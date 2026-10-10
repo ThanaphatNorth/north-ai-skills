@@ -1,0 +1,158 @@
+/* ==========================================================================
+   tailwind-theme.css: Tailwind CSS v4 mapping for tokens-starter.css
+   Tailwind-only syntax (@theme, @custom-variant, "--color-*: initial"):
+   it must go through the Tailwind compiler. Tested with tailwindcss 4.3.3.
+   Entry stylesheet:
+
+     @import "tailwindcss";
+     @import "./tokens-starter.css";
+     @import "./tailwind-theme.css";
+
+   tokens-starter.css stays the single source of truth. "@theme inline
+   reference" registers utilities that point at those variables without
+   re-emitting them (plain "@theme inline" would emit self-references like
+   --radius-md: var(--radius-md) into the theme layer).
+
+   Utilities you get: bg-bg bg-surface bg-surface-raised text-fg text-fg-muted
+   border-border border-border-strong bg-primary text-primary-foreground
+   hover:bg-primary-hover bg-danger-subtle text-danger-text ring-focus
+   rounded-md shadow-popover text-2xl font-sans ease-standard p-4 (= --space-4)
+   No z-index/duration namespaces exist: use z-(--z-modal) duration-(--duration-fast).
+   Breakpoints: Tailwind defaults (sm 40rem ... 2xl 96rem) already match the tokens.
+   ========================================================================== */
+
+/* dark: variant = same rule as the tokens (OS dark unless pinned light, or forced dark).
+   Semantic tokens already flip, so most components need no dark: classes. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+}
+
+/* Drop Tailwind's default palette and scales so only design-system values exist.
+   Delete a line to keep that Tailwind default namespace. */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --text-*: initial;
+  --ease-*: initial;
+}
+
+@theme inline reference {
+  /* Colors: semantic roles only (primitives stay out of utilities on purpose) */
+  --color-white: var(--neutral-0);
+  --color-black: var(--neutral-1000);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-scrim: var(--scrim);
+  --color-fg: var(--text);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-disabled: var(--text-disabled);
+  --color-fg-inverse: var(--text-inverse);
+  --color-link: var(--link);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-text: var(--success-text);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-danger-text: var(--danger-text);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-text: var(--info-text);
+  --color-focus: var(--focus-ring);
+
+  /* Spacing: Tailwind multiplies --spacing, so p-4 = 4 x 0.25rem = --space-4 */
+  --spacing: var(--space-1);
+
+  /* Radius */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-control: var(--control-radius);
+  --radius-card: var(--card-radius);
+
+  /* Elevation */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-card: var(--elevation-card);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-popover: var(--elevation-popover);
+  --shadow-dialog: var(--elevation-dialog);
+  --shadow-toast: var(--elevation-toast);
+
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+  --font-weight-normal: var(--font-weight-normal);
+  --font-weight-medium: var(--font-weight-medium);
+  --font-weight-semibold: var(--font-weight-semibold);
+  --font-weight-bold: var(--font-weight-bold);
+  --text-xs: var(--font-size-xs);
+  --text-xs--line-height: var(--line-height-normal);
+  --text-sm: var(--font-size-sm);
+  --text-sm--line-height: var(--line-height-normal);
+  --text-base: var(--font-size-base);
+  --text-base--line-height: var(--line-height-normal);
+  --text-lg: var(--font-size-lg);
+  --text-lg--line-height: var(--line-height-normal);
+  --text-xl: var(--font-size-xl);
+  --text-xl--line-height: var(--line-height-snug);
+  --text-2xl: var(--font-size-2xl);
+  --text-2xl--line-height: var(--line-height-snug);
+  --text-3xl: var(--font-size-3xl);
+  --text-3xl--line-height: var(--line-height-tight);
+  --text-4xl: var(--font-size-4xl);
+  --text-4xl--line-height: var(--line-height-tight);
+  --text-5xl: var(--font-size-5xl);
+  --text-5xl--line-height: var(--line-height-tight);
+  --tracking-tight: var(--tracking-tight);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: var(--tracking-wide);
+  --leading-tight: var(--line-height-tight);
+  --leading-snug: var(--line-height-snug);
+  --leading-normal: var(--line-height-normal);
+  --leading-relaxed: var(--line-height-relaxed);
+
+  /* Motion */
+  --ease-standard: var(--ease-standard);
+  --ease-out: var(--ease-out);
+  --ease-in: var(--ease-in);
+  --ease-emphasized-out: var(--ease-emphasized-out);
+  --ease-emphasized-in: var(--ease-emphasized-in);
+  --default-transition-duration: var(--duration-moderate);
+  --default-transition-timing-function: var(--ease-standard);
+}

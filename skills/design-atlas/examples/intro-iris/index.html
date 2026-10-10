@@ -1,0 +1,267 @@
+<!doctype html>
+<!--
+  INTRO IRIS · design-atlas signature recipe (vanilla, WAAPI + a registered custom property)
+  What: an opening sequence. Black screen -> one breathing point of light -> after ~1.2 s (or on the
+    first wheel / touch / key / click) the point opens into an iris (clip-path: circle()) with a glowing
+    rim that reveals the page; the hero staggers in. The point of light lands on the sun in the hero
+    scene, so the intro is part of the story, not a loader.
+  Feeling / story: arrival, "let there be light", the curtain rising (architecture, galleries, a
+    launch, hospitality, a portfolio's first impression).
+  Use when: brand-led landing pages people open on purpose; the hero has a natural light source at the
+    viewport centre to land on.
+  Avoid when: task pages, return visits within a session, search/ads landing pages where speed to
+    content matters, or any page users open many times a day.
+  Ambition: cinematic.
+  Rules this recipe keeps: plays once per session (sessionStorage), a visible Skip control (also Esc),
+    scroll is locked only until the iris finishes and never longer than CFG.maxLock (2.5 s), first
+    interaction opens it immediately, reduced motion or no JS = the page shows at once.
+  Knobs: CFG below (autoOpen ms, irisMs, maxLock, storageKey); ?intro in the URL forces a replay;
+    window.lumenIntro.replay() / .skip() for design review and tests; CSS --bone/--stone/--clay/--ink,
+    --arch-top (where the arch starts; the sun sits at the viewport centre inside it).
+  Perf: ~1.1 s of clip-path + one full-screen gradient (the rim) repainting per frame, driven by WAAPI
+    on a registered <length> (--iris, inherits:false, so only two elements restyle). Then nothing runs.
+    Fallback without CSS.registerProperty: a plain fade of the black curtain.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier Lumen — Rooms shaped by light</title>
+<script>
+  // Decide before first paint, so returning visitors never see a black flash.
+  (function () {
+    var d = document.documentElement, seen = null;
+    try { seen = sessionStorage.getItem('lumen-intro'); } catch (e) {}
+    var force = /[?&]intro\b/.test(location.search);
+    if ((force || !seen) && !matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('has-intro', 'lock');
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans+Thai:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+@property --iris{syntax:'<length>';inherits:false;initial-value:0px}
+:root{
+  --ease-standard:cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out:cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
+  --bone:#efe8dc; --stone:#d8ccb8; --clay:#b4532d; --ink:#1d1a16; --sun:#fff3dc;
+  --arch-top:15vh; --arch-bot:22vh; --arch-w:min(22vw,38vh);
+  --serif:"Instrument Serif",Georgia,serif; --sans:"IBM Plex Sans Thai",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{scrollbar-gutter:stable}
+html.lock{overflow:hidden}
+body{background:var(--bone);color:var(--ink);font:300 17px/1.65 var(--sans);overflow-x:clip}
+.has-intro body{background:#000}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+
+/* ---- curtain: point of light, rim, skip ---- */
+.curtain{display:none}
+.has-intro .curtain{display:block;position:fixed;inset:0;z-index:50;pointer-events:none}
+.dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--sun);opacity:0;
+  box-shadow:0 0 12px 3px rgba(255,236,200,.9),0 0 60px 18px rgba(255,190,120,.35),0 0 160px 60px rgba(255,170,90,.12)}
+.has-intro .dot{animation:appear .6s var(--ease-emphasized-out) .15s forwards,breathe 1.7s ease-in-out .75s infinite}
+@keyframes appear{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+@keyframes breathe{50%{transform:scale(1.45);opacity:.75}}
+.rim{position:absolute;inset:0;opacity:0;
+  background:radial-gradient(circle at 50% 50%,rgba(255,240,215,0) calc(var(--iris) - 2px),rgba(255,244,224,.95) var(--iris),rgba(255,196,130,.32) calc(var(--iris) + 12px),rgba(255,180,110,0) calc(var(--iris) + 110px))}
+.skip{position:absolute;right:clamp(16px,4vw,40px);bottom:clamp(16px,4vh,36px);pointer-events:auto;min-height:44px;padding:0 20px;border-radius:999px;
+  border:1px solid rgba(255,243,220,.35);background:rgba(0,0,0,.4);color:#f3ead9;font:400 14px/1 var(--sans);letter-spacing:.06em;cursor:pointer}
+.skip:hover{border-color:rgba(255,243,220,.8)}
+.has-intro .page{clip-path:circle(var(--iris) at var(--cx,50vw) var(--cy,50vh))}
+.fade .page{clip-path:none}
+/* safety net if the script never runs: page shows and scroll unlocks after 2.6 s, CSS only (by then the iris is done anyway) */
+html.has-intro{animation:unlock 0s 2.6s forwards}
+.has-intro .page{animation:unclip 0s 2.6s forwards}
+.has-intro .curtain{animation:hide 0s 2.6s forwards}
+@keyframes unlock{to{overflow:visible}}
+@keyframes unclip{to{clip-path:none}}
+@keyframes hide{to{visibility:hidden}}
+.fade .curtain{background:#000}
+
+/* ---- hero entrance (only while the intro plays) ---- */
+.has-intro [data-in]{opacity:0}
+.has-intro.play [data-in]{animation:rise 1s var(--ease-emphasized-out) both;animation-delay:calc(260ms + var(--i,0) * 90ms)}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+
+/* ---- page ---- */
+.bar{position:fixed;inset:0 0 auto;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(16px,4vw,56px)}
+.logo{font:400 26px/1 var(--serif);letter-spacing:.01em;text-decoration:none}
+.logo i{color:var(--clay)}
+nav{display:flex;gap:4px}
+nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;text-decoration:none;font-size:15px}
+nav a:hover{color:var(--clay)}
+.hero{position:relative;height:100vh;height:100svh;min-height:600px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) var(--arch-w) minmax(0,1fr);align-items:end;gap:clamp(24px,4vw,64px);padding:0 clamp(16px,4vw,56px) 9vh}
+.scene,.scene>*{position:absolute}
+.scene{inset:0}
+.wall{inset:0;background:linear-gradient(90deg,#d6c9b3 0%,#e9e0d0 28%,#f1eadf 50%,#e8dfcf 72%,#d3c5ae 100%)}
+.floor{left:0;right:0;bottom:0;height:var(--arch-bot);background:linear-gradient(#cdbfa7,#b9a98e)}
+.reveal,.arch{left:50%;top:var(--arch-top);bottom:var(--arch-bot);border-radius:999px 999px 0 0}
+.reveal{width:calc(var(--arch-w) * 1.16);transform:translateX(-54%);background:linear-gradient(90deg,#bcae96,#d2c5af)}
+.arch{width:var(--arch-w);transform:translateX(-50%);overflow:hidden;background:linear-gradient(#e7a07c 0%,#f2c79e 38%,#f8e2c4 70%,#fcefdc 100%)}
+.sun{position:absolute;left:50%;top:calc(50vh - var(--arch-top));top:calc(50svh - var(--arch-top));width:min(9vw,12vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,#fffaf0 0 34%,rgba(255,236,206,.7) 46%,rgba(255,220,180,0) 70%)}
+.hills{position:absolute;left:0;bottom:0;width:100%;height:30%}
+.shaft{left:50%;bottom:0;height:var(--arch-bot);width:calc(var(--arch-w) * 2.3);transform:translateX(-50%);clip-path:polygon(28.3% 0,71.7% 0,100% 100%,0 100%);
+  background:linear-gradient(rgba(255,240,214,.85),rgba(255,236,206,.25))}
+.shade{inset:0;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 55%,rgba(60,40,20,.18) 100%)}
+.grain{inset:0;opacity:.14;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.anno{left:calc(50% + var(--arch-w) / 2 + 40px);top:calc(50vh - 22px);top:calc(50svh - 22px);font-size:12px;line-height:1.5;letter-spacing:.14em;text-transform:uppercase;color:#8d7a62}
+.anno::before{content:"";position:absolute;right:calc(100% + 12px);top:11px;width:calc(var(--arch-w) / 2 + 28px);height:1px;background:linear-gradient(90deg,rgba(141,122,98,0),#8d7a62)}
+.anno span{display:block;text-transform:none;letter-spacing:.02em}
+.hero-l,.hero-r{position:relative}
+.hero-l{grid-column:1}
+.hero-r{grid-column:3;max-width:24em;justify-self:end}
+.eyebrow{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);font-weight:500}
+h1{font:400 clamp(48px,5.6vw,104px)/.92 var(--serif);letter-spacing:-.015em;margin-top:14px}
+h1 span{display:block}
+h1 em{color:var(--clay)}
+.hero-r p{font-size:16px}
+.cta{display:inline-flex;align-items:center;gap:10px;min-height:48px;margin-top:20px;padding:0 24px;border-radius:999px;background:var(--ink);color:var(--bone);text-decoration:none;font-weight:500;transition:background .3s var(--ease-standard)}
+.cta:hover{background:var(--clay)}
+
+section.block{padding:clamp(80px,11vw,150px) clamp(16px,4vw,56px)}
+.block h2{font:400 clamp(40px,5vw,76px)/1 var(--serif);max-width:12em}
+.block h2 + p{margin-top:14px;max-width:34em;font-size:18px}
+.works{list-style:none;padding:0;margin-top:56px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,2.4vw,32px)}
+.thumb{aspect-ratio:4/5;border-radius:4px;position:relative;overflow:hidden;background:var(--c1)}
+.thumb::before{content:"";position:absolute;left:22%;right:22%;top:18%;bottom:26%;border-radius:999px 999px 0 0;background:var(--c2)}
+.thumb::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26%;background:var(--c3)}
+.works h3{font:400 28px/1.1 var(--serif);margin-top:14px}
+.works p{font-size:15px;opacity:.75}
+.quiet{background:#e6ddcd}
+footer{padding:40px clamp(16px,4vw,56px) 56px;font-size:14px;opacity:.65}
+
+@media (max-width:760px){
+  :root{--arch-top:34vh;--arch-w:58vw;--arch-bot:18vh}
+  .hero{grid-template-columns:minmax(0,1fr);align-items:stretch;align-content:space-between;padding:96px 16px 7vh}
+  .hero-l,.hero-r{grid-column:1}
+  .anno{display:none}
+  .hero-r{justify-self:stretch;max-width:none;align-self:end}
+  .hero-r p{font-size:15px}
+  h1{font-size:clamp(46px,13vw,64px)}
+  nav a{padding:0 8px;font-size:14px}
+  .works{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){.cta{transition:none}}
+</style>
+</head>
+<body>
+<div class="curtain" aria-label="Intro">
+  <div class="rim" aria-hidden="true"></div>
+  <div class="dot" aria-hidden="true"></div>
+  <button class="skip" type="button">Skip intro · ข้ามอินโทร</button>
+</div>
+<div class="page" id="page">
+  <header class="bar" data-in style="--i:0">
+    <a class="logo" href="#top">Atelier <i>Lumen</i></a>
+    <nav aria-label="Main"><a href="#work">Work</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </header>
+  <main id="top">
+    <section class="hero" data-story aria-labelledby="h">
+      <div class="scene" aria-hidden="true">
+        <div class="wall"></div><div class="floor"></div><div class="reveal"></div>
+        <div class="arch"><div class="sun"></div>
+          <svg class="hills" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 18C18 8 30 14 44 10s30-6 56 6V30H0z" fill="#dba184" opacity=".7"/><path d="M0 24c20-8 36-2 52-6s32-4 48 2v10H0z" fill="#c98a6c" opacity=".75"/></svg>
+        </div>
+        <div class="shaft"></div><div class="shade"></div><div class="grain"></div>
+        <p class="anno">06:12 · first light<span>ห้องรับแสงแรกของวัน · 21 มิ.ย.</span></p>
+      </div>
+      <div class="hero-l">
+        <p class="eyebrow" data-in style="--i:1">Architecture of light · Chiang Mai</p>
+        <h1 id="h"><span data-in style="--i:2">Rooms shaped</span><span data-in style="--i:3">by <em>light.</em></span></h1>
+      </div>
+      <div class="hero-r">
+        <p lang="th" data-in style="--i:4">เราออกแบบบ้าน รีสอร์ต และพื้นที่สาธารณะ โดยเริ่มจากเส้นทางของแสงธรรมชาติ ตลอดทั้งวัน</p>
+        <a class="cta" href="#work" data-in style="--i:5">See selected work →</a>
+      </div>
+    </section>
+    <section class="block" id="work">
+      <h2>Selected work, 2019–2026</h2>
+      <p>Twelve buildings, one brief: let the day write the interior. <span lang="th">สิบสองอาคาร โจทย์เดียว ให้แสงของวันเป็นผู้ออกแบบภายใน</span></p>
+      <ul class="works">
+        <li><div class="thumb" style="--c1:#d9c6a8;--c2:#f3d7b0;--c3:#b9a283" aria-hidden="true"></div><h3>Courtyard House, Mae Rim</h3><p>Rammed earth, one oculus, 2024</p></li>
+        <li><div class="thumb" style="--c1:#b8b3a6;--c2:#e9e3d2;--c3:#8f8a7d" aria-hidden="true"></div><h3>Library of Shade</h3><p>Public reading rooms, 2022</p></li>
+        <li><div class="thumb" style="--c1:#c8a58d;--c2:#f6c79a;--c3:#a07a63" aria-hidden="true"></div><h3>Dusk Pavilion, Krabi</h3><p>Resort spa, 2026</p></li>
+      </ul>
+    </section>
+    <section class="block quiet" id="studio">
+      <h2>We draw the sun before the walls.</h2>
+      <p lang="th">ทุกโครงการเริ่มจากการศึกษาทิศทางแสงตลอดสี่ฤดู ก่อนจะลากเส้นแรกของผนัง</p>
+    </section>
+  </main>
+  <footer id="contact">Atelier Lumen is a fictional studio made for a design-atlas recipe · hello@example.com</footer>
+</div>
+<script>
+(() => {
+  const CFG = { autoOpen: 1200, irisMs: 1250, maxLock: 2500, storageKey: 'lumen-intro' };
+  const root = document.documentElement, page = document.getElementById('page');
+  const curtain = document.querySelector('.curtain'), dot = curtain.querySelector('.dot'), rim = curtain.querySelector('.rim'), skipBtn = curtain.querySelector('.skip');
+  const canIris = !!(window.CSS && CSS.registerProperty);
+  const css = (n, d) => getComputedStyle(root).getPropertyValue(n).trim() || d;
+  const easeIn = css('--ease-emphasized-in', 'ease-in'), easeOut = css('--ease-emphasized-out', 'ease-out');
+  let state = 'idle', timers = [], anims = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const remember = () => { try { sessionStorage.setItem(CFG.storageKey, '1'); } catch (e) {} };
+
+  function open() {
+    if (state !== 'waiting') return;
+    state = 'opening';
+    const R = Math.hypot(innerWidth, innerHeight) / 2 + 60;
+    page.style.setProperty('--cx', innerWidth / 2 + 'px');
+    page.style.setProperty('--cy', scrollY + innerHeight / 2 + 'px');
+    root.classList.add('play');
+    // Material "emphasized" = emphasized-in for the first ~40 %, then emphasized-out: the iris is seen
+    // growing from the point before it bursts open.
+    const t = { duration: CFG.irisMs, fill: 'forwards' };
+    const k = (r, o, extra) => Object.assign({ '--iris': r + 'px', offset: o }, extra);
+    if (canIris) {
+      anims.push(page.animate([k(0, 0, { easing: easeIn }), k(R * 0.16, 0.4, { easing: easeOut }), k(R, 1)], t));
+      anims.push(rim.animate([k(0, 0, { easing: easeIn, opacity: 1 }), k(R * 0.16, 0.4, { easing: easeOut, opacity: 1 }), k(R, 1, { opacity: 0 })], t));
+    } else {
+      root.classList.add('fade');
+      anims.push(curtain.animate([{ opacity: 1 }, { opacity: 0 }], { ...t, easing: easeOut }));
+    }
+    dot.getAnimations().forEach((a) => a.cancel());
+    anims.push(dot.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(2.6)', opacity: 0.9, offset: 0.6 }, { transform: 'scale(4)', opacity: 0 }], { duration: 760, easing: easeIn, fill: 'forwards' }));
+    anims[0].finished.then(() => later(finish, 900), () => {});   // let the stagger land, then clean up
+    later(unlock, CFG.irisMs);
+  }
+  const unlock = () => root.classList.remove('lock');
+  function finish() {
+    if (state === 'done') return;
+    state = 'done';
+    timers.forEach(clearTimeout); timers = [];
+    anims.forEach((a) => a.cancel()); anims = [];
+    root.classList.remove('has-intro', 'lock', 'play', 'fade');
+    page.style.removeProperty('--cx'); page.style.removeProperty('--cy');
+    removeEventListener('wheel', early); removeEventListener('touchstart', early); removeEventListener('keydown', early); removeEventListener('pointerdown', early);
+    if (document.activeElement === skipBtn) document.querySelector('.logo').focus();
+  }
+  function early(e) {
+    if (e.type === 'keydown') { if (e.key === 'Escape') return finish(); if (e.key === 'Tab' || e.key === 'Shift') return; }
+    if (e.target === skipBtn) return;
+    if (state === 'waiting') open();
+    else if (state === 'opening') anims.forEach((a) => (a.playbackRate = 2));   // impatient: hurry, do not jump
+  }
+  function start() {
+    state = 'waiting'; remember();
+    if (!canIris) root.classList.add('fade');            // no registered properties: black curtain + fade
+    addEventListener('wheel', early, { passive: true }); addEventListener('touchstart', early, { passive: true });
+    addEventListener('keydown', early); addEventListener('pointerdown', early);
+    later(open, CFG.autoOpen);
+    later(finish, CFG.autoOpen + CFG.maxLock);            // hard cap: never hold the page longer than this
+    later(unlock, CFG.maxLock);
+  }
+  skipBtn.addEventListener('click', finish);
+  window.lumenIntro = {
+    replay() { finish(); scrollTo(0, 0); void dot.offsetWidth; state = 'idle'; root.classList.add('has-intro', 'lock'); start(); },
+    skip: finish,
+  };
+  if (root.classList.contains('has-intro')) start();
+})();
+</script>
+</body>
+</html>

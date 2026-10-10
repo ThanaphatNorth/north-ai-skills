@@ -1,0 +1,495 @@
+/* ==========================================================================
+   tokens-starter.css: design-atlas starter token set (CSS custom properties)
+   --------------------------------------------------------------------------
+   Layers:   1. primitives (raw values: OKLCH ramps, scales)
+             2. semantic   (roles: --bg, --text, --primary ... ; themed)
+             3. component  (control/card sizing; theme-free values only)
+   Theming:  light = default.
+             dark  = OS preference (prefers-color-scheme) unless
+                     <html data-theme="light">; force with data-theme="dark".
+             data-theme="dark|light" also works on any subtree (scoped theme).
+             data-brand / data-density: set on <html> only (see notes below).
+   Rebrand:  change --brand-h / --brand-c (and --accent-h / --accent-c).
+             Ramp lightness is fixed per step, so every semantic pair keeps
+             >= 4.5:1 (text) / >= 3:1 (borders, focus) for any hue (checked
+             at 0-330deg; weakest primary-foreground on primary = 4.7:1).
+             A yellow/lime brand at L 0.54 reads as olive: for a bright
+             yellow button use --brand-400 + --neutral-950 text instead.
+   Support:  oklch() + calc() in color: Chrome 111+, Safari 15.4+, Firefox 113+.
+   Breakpoints (custom properties cannot be used inside @media; copy values):
+             sm 40rem (640px) · md 48rem (768px) · lg 64rem (1024px)
+             xl 80rem (1280px) · 2xl 96rem (1536px)
+             Prefer container queries (@container) for component layout.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PRIMITIVES: raw values. Never use these directly in components;
+      components consume semantic tokens (section 2).
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand hue + peak chroma (placeholders: indigo). Steps scale chroma down at
+     the extremes. Largest --brand-c that keeps all 11 steps inside sRGB:
+     hue 300-30 (pink/red) ~0.18-0.24 · 45 ~0.15 · 60-120 (yellow) ~0.11
+     · 135-150 (green) ~0.15 · 165-225 (teal/cyan) ~0.09-0.10
+     · 240 ~0.12 · 255-285 (blue/indigo) ~0.17. Above that, browsers clip. */
+  --brand-h: 265;
+  --brand-c: 0.16;
+  --accent-h: 345;
+  --accent-c: 0.15;
+  --neutral-h: var(--brand-h); /* tinted neutrals; set --neutral-c: 0 for pure gray */
+  --neutral-c: 0.006;
+
+  --brand-50:  oklch(0.97 calc(var(--brand-c) * 0.08) var(--brand-h));
+  --brand-100: oklch(0.94 calc(var(--brand-c) * 0.16) var(--brand-h));
+  --brand-200: oklch(0.88 calc(var(--brand-c) * 0.34) var(--brand-h));
+  --brand-300: oklch(0.80 calc(var(--brand-c) * 0.60) var(--brand-h));
+  --brand-400: oklch(0.71 calc(var(--brand-c) * 0.90) var(--brand-h));
+  --brand-500: oklch(0.62 var(--brand-c) var(--brand-h));
+  --brand-600: oklch(0.54 var(--brand-c) var(--brand-h));
+  --brand-700: oklch(0.46 calc(var(--brand-c) * 0.85) var(--brand-h));
+  --brand-800: oklch(0.38 calc(var(--brand-c) * 0.65) var(--brand-h));
+  --brand-900: oklch(0.30 calc(var(--brand-c) * 0.50) var(--brand-h));
+  --brand-950: oklch(0.22 calc(var(--brand-c) * 0.35) var(--brand-h));
+
+  --accent-50:  oklch(0.97 calc(var(--accent-c) * 0.08) var(--accent-h));
+  --accent-100: oklch(0.94 calc(var(--accent-c) * 0.16) var(--accent-h));
+  --accent-200: oklch(0.88 calc(var(--accent-c) * 0.34) var(--accent-h));
+  --accent-300: oklch(0.80 calc(var(--accent-c) * 0.60) var(--accent-h));
+  --accent-400: oklch(0.71 calc(var(--accent-c) * 0.90) var(--accent-h));
+  --accent-500: oklch(0.62 var(--accent-c) var(--accent-h));
+  --accent-600: oklch(0.54 var(--accent-c) var(--accent-h));
+  --accent-700: oklch(0.46 calc(var(--accent-c) * 0.85) var(--accent-h));
+  --accent-800: oklch(0.38 calc(var(--accent-c) * 0.65) var(--accent-h));
+  --accent-900: oklch(0.30 calc(var(--accent-c) * 0.50) var(--accent-h));
+  --accent-950: oklch(0.22 calc(var(--accent-c) * 0.35) var(--accent-h));
+
+  --neutral-0:    oklch(1 0 0);
+  --neutral-50:   oklch(0.985 var(--neutral-c) var(--neutral-h));
+  --neutral-100:  oklch(0.967 var(--neutral-c) var(--neutral-h));
+  --neutral-200:  oklch(0.922 var(--neutral-c) var(--neutral-h));
+  --neutral-300:  oklch(0.870 var(--neutral-c) var(--neutral-h));
+  --neutral-400:  oklch(0.708 var(--neutral-c) var(--neutral-h));
+  --neutral-500:  oklch(0.556 var(--neutral-c) var(--neutral-h));
+  --neutral-600:  oklch(0.439 var(--neutral-c) var(--neutral-h));
+  --neutral-700:  oklch(0.371 var(--neutral-c) var(--neutral-h));
+  --neutral-800:  oklch(0.269 var(--neutral-c) var(--neutral-h));
+  --neutral-900:  oklch(0.205 var(--neutral-c) var(--neutral-h));
+  --neutral-950:  oklch(0.145 var(--neutral-c) var(--neutral-h));
+  --neutral-1000: oklch(0 0 0);
+
+  /* Status ramps: fixed hues so status meaning never follows the brand. */
+  --green-50:  oklch(0.97 0.03 150);
+  --green-300: oklch(0.82 0.13 150);
+  --green-500: oklch(0.68 0.16 150);
+  --green-600: oklch(0.52 0.14 150);
+  --green-700: oklch(0.45 0.12 150);
+  --green-950: oklch(0.24 0.05 150);
+
+  --amber-50:  oklch(0.97 0.03 85);
+  --amber-300: oklch(0.86 0.13 85);
+  --amber-500: oklch(0.78 0.16 75);
+  --amber-700: oklch(0.47 0.10 60);
+  --amber-950: oklch(0.25 0.05 60);
+
+  --red-50:  oklch(0.97 0.013 25);
+  --red-300: oklch(0.80 0.10 25);
+  --red-500: oklch(0.68 0.19 25);
+  --red-600: oklch(0.55 0.20 27);
+  --red-700: oklch(0.47 0.17 27);
+  --red-950: oklch(0.25 0.08 25);
+
+  --blue-50:  oklch(0.97 0.015 245);
+  --blue-300: oklch(0.81 0.09 245);
+  --blue-500: oklch(0.68 0.14 245);
+  --blue-600: oklch(0.52 0.15 255);
+  --blue-700: oklch(0.45 0.14 255);
+  --blue-950: oklch(0.25 0.06 250);
+
+  /* Spacing: 4px base; the number = multiples of 4px (matches Tailwind numbering). */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2 */
+  --space-1: 0.25rem;    /* 4 */
+  --space-1-5: 0.375rem; /* 6 */
+  --space-2: 0.5rem;     /* 8 */
+  --space-3: 0.75rem;    /* 12 */
+  --space-4: 1rem;       /* 16 */
+  --space-5: 1.25rem;    /* 20 */
+  --space-6: 1.5rem;     /* 24 */
+  --space-8: 2rem;       /* 32 */
+  --space-10: 2.5rem;    /* 40 */
+  --space-12: 3rem;      /* 48 */
+  --space-16: 4rem;      /* 64 */
+  --space-20: 5rem;      /* 80 */
+  --space-24: 6rem;      /* 96 */
+  --space-32: 8rem;      /* 128 */
+
+  /* Radius. Nested rule: inner radius = outer radius - padding (never < 0). */
+  --radius-none: 0;
+  --radius-xs: 0.125rem; /* 2 */
+  --radius-sm: 0.25rem;  /* 4 */
+  --radius-md: 0.5rem;   /* 8 */
+  --radius-lg: 0.75rem;  /* 12 */
+  --radius-xl: 1rem;     /* 16 */
+  --radius-2xl: 1.5rem;  /* 24 */
+  --radius-full: 9999px;
+
+  /* Border widths */
+  --border-width: 1px;
+  --border-width-strong: 2px;
+
+  /* Font stacks: first family is the brand choice; the rest are safe fallbacks.
+     Thai coverage: "Noto Sans Thai"/"IBM Plex Sans Thai" (load them if used). */
+  --font-sans: "Inter", "Noto Sans Thai", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  --font-serif: "Source Serif 4", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+    Consolas, "Liberation Mono", monospace;
+  --font-display: var(--font-sans);
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Type scale. xs-base static; lg+ fluid between 360px and 1280px viewports.
+     rem + vw keeps browser zoom/text-size settings working. */
+  --font-size-xs: 0.75rem;   /* 12 */
+  --font-size-sm: 0.875rem;  /* 14 */
+  --font-size-base: 1rem;    /* 16 */
+  --font-size-lg: clamp(1.125rem, 1.0761rem + 0.2174vw, 1.25rem);  /* 18-20 */
+  --font-size-xl: clamp(1.25rem, 1.1522rem + 0.4348vw, 1.5rem);    /* 20-24 */
+  --font-size-2xl: clamp(1.5rem, 1.3533rem + 0.6522vw, 1.875rem);  /* 24-30 */
+  --font-size-3xl: clamp(1.875rem, 1.6304rem + 1.087vw, 2.5rem);   /* 30-40 */
+  --font-size-4xl: clamp(2.25rem, 1.7609rem + 2.1739vw, 3.5rem);   /* 36-56 */
+  --font-size-5xl: clamp(3rem, 2.413rem + 2.6087vw, 4.5rem);       /* 48-72 */
+
+  --line-height-tight: 1.1;   /* display >= 3xl */
+  --line-height-snug: 1.25;   /* headings */
+  --line-height-normal: 1.5;  /* UI + body */
+  --line-height-relaxed: 1.7; /* long-form reading */
+
+  --tracking-tight: -0.02em;  /* large headings */
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;    /* all-caps labels */
+
+  /* Sizes */
+  --icon-sm: 1rem;      /* 16 */
+  --icon-md: 1.25rem;   /* 20 */
+  --icon-lg: 1.5rem;    /* 24 */
+  --target-min: 2.75rem; /* 44px touch target; WCAG 2.2 AA floor is 24px */
+  --measure: 70ch;       /* max line length for reading text */
+
+  /* Z-index: named layers with gaps. <dialog>.showModal() and the Popover
+     API render in the top layer and need no z-index at all. */
+  --z-base: 0;
+  --z-raised: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-header: 1200;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-toast: 1600;
+  --z-tooltip: 1700;
+
+  /* Motion (curves = Material 3 tokens). See motion.md for usage rules. */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;    /* hover, press feedback */
+  --duration-moderate: 200ms; /* small UI: toggles, tooltips, fades */
+  --duration-slow: 300ms;    /* menus, popovers, accordions */
+  --duration-slower: 500ms;  /* page-level, large surfaces */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0, 1);          /* entering (standard decelerate) */
+  --ease-in: cubic-bezier(0.3, 0, 1, 1);         /* exiting (standard accelerate) */
+  --ease-emphasized-out: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-emphasized-in: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --ease-linear: linear;
+  --spring-fast: 0.9 1400;    /* dampingRatio stiffness, read by JS (Motion, Reanimated) */
+  --spring-default: 0.9 700;
+  --spring-slow: 0.9 300;
+
+  /* Interaction state layers (Material 3 opacities, androidx StateTokens v0_210) */
+  --state-hover: 0.08;
+  --state-focus: 0.1;
+  --state-pressed: 0.1;
+  --state-dragged: 0.16;
+  --opacity-disabled: 0.5; /* whole-element dim; M3 uses 0.38 content / 0.1 container */
+}
+
+/* Thai (and other scripts with stacked marks): looser line-height, no negative tracking.
+   Values from references/typography-layout.md; Thai needs ~1.5x the vertical room of Latin. */
+:lang(th) {
+  --line-height-tight: 1.3;   /* display >= 48px: 1.2-1.35 */
+  --line-height-snug: 1.4;    /* headings 24-40px: 1.3-1.45 */
+  --line-height-normal: 1.6;  /* UI + body: never below 1.5 */
+  --line-height-relaxed: 1.8; /* long-form reading */
+  --tracking-tight: 0em;      /* never tighten Thai */
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-moderate: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. SEMANTIC: role tokens. Components use ONLY these.
+      Pairs: every fill has a -foreground that passes 4.5:1 on it.
+   -------------------------------------------------------------------------- */
+
+/* Light (default, and any [data-theme="light"] subtree) */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: var(--neutral-50);
+  --surface: var(--neutral-0);
+  --surface-raised: var(--neutral-0);   /* + --shadow-md; menus, popovers */
+  --surface-sunken: var(--neutral-100); /* wells, code blocks, table stripes */
+  --scrim: oklch(0 0 0 / 0.5);
+
+  --text: var(--neutral-950);
+  --text-muted: var(--neutral-600);
+  --text-disabled: var(--neutral-400);  /* exempt from contrast rules */
+  --text-inverse: var(--neutral-50);
+  --link: var(--brand-700);
+
+  --border: var(--neutral-200);         /* decorative dividers, card edges */
+  --border-strong: var(--neutral-500);  /* input outlines: >= 3:1 vs --surface */
+
+  --primary: var(--brand-600);
+  --primary-hover: var(--brand-700);
+  --primary-active: var(--brand-800);
+  --primary-foreground: var(--neutral-0);
+  --primary-subtle: var(--brand-100);
+  --primary-subtle-foreground: var(--brand-800);
+
+  --accent: var(--accent-600);
+  --accent-foreground: var(--neutral-0);
+  --accent-subtle: var(--accent-100);
+
+  --success: var(--green-600);
+  --success-foreground: var(--neutral-0);
+  --success-subtle: var(--green-50);
+  --success-text: var(--green-700);
+
+  --warning: var(--amber-500);          /* yellow fills take dark text */
+  --warning-foreground: var(--amber-950);
+  --warning-subtle: var(--amber-50);
+  --warning-text: var(--amber-700);
+
+  --danger: var(--red-600);
+  --danger-foreground: var(--neutral-0);
+  --danger-subtle: var(--red-50);
+  --danger-text: var(--red-700);
+
+  --info: var(--blue-600);
+  --info-foreground: var(--neutral-0);
+  --info-subtle: var(--blue-50);
+  --info-text: var(--blue-700);
+
+  --focus-ring: var(--brand-600);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  --shadow-color: 0.25 0.02 var(--neutral-h); /* L C H, used inside oklch() */
+  --shadow-strength: 1;
+}
+
+/* Dark: OS preference (unless the page pins light) ... */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: var(--neutral-950);
+    --surface: var(--neutral-900);
+    --surface-raised: var(--neutral-800); /* higher = lighter in dark mode */
+    --surface-sunken: oklch(0.12 var(--neutral-c) var(--neutral-h));
+    --scrim: oklch(0 0 0 / 0.6);
+
+    --text: var(--neutral-50);
+    --text-muted: var(--neutral-400);
+    --text-disabled: var(--neutral-600);
+    --text-inverse: var(--neutral-950);
+    --link: var(--brand-300);
+
+    --border: var(--neutral-800);
+    --border-strong: var(--neutral-500);
+
+    --primary: var(--brand-400);
+    --primary-hover: var(--brand-300);
+    --primary-active: var(--brand-200);
+    --primary-foreground: var(--brand-950);
+    --primary-subtle: var(--brand-900);
+    --primary-subtle-foreground: var(--brand-200);
+
+    --accent: var(--accent-400);
+    --accent-foreground: var(--accent-950);
+    --accent-subtle: var(--accent-900);
+
+    --success: var(--green-500);
+    --success-foreground: var(--green-950);
+    --success-subtle: var(--green-950);
+    --success-text: var(--green-300);
+
+    --warning: var(--amber-500);
+    --warning-foreground: var(--amber-950);
+    --warning-subtle: var(--amber-950);
+    --warning-text: var(--amber-300);
+
+    --danger: var(--red-500);
+    --danger-foreground: var(--red-950);
+    --danger-subtle: var(--red-950);
+    --danger-text: var(--red-300);
+
+    --info: var(--blue-500);
+    --info-foreground: var(--blue-950);
+    --info-subtle: var(--blue-950);
+    --info-text: var(--blue-300);
+
+    --focus-ring: var(--brand-300);
+
+    --shadow-color: 0 0 0;
+    --shadow-strength: 3; /* shadows read weaker on dark; lean on surface lightness */
+  }
+}
+
+/* ... or forced dark on <html> or any subtree. Keep in sync with the block above. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: var(--neutral-950);
+  --surface: var(--neutral-900);
+  --surface-raised: var(--neutral-800);
+  --surface-sunken: oklch(0.12 var(--neutral-c) var(--neutral-h));
+  --scrim: oklch(0 0 0 / 0.6);
+
+  --text: var(--neutral-50);
+  --text-muted: var(--neutral-400);
+  --text-disabled: var(--neutral-600);
+  --text-inverse: var(--neutral-950);
+  --link: var(--brand-300);
+
+  --border: var(--neutral-800);
+  --border-strong: var(--neutral-500);
+
+  --primary: var(--brand-400);
+  --primary-hover: var(--brand-300);
+  --primary-active: var(--brand-200);
+  --primary-foreground: var(--brand-950);
+  --primary-subtle: var(--brand-900);
+  --primary-subtle-foreground: var(--brand-200);
+
+  --accent: var(--accent-400);
+  --accent-foreground: var(--accent-950);
+  --accent-subtle: var(--accent-900);
+
+  --success: var(--green-500);
+  --success-foreground: var(--green-950);
+  --success-subtle: var(--green-950);
+  --success-text: var(--green-300);
+
+  --warning: var(--amber-500);
+  --warning-foreground: var(--amber-950);
+  --warning-subtle: var(--amber-950);
+  --warning-text: var(--amber-300);
+
+  --danger: var(--red-500);
+  --danger-foreground: var(--red-950);
+  --danger-subtle: var(--red-950);
+  --danger-text: var(--red-300);
+
+  --info: var(--blue-500);
+  --info-foreground: var(--blue-950);
+  --info-subtle: var(--blue-950);
+  --info-text: var(--blue-300);
+
+  --focus-ring: var(--brand-300);
+
+  --shadow-color: 0 0 0;
+  --shadow-strength: 3;
+}
+
+/* Elevation. Declared on every theme scope so a [data-theme] subtree
+   recomputes shadows from its own --shadow-color (var() resolves where the
+   property is declared, then inherits as a fixed value). */
+:root,
+[data-theme] {
+  --shadow-xs: 0 1px 2px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength)));
+  --shadow-sm: 0 1px 2px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
+    0 2px 6px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength)));
+  --shadow-md: 0 2px 4px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
+    0 6px 16px oklch(var(--shadow-color) / calc(0.08 * var(--shadow-strength)));
+  --shadow-lg: 0 4px 8px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
+    0 12px 32px oklch(var(--shadow-color) / calc(0.12 * var(--shadow-strength)));
+  --shadow-xl: 0 8px 16px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
+    0 24px 56px oklch(var(--shadow-color) / calc(0.16 * var(--shadow-strength)));
+
+  /* Semantic elevation roles */
+  --elevation-card: var(--shadow-xs);
+  --elevation-raised: var(--shadow-sm);  /* hover lift, sticky header */
+  --elevation-popover: var(--shadow-md); /* menus, popovers, comboboxes */
+  --elevation-dialog: var(--shadow-lg);  /* dialogs, drawers */
+  --elevation-toast: var(--shadow-xl);
+}
+
+/* Apply the theme on every theme scope. Inherited properties (color) are
+   computed on the parent, so a [data-theme] subtree must re-declare them or it
+   keeps the parent's text color (dark-on-dark). */
+:root,
+[data-theme] {
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+/* --------------------------------------------------------------------------
+   3. COMPONENT: theme-free sizing shared by controls (button, input, select).
+      Theme-dependent component tokens (e.g. --button-bg: var(--primary))
+      belong on the component selector, not :root, or scoped themes break.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Use control heights as min-height, never height: Thai stacked marks and text scaling need room. */
+  --control-height-sm: 2rem;    /* 32: secondary/inline only */
+  --control-height-md: 2.75rem; /* 44: default, touch-safe (= --target-min) */
+  --control-height-lg: 3rem;    /* 48 */
+  --control-padding-x-sm: var(--space-3);
+  --control-padding-x-md: var(--space-4);
+  --control-padding-x-lg: var(--space-5);
+  --control-gap: var(--space-2);
+  --control-radius: var(--radius-md);
+  --control-font-size: var(--font-size-base); /* 16: inputs below 16px make iOS Safari zoom; Thai needs it */
+
+  --card-padding: var(--space-6);
+  --card-radius: var(--radius-xl);
+  --card-gap: var(--space-4);
+}
+
+/* Density modes: set on <html>. Compact = data tables, pro tools. */
+:root[data-density="compact"] {
+  --control-height-sm: 1.75rem; /* 28 */
+  --control-height-md: 2rem;    /* 32 */
+  --control-height-lg: 2.5rem;  /* 40 */
+  --control-padding-x-md: var(--space-3);
+  --control-font-size: var(--font-size-sm);   /* pointer-first pro tools only */
+  --card-padding: var(--space-4);
+}
+
+:root[data-density="comfortable"] {
+  --control-height-md: 3rem;    /* 48: touch-first, older or less precise users */
+  --control-height-lg: 3.5rem;  /* 56 */
+  --card-padding: var(--space-8);
+}
+
+/* Brand modes: set on <html> (the ramps above read --brand-h on the same
+   element). Example second brand: */
+:root[data-brand="ocean"] {
+  --brand-h: 220;
+  --brand-c: 0.1; /* cyan-blue hues clip above ~0.10 */
+  --accent-h: 175;
+}

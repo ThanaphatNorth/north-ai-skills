@@ -1,0 +1,267 @@
+<!doctype html>
+<!--
+  RECIPE · velocity-gallery
+  What: a pinned horizontal gallery. Vertical scroll moves a row of artworks sideways; scroll speed
+        adds a subtle skew to the row and parallax to the painting inside each frame, and a huge outlined
+        title marquee drifts behind the row, pushed faster (or reversed) by the scroll. Vanilla JS,
+        no libraries.
+  Feeling / story: walking past a wall of work, where the work answers your pace. Fits portfolios,
+        exhibitions, lookbooks, collections, case-study strips and product ranges.
+  Use when: 5–10 strong visuals of similar weight, and a page about browsing rather than reading.
+  Avoid when: items need comparison side by side, long captions, or > 12 items (people lose their place).
+        Mind your users on wheel mice: keep the pinned distance honest (≈ one wheel flick per card).
+  Ambition: bold.
+  Knobs: CONFIG in the script (maxSkew, skewPerPx, parallax, smooth, marqueeBoost, idleMs); CSS custom
+        properties (--paper, --ink, --accent, --card-h, --gap, --mq-speed).
+  Mobile (< 768 px) and reduced motion: no pinning, no skew. The row becomes a native horizontal swipe
+        with scroll-snap (mobile), or a wrapped grid on desktop with reduced motion. The marquee is CSS-only
+        (static under reduced motion).
+  Perf: transform-only writes. One transform on the row, one per visible painting, one on the marquee.
+        No layout reads in the loop (geometry is cached on resize). The loop sleeps once the row settles
+        and the gallery is offscreen. Base marquee drift runs as a compositor CSS animation. Measured main
+        thread ≈ 1.0 ms/frame while scrubbing at 1440×900, 0.4 ms at 390 (headless Chrome, M3).
+-->
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sala Gallery · แสงมรสุม — velocity gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=IBM+Plex+Sans+Thai:wght@300;400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #ece5d6; --mat: #f6f1e6; --ink: #1b1712; --muted: #6a6256; --accent: #c23f28; --line: #1b17121f;
+  --card-h: 58vh; --gap: clamp(28px, 4vw, 72px); --mq-speed: 60s;
+  --ease-standard: cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
+  --grot: "Big Shoulders Display", "IBM Plex Sans Thai", sans-serif;
+  --th: "IBM Plex Sans Thai", system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+* { box-sizing: border-box; }
+html { background: var(--paper); color: var(--ink); }
+body { margin: 0; font: 300 17px/1.7 var(--th); background: var(--paper); overflow-x: clip; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 20px clamp(16px, 4vw, 56px); border-bottom: 1px solid var(--line); }
+.logo { font: 800 22px var(--grot); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; gap: 10px; }
+.logo i { width: 12px; height: 12px; background: var(--accent); border-radius: 50%; }
+header a.nav { text-decoration: none; font-size: 15px; padding: 6px 0; border-bottom: 1px solid currentColor; }
+.intro { display: grid; grid-template-columns: 1fr; gap: 24px; padding: clamp(48px, 10vh, 120px) clamp(16px, 4vw, 56px) clamp(40px, 8vh, 96px); }
+.intro .kicker { font: 500 14px var(--grot); letter-spacing: .24em; text-transform: uppercase; color: var(--accent); margin: 0; }
+.intro h1 { margin: 0; font: 600 clamp(52px, 10vw, 156px)/1.12 var(--th); letter-spacing: -.01em; }
+.intro h1 em { display: block; font: italic 400 .42em/1.1 var(--serif); letter-spacing: 0; color: var(--muted); }
+.intro p { max-width: 46ch; margin: 0; font-size: 18px; }
+@media (min-width: 900px) { .intro { grid-template-columns: 1.4fr 1fr; align-items: end; } }
+
+/* ---------- gallery: base = native swipe with scroll-snap (mobile, no JS) ---------- */
+.gallery { position: relative; }
+.pin { position: relative; overflow: hidden; overflow: clip; padding: 24px 0 40px; }
+.mq { position: absolute; left: 0; top: 50%; translate: 0 -50%; pointer-events: none; white-space: nowrap; z-index: 0; }
+.mq-in { display: flex; width: max-content; animation: mq var(--mq-speed) linear infinite; }
+.mq span { font: 900 clamp(120px, 24vw, 380px)/1 var(--grot); text-transform: uppercase; letter-spacing: .01em; color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 42%, transparent); padding-right: .25em; }
+@keyframes mq { to { transform: translate3d(-33.3333%, 0, 0); } }
+.track { position: relative; z-index: 1; display: flex; align-items: flex-end; gap: 20px; margin: 0; padding: 0 16px 8px; list-style: none;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; overscroll-behavior-x: contain; scrollbar-width: none; }
+.track::-webkit-scrollbar { display: none; }
+.card, .room, .end { flex: 0 0 auto; scroll-snap-align: center; }
+.card { width: min(76vw, 340px); }
+.room { width: min(70vw, 300px); align-self: center; scroll-snap-align: start; }
+.room b { display: block; font: 800 15px var(--grot); letter-spacing: .24em; text-transform: uppercase; color: var(--accent); }
+.room p { margin: 8px 0 0; font-size: 16px; }
+figure { margin: 0; }
+.frame { background: var(--mat); padding: 12px; box-shadow: 0 1px 0 #0000000d, 0 24px 48px -28px #3b2a1666; }
+.art { position: relative; overflow: hidden; aspect-ratio: var(--ar, .8); }
+.paint { position: absolute; inset: 0 -14%; will-change: transform; }
+.paint::after { content: ""; position: absolute; inset: 0; background-image: var(--noise); opacity: .5; mix-blend-mode: multiply; }
+figcaption { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; padding: 14px 2px 0; }
+figcaption .no { grid-row: span 3; font: 800 15px var(--grot); color: var(--accent); padding-top: 4px; }
+figcaption .t { font-weight: 600; font-size: 17px; line-height: 1.5; }
+figcaption em { font: italic 400 19px/1.2 var(--serif); }
+figcaption small { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.end { width: min(70vw, 300px); align-self: center; }
+.end a { display: grid; gap: 10px; place-content: center; text-align: center; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: var(--paper);
+  text-decoration: none; padding: 24px; transition: transform .5s var(--ease-emphasized-out), background .3s var(--ease-standard); }
+.end a:hover, .end a:focus-visible { transform: scale(1.04) rotate(-3deg); background: var(--accent); }
+.end b { font: 800 clamp(22px, 2vw, 30px)/1.15 var(--grot); text-transform: uppercase; letter-spacing: .04em; }
+.end span { font-size: 15px; }
+.hud { display: none; }
+
+/* ---------- pinned mode (JS adds .pinned ≥ 768 px, motion allowed) ---------- */
+.pinned .pin { position: sticky; top: 0; height: 100vh; padding: 0 0 13vh; display: flex; align-items: flex-end; }
+.pinned .mq { top: 6vh; translate: none; } /* title band above the row; the tallest frames overlap its foot */
+.pinned .track { overflow: visible; scroll-snap-type: none; padding: 0 12vw 0 6vw; gap: var(--gap); align-items: flex-end; width: max-content; will-change: transform; transform-origin: 50% 100%; }
+.pinned .card { width: calc(var(--card-h) * var(--hs, 1) * var(--ar) + 24px); }
+.pinned .art { height: calc(var(--card-h) * var(--hs, 1)); aspect-ratio: auto; }
+.pinned .room { width: 26vw; max-width: 380px; align-self: center; }
+.pinned .room p { font-size: 18px; }
+.pinned .end { width: clamp(220px, 20vw, 300px); }
+.pinned .hud { position: absolute; left: clamp(16px, 4vw, 56px); right: clamp(16px, 4vw, 56px); bottom: 28px; display: flex; align-items: center; gap: 20px; font: 800 14px var(--grot); letter-spacing: .16em; z-index: 2; }
+.hud .bar { flex: 1; height: 1px; background: var(--line); }
+.hud .bar i { display: block; height: 100%; background: var(--ink); transform-origin: 0 50%; transform: scaleX(0); }
+
+/* ---------- reduced motion: nothing moves on its own ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mq-in { animation: none; }
+  .end a { transition: none; }
+}
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+  .track { flex-wrap: wrap; overflow: visible; justify-content: center; align-items: flex-start; gap: 48px 32px; padding: 0 clamp(16px, 4vw, 56px) 48px; }
+  .card { width: 300px; }
+}
+.visit { padding: clamp(64px, 12vh, 140px) clamp(16px, 4vw, 56px); display: grid; gap: 24px; border-top: 1px solid var(--line); }
+.visit h2 { margin: 0; font: 600 clamp(34px, 5vw, 64px)/1.3 var(--th); }
+.visit dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 20px; margin: 0; }
+.visit dt { font: 800 13px var(--grot); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.visit dd { margin: 4px 0 0; font-size: 18px; }
+footer { padding: 28px clamp(16px, 4vw, 56px); font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#top" lang="en"><i></i>Sala</a>
+  <a class="nav" href="#visit">เยี่ยมชม</a>
+</header>
+<main id="top">
+  <section class="intro">
+    <div>
+      <p class="kicker" lang="en">Sala Gallery · Room 1 · 12.06 – 30.09</p>
+      <h1>แสงมรสุม <em lang="en">Monsoon Light</em></h1>
+    </div>
+    <p>ภาพวาดเจ็ดชิ้นจากเจ็ดศิลปิน ที่จ้องมองฤดูฝนจนเห็นสีของมัน — ฟ้าก่อนพายุ ทุ่งหลังฝน และแม่น้ำสีชา เลื่อนลงเพื่อเดินผ่านผนังห้อง</p>
+  </section>
+
+  <section class="gallery" id="gallery" aria-label="ผลงานในนิทรรศการ แสงมรสุม">
+    <div class="pin">
+      <div class="mq" aria-hidden="true"><div class="mq-out"><div class="mq-in"><span>Monsoon Light — แสงมรสุม — </span><span>Monsoon Light — แสงมรสุม — </span><span>Monsoon Light — แสงมรสุม — </span></div></div></div>
+      <ol class="track" aria-label="เจ็ดผลงาน">
+        <li class="room"><b lang="en">Room 1</b><p>เจ็ดภาพ เรียงตามชั่วโมงของวันที่ฝนตกทั้งวัน ตั้งแต่ฟ้าสางจนค่ำ</p></li>
+        <li class="card" style="--ar:.78"><figure><div class="frame"><div class="art" role="img" aria-label="ภาพเส้นฝนเฉียงบนพื้นฟ้าสีเทาน้ำเงิน"><div class="paint p1"></div></div></div>
+          <figcaption><span class="no">01</span><span class="t">ฝนแรก</span><em lang="en">First Rain</em><small>พิม รัตนกุล · 2026 · สีน้ำมันบนผ้าใบ</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.32; --hs:.74"><figure><div class="frame"><div class="art" role="img" aria-label="ทุ่งข้าวเป็นแถบสีเขียวทองใต้ฟ้าซีด"><div class="paint p2"></div></div></div>
+          <figcaption><span class="no">02</span><span class="t">ทุ่งหลังพายุ</span><em lang="en">Field after the Storm</em><small>ธนา อินทร์แก้ว · 2025 · อะคริลิก</small></figcaption></figure></li>
+        <li class="card" style="--ar:.8"><figure><div class="frame"><div class="art" role="img" aria-label="ดวงอาทิตย์สีแดงชาดจมลงในน้ำสีเขียวหัวเป็ด"><div class="paint p3"></div></div></div>
+          <figcaption><span class="no">03</span><span class="t">ตะวันจมน้ำ</span><em lang="en">Drowned Sun</em><small>มาลี ศรีสุข · 2026 · สีฝุ่น</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.05; --hs:.84"><figure><div class="frame"><div class="art" role="img" aria-label="เงาเรขาคณิตของระเบียงบนผนังสีดินเหลือง"><div class="paint p4"></div></div></div>
+          <figcaption><span class="no">04</span><span class="t">ระเบียงชื้น</span><em lang="en">Damp Veranda</em><small>กฤต วงศ์ใหญ่ · 2024 · สีน้ำมัน</small></figcaption></figure></li>
+        <li class="card" style="--ar:.74"><figure><div class="frame"><div class="art" role="img" aria-label="ก้อนเมฆสีม่วงช้ำตั้งเค้าเหนือเส้นขอบฟ้า"><div class="paint p5"></div></div></div>
+          <figcaption><span class="no">05</span><span class="t">เมฆตั้งเค้า</span><em lang="en">Gathering Clouds</em><small>อรุณี ทองดี · 2026 · สีน้ำ</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.4; --hs:.72"><figure><div class="frame"><div class="art" role="img" aria-label="แม่น้ำสีชาไหลเป็นริ้วสีอำพัน"><div class="paint p6"></div></div></div>
+          <figcaption><span class="no">06</span><span class="t">แม่น้ำสีชา</span><em lang="en">Tea-coloured River</em><small>ภูมิ แสงทอง · 2025 · สีน้ำมัน</small></figcaption></figure></li>
+        <li class="card" style="--ar:.82"><figure><div class="frame"><div class="art" role="img" aria-label="ฟ้าหลังฝนสีฟ้าอมชมพู กับดวงอาทิตย์ดวงเล็กสีขาว"><div class="paint p7"></div></div></div>
+          <figcaption><span class="no">07</span><span class="t">ฟ้าหลังฝน</span><em lang="en">Sky after Rain</em><small>นภา จันทร์เพ็ญ · 2026 · สีพาสเทล</small></figcaption></figure></li>
+        <li class="end"><a href="#visit"><b lang="en">Book a viewing</b><span>จองรอบชม →</span></a></li>
+      </ol>
+      <div class="hud" aria-hidden="true"><span class="count"><b>01</b> / 07</span><span class="bar"><i></i></span><span lang="en">Scroll</span></div>
+    </div>
+  </section>
+
+  <section class="visit" id="visit">
+    <h2>เปิดทุกวัน ยกเว้นวันจันทร์</h2>
+    <dl>
+      <div><dt lang="en">Hours</dt><dd>11:00 – 20:00</dd></div>
+      <div><dt lang="en">Where</dt><dd>ซอยนานา เยาวราช กรุงเทพฯ</dd></div>
+      <div><dt lang="en">Entry</dt><dd>ไม่มีค่าเข้าชม</dd></div>
+    </dl>
+  </section>
+</main>
+<footer><span lang="en">Sala Gallery</span> · แกลเลอรีสมมติสำหรับสาธิต <span lang="en">— a fictional gallery for this demo.</span></footer>
+<style>
+/* the seven "paintings": layered CSS gradients + an SVG grain (no image files) */
+.p1 { background: repeating-linear-gradient(104deg, transparent 0 22px, #ffffff1c 22px 23px, transparent 23px 41px, #0b1a2c22 41px 42px),
+  radial-gradient(70% 40% at 60% 20%, #9fb0c2 0%, transparent 70%), linear-gradient(180deg, #2a3d58 0%, #4a6079 52%, #7d8d9b 60%, #34465a 100%); }
+.p2 { background: radial-gradient(90% 30% at 30% 18%, #f4ead1 0%, transparent 60%),
+  linear-gradient(180deg, #d9d6c4 0 38%, #c9b65e 38% 46%, #8f9a3c 46% 58%, #59702f 58% 70%, #b9a447 70% 76%, #3f5426 76% 100%); }
+.p3 { background: radial-gradient(circle at 50% 44%, #e0502f 0 18%, #c23f28 19%, transparent 20%),
+  repeating-linear-gradient(180deg, transparent 0 14px, #e0502f33 14px 16px) 0 64% / 100% 36% no-repeat,
+  linear-gradient(180deg, #e6d2b0 0%, #d9a77c 40%, #1f4b4a 62%, #12302f 100%); }
+.p4 { background: linear-gradient(118deg, transparent 0 42%, #5a3a1a55 42% 58%, transparent 58%),
+  linear-gradient(118deg, transparent 0 64%, #5a3a1a40 64% 72%, transparent 72%),
+  repeating-linear-gradient(90deg, transparent 0 46px, #4a2f1433 46px 52px), linear-gradient(180deg, #e2b25a, #c98d34 70%, #9c6326); }
+.p5 { background: radial-gradient(40% 28% at 30% 36%, #a597b7 0%, transparent 70%), radial-gradient(46% 30% at 70% 30%, #6f5f86 0%, transparent 70%),
+  radial-gradient(60% 26% at 50% 54%, #4a3e5e 0%, transparent 70%), linear-gradient(180deg, #c8c3cf 0%, #8c86a0 58%, #2e2a36 70%, #1c1a22 100%); }
+.p6 { background: radial-gradient(70% 16% at 40% 34%, #f6d9a066, transparent 70%), radial-gradient(50% 10% at 70% 62%, #f3c88a44, transparent 70%),
+  repeating-linear-gradient(172deg, transparent 0 22px, #f3c88a22 22px 24px, transparent 24px 40px, #3a1d0a22 40px 43px),
+  linear-gradient(180deg, #b8a58a 0 22%, #8a5a2b 22%, #a8692c 50%, #6b3a16 100%); }
+.p7 { background: radial-gradient(circle at 68% 30%, #fffdf6 0 5%, #fffdf680 6%, transparent 14%),
+  linear-gradient(180deg, #a9c3dc 0%, #d9c6d8 55%, #f2d7c9 78%, #e9c3b2 100%); }
+</style>
+<script>
+(() => {
+  const CONFIG = {
+    maxSkew: 6,         // deg at full speed
+    skewPerPx: 0.16,    // deg of skew per px/frame of row velocity
+    parallax: 1,        // 0–1 of the painting's bleed used for inner parallax
+    smooth: 0.11,       // row easing toward the scroll target (per 60 fps frame)
+    marqueeBoost: 0.85, // marquee px per px of row movement
+    idleMs: 1200,
+  };
+  const pinnedMQ = matchMedia('(min-width: 768px) and (prefers-reduced-motion: no-preference)');
+  const root = document.documentElement, gal = document.getElementById('gallery');
+  const track = gal.querySelector('.track'), cards = [...track.querySelectorAll('.card')];
+  const paints = cards.map((c) => c.querySelector('.paint'));
+  const mq = gal.querySelector('.mq-out'), bar = gal.querySelector('.bar i'), count = gal.querySelector('.count b');
+  let on = false, top0 = 0, dist = 1, vw = 0, x = 0, skew = 0, mqOff = 0, mqSeg = 1, raf = 0, last = 0, lastScroll = 0, visible = true, geo = [];
+
+  function layout() {
+    on = pinnedMQ.matches;
+    root.classList.toggle('pinned', on);
+    if (!on) { // native swipe: hand everything back to CSS
+      gal.style.height = ''; track.style.transform = ''; mq.style.transform = ''; paints.forEach((p) => (p.style.transform = ''));
+      track.setAttribute('tabindex', '0'); return; // a scrollable region must be keyboard-focusable
+    }
+    track.removeAttribute('tabindex');
+    track.style.transform = 'none';
+    vw = innerWidth; dist = Math.max(1, track.scrollWidth - vw);
+    gal.style.height = dist + innerHeight + 'px';
+    top0 = gal.offsetTop;
+    geo = cards.map((c) => ({ c: c.offsetLeft + c.offsetWidth / 2, bleed: c.querySelector('.art').offsetWidth * 0.14 }));
+    mqSeg = mq.querySelector('span').offsetWidth;
+    x = -Math.min(1, Math.max(0, (scrollY - top0) / dist)) * dist;
+    wake();
+  }
+
+  function frame(now) {
+    const dt = Math.min(50, last ? now - last : 16.7); last = now;
+    const p = Math.min(1, Math.max(0, (scrollY - top0) / dist));
+    const k = 1 - Math.pow(1 - CONFIG.smooth, dt / 16.7), px = x;
+    x += (-p * dist - x) * k;
+    const vel = (x - px) / (dt / 16.7); // px per 60 fps frame; < 0 while scrolling forward
+    const target = Math.max(-CONFIG.maxSkew, Math.min(CONFIG.maxSkew, vel * CONFIG.skewPerPx));
+    skew += (target - skew) * Math.min(1, 0.18 * dt / 16.7);
+    track.style.transform = `translate3d(${x.toFixed(2)}px,0,0) skewX(${skew.toFixed(3)}deg)`;
+    for (let i = 0; i < geo.length; i++) { // paintings drift against the row: depth inside the frame
+      const off = geo[i].c + x - vw / 2;
+      if (Math.abs(off) > vw) continue;
+      const s = Math.max(-1, Math.min(1, off / (vw / 2))) * geo[i].bleed * CONFIG.parallax;
+      paints[i].style.transform = `translate3d(${(-s).toFixed(1)}px,0,0)`;
+    }
+    mqOff = (((mqOff + vel * CONFIG.marqueeBoost) % mqSeg) - mqSeg) % mqSeg; // keep in (-seg, 0]
+    mq.style.transform = `translate3d(${mqOff.toFixed(1)}px,0,0)`;
+    bar.style.transform = `scaleX(${p.toFixed(4)})`;
+    count.textContent = String(1 + Math.round(p * (cards.length - 1))).padStart(2, '0');
+    const settled = Math.abs(-p * dist - x) < 0.05 && Math.abs(skew) < 0.005;
+    if (!visible || (settled && now - lastScroll > CONFIG.idleMs)) { raf = 0; last = 0; return; }
+    raf = requestAnimationFrame(frame);
+  }
+  function wake() { if (on && !raf) raf = requestAnimationFrame(frame); }
+
+  addEventListener('scroll', () => { lastScroll = performance.now(); wake(); }, { passive: true });
+  addEventListener('resize', () => { clearTimeout(layout.t); layout.t = setTimeout(layout, 150); });
+  pinnedMQ.addEventListener?.('change', layout);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; wake(); }).observe(gal);
+  // keyboard: tabbing to a link in the moving row scrolls the page so that item is centred
+  track.addEventListener('focusin', (e) => {
+    if (!on) return; const li = e.target.closest('li'); if (!li) return;
+    const p = Math.min(1, Math.max(0, (li.offsetLeft + li.offsetWidth / 2 - vw / 2) / dist));
+    scrollTo({ top: top0 + p * dist, behavior: 'auto' });
+  });
+  document.fonts.ready.then(layout); layout();
+})();
+</script>
+</body>
+</html>

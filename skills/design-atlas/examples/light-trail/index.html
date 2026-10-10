@@ -1,0 +1,369 @@
+<!doctype html>
+<!--
+  light-trail — "a line of light finding its way home"
+  Feeling: hush → hope → relief. Total darkness, one breathing point of light. Scrolling draws a glowing
+  line through the night; it lights up neighbouring homes (stars), traces a house, switches on its window,
+  and the window's light floods the screen like dawn, revealing the call to action.
+  Use for: brand stories, launches and campaigns whose truth is dark → light, lost → home, off → on
+  (energy, mobility, hospitality, astronomy, sleep, a product reveal). Fictional brand: Baan Saeng (home solar).
+  Avoid for: surfaces where people arrive worried or in a hurry (health symptoms, emergencies, money trouble):
+  they need the action in the first screen, light palettes and little motion — see creative-direction.md §1
+  (context-of-use gate). Also avoid for dense task UIs and pages people revisit daily.
+  Ambition: cinematic. Tech: vanilla JS + one sticky stage, SVG path (stroke-dashoffset) for the line,
+  CSS-blurred twin SVG for glow, canvas 2D (additive) for sparks + stars, feathered CSS mask-image for the dawn.
+  Knobs: CONFIG below (acts, colours, particle cap, smoothing); CSS custom properties in :root.
+  Cost: 1 rAF loop that runs only while the story is on screen and something is moving; ~220 sparks max.
+  Accessibility: all copy is real DOM text in reading order; art is aria-hidden; skip link; without JS or
+  with prefers-reduced-motion the page shows the finished composition and the copy as a normal page.
+  Test hooks: ?capture → no smoothing, no rAF; window.__frame(dtMs) advances one frame (for video capture).
+-->
+<html lang="th" class="rm">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baan Saeng — แสงที่อยู่กับบ้านคุณ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night: #04050a;
+  --ink: #1d2c4c;
+  --warm: #ffcf96;
+  --warm-2: #ff9f6e;
+  --dim-text: #9aa0ae;            /* 7.7:1 on --night: readable before the light arrives */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized-out: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --font-display: "Anuphan", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai Looped", "Anuphan", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--night); color: #e9ebf0; }
+body { margin: 0; font: 300 1.0625rem/1.75 var(--font-body); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.nw { white-space: nowrap; }
+.skip { position: fixed; left: 1rem; top: 1rem; z-index: 50; padding: .6rem 1rem; border-radius: 999px;
+  background: #fff; color: var(--ink); font: 500 .875rem/1 var(--font-display); transform: translateY(-200%); }
+.skip:focus-visible { transform: none; outline: 3px solid var(--warm); outline-offset: 3px; }
+.brand { margin: 0; position: fixed; left: clamp(1rem, 4vw, 2.5rem); top: clamp(1rem, 3vw, 1.75rem); z-index: 20;
+  font: 500 .95rem/1 var(--font-display); letter-spacing: .02em; color: #c9ccd6; mix-blend-mode: difference; }
+.brand b { color: var(--warm); font-weight: 500; }
+
+/* ---------- the story: one sticky stage scrubbed by scroll ---------- */
+.story { position: relative; height: 760vh; }
+.stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background:
+  radial-gradient(120% 90% at 50% 120%, rgba(40, 52, 98, calc(var(--amb, 0) * .55)) 0%, transparent 60%), var(--night); }
+.art, .art > * { position: absolute; inset: 0; width: 100%; height: 100%; }
+.art svg { overflow: visible; }
+.line-glow { filter: blur(14px); opacity: .75; }
+.line-glow path { stroke: var(--warm-2); stroke-width: 22; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.line-core path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.line-core .soft { stroke: var(--warm); stroke-width: 6; opacity: .45; }
+.line-core .hot { stroke: #fff6ea; stroke-width: 1.8; }
+.line-core .ember { fill: none; stroke: #ffbf86; stroke-width: 1.2; opacity: .28; stroke-linecap: round; }
+.window { fill: var(--warm); opacity: 0; }
+.orb { position: absolute; left: 0; top: 0; width: 220px; height: 220px; margin: -110px 0 0 -110px; pointer-events: none;
+  background: radial-gradient(circle, #fff 0 3%, rgba(255, 236, 205, .95) 5%, rgba(255, 186, 120, .45) 14%,
+  rgba(255, 140, 90, .14) 32%, transparent 62%); mix-blend-mode: screen; will-change: transform, opacity; }
+.grain { pointer-events: none; opacity: .07; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.vignette { pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0, 0, 0, .65) 100%); }
+.dawn { pointer-events: none; -webkit-mask-image: radial-gradient(circle, #000 0, transparent 0); mask-image: radial-gradient(circle, #000 0, transparent 0);
+  background: radial-gradient(circle at var(--wx, 50%) var(--wy, 50%), #fffaf2 0%, #ffe6c4 18%, #ffc9a3 38%, #f6c6c9 62%, #dcd3f2 100%); }
+
+/* copy beats: real text, lit by the light as it passes */
+.beat { position: absolute; max-width: min(30rem, 86vw); opacity: 0; will-change: opacity, transform; }
+.beat h2 { margin: 0 0 .35em; font: 500 clamp(2rem, 4.4vw, 3.6rem)/1.3 var(--font-display); letter-spacing: 0; text-wrap: balance;
+  color: var(--dim-text); background: radial-gradient(circle at var(--lx, -999px) var(--ly, -999px), #fff 0, #ffe9cc 70px, #ffc28a 150px, var(--dim-text) 330px);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.beat p { margin: 0; color: #b3b8c4; font-size: clamp(1rem, 1.3vw, 1.15rem); }
+.beat .en { display: block; margin-top: .35em; font: 300 .9rem/1.5 var(--font-body); letter-spacing: .04em; color: #7e8492; }
+.b0 { left: 50%; top: calc(45% + 64px); transform: translateX(-50%); text-align: center; }
+.b0 p { font: 400 .95rem/1.6 var(--font-display); color: #a3a8b5; }   /* no letter-spacing on Thai */
+.b0 .en { letter-spacing: .28em; text-transform: uppercase; font-size: .68rem; }
+.b0 .cue { display: block; width: 1px; height: 38px; margin: .9rem auto 0; background: linear-gradient(#7e8492, transparent); transform-origin: top;
+  animation: cue 2.2s var(--ease-standard) infinite; }
+@keyframes cue { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+.b1 { left: 7vw; bottom: 12vh; }
+.b2 { right: 7vw; top: 13vh; text-align: right; }
+.b3 { left: 7vw; top: 16vh; }
+.final { left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; max-width: min(38rem, 88vw); }
+.final h2 { color: var(--ink); background: none; -webkit-text-fill-color: currentColor; font-size: clamp(2.4rem, 6vw, 4.6rem); }
+.final p { color: #3d4a66; }
+.cta { display: inline-flex; align-items: center; gap: .6rem; margin-top: 1.6rem; padding: 1rem 1.6rem; border-radius: 999px; border: 0;
+  background: var(--ink); color: #fff; font: 500 1.05rem/1 var(--font-display); text-decoration: none; min-height: 48px;
+  box-shadow: 0 10px 30px -10px rgba(29, 44, 76, .55), 0 0 0 0 rgba(255, 180, 110, .0);
+  transition: transform .3s var(--ease-emphasized-out), box-shadow .3s var(--ease-standard); }
+.cta:hover, .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 16px 40px -12px rgba(29, 44, 76, .6), 0 0 0 8px rgba(255, 196, 140, .35); }
+.cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+.cta span { transition: transform .3s var(--ease-emphasized-out); }
+.cta:hover span { transform: translateX(4px); }
+
+@media (max-aspect-ratio: 4/5) {           /* portrait phones: copy sits below the drawing */
+  .b1, .b2, .b3 { left: 7vw; right: 7vw; top: auto; bottom: 7svh; text-align: left; }
+  .b0 { top: calc(40% + 56px); }
+}
+
+/* ---------- after the story: an ordinary, calm page ---------- */
+.after { position: relative; background: #fffaf3; color: var(--ink); padding: clamp(4rem, 10vw, 8rem) clamp(1.25rem, 7vw, 6rem); }
+.after h2 { margin: 0 0 2.5rem; font: 500 clamp(1.8rem, 3.4vw, 2.8rem)/1.35 var(--font-display); max-width: 22ch; }
+.after ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.after li { border-top: 1px solid #e6d9c6; padding-top: 1.1rem; }
+.after li b { display: block; font: 500 1.15rem/1.4 var(--font-display); margin-bottom: .3rem; }
+.after li span { color: #4a5670; }
+footer { background: #fffaf3; color: #6b7590; padding: 2rem clamp(1.25rem, 7vw, 6rem) 3rem; font-size: .875rem; }
+
+/* ---------- static composition: no JS, or prefers-reduced-motion ---------- */
+.rm .story { height: auto; }
+.rm .stage { position: relative; height: auto; overflow: visible; padding-bottom: 3rem; }
+.rm .art { position: relative; height: 72svh; }
+.rm .art > * { position: absolute; }
+.rm .orb, .rm .dawn, .rm .b0 { display: none; }
+.rm .window { opacity: 1; }
+.rm .beat { position: relative; inset: auto; transform: none; opacity: 1; margin: 0 auto 3rem; padding: 0 7vw; max-width: 46rem; text-align: left; }
+.rm .beat h2 { -webkit-text-fill-color: #f3e2c8; }
+.rm .final h2 { -webkit-text-fill-color: #fff; color: #fff; }
+.rm .final p { color: #b3b8c4; }
+.rm .cta { background: var(--warm); color: var(--ink); }
+</style>
+</head>
+<body>
+<a class="skip" href="#after">ข้ามเรื่องราว ไปที่เนื้อหา</a>
+<h1 class="brand">Baan <b>Saeng</b><span class="sr"> — บ้านแสง โซลาร์และแบตเตอรี่สำรองไฟสำหรับบ้าน</span></h1>
+
+<main>
+  <section class="story" id="story" data-story aria-label="เรื่องราว: แสงที่หาทางกลับบ้าน">
+    <div class="stage" id="stage">
+      <div class="art" aria-hidden="true">
+        <svg class="line-glow" id="glow"><path id="gFresh"/><path id="gHouse"/><path id="gWin"/></svg>
+        <canvas id="fx"></canvas>
+        <svg class="line-core" id="core"><path class="ember" id="cEmber"/>
+          <path class="soft" id="sFresh"/><path class="hot" id="hFresh"/><path class="soft" id="sHouse"/><path class="hot" id="hHouse"/>
+          <rect class="window" id="win"/><path class="soft" id="sWin"/><path class="hot" id="hWin"/></svg>
+        <div class="orb" id="orb"></div>
+        <div class="dawn" id="dawn"></div>
+        <div class="vignette"></div>
+        <div class="grain"></div>
+      </div>
+
+      <div class="beat b0" id="b0"><p>เลื่อนลงช้า ๆ<span class="en">scroll slowly</span></p><span class="cue" aria-hidden="true"></span></div>
+      <div class="beat b1" id="b1"><h2>ไฟดับทั้งซอย</h2><p>คืนพายุเข้า ถนนมืดสนิท ตู้เย็นเงียบ พัดลมหยุดหมุน<span class="en">A storm night. The whole street goes dark.</span></p></div>
+      <div class="beat b2" id="b2"><h2>แต่บางบ้านยังสว่าง</h2><p>บ้านที่เก็บแสงแดดของกลางวันไว้ใช้ตอนกลางคืน<span class="en">Some homes keep their own light.</span></p></div>
+      <div class="beat b3" id="b3"><h2>แดดของวันนี้ คือไฟของคืนนี้</h2><p>แผงโซลาร์บนหลังคา กับแบตเตอรี่ที่สลับไฟให้เองใน<span class="nw">เสี้ยววินาที</span><span class="en">Today's sun is tonight's light.</span></p></div>
+      <div class="beat final" id="b4"><h2>บ้านคุณ <span class="nw">ไม่ต้องรอไฟมา</span></h2><p>ประเมินหลังคาฟรี รู้ผล<span class="nw">ค่าไฟที่ประหยัด</span>ใน <span class="nw">2 นาที</span></p><a class="cta" href="#after">ประเมินบ้านของฉัน <span aria-hidden="true">→</span></a></div>
+    </div>
+  </section>
+
+  <section class="after" id="after" tabindex="-1">
+    <h2>พลังงานที่อยู่กับบ้านคุณ ทั้งวันและทั้งคืน</h2>
+    <ul>
+      <li><b>สำรวจหลังคาฟรี</b><span>ช่างเข้าวัดพื้นที่และเงาแดด ก่อนเสนอราคา</span></li>
+      <li><b>สลับไฟอัตโนมัติ</b><span>ไฟดับเมื่อไร แบตเตอรี่จ่ายไฟต่อทันที</span></li>
+      <li><b>ดูการใช้ไฟในแอป</b><span>รู้ว่าวันนี้ผลิตเท่าไร ใช้เท่าไร เหลือเก็บเท่าไร</span></li>
+    </ul>
+  </section>
+</main>
+<footer>ตัวอย่างงานออกแบบ · Baan Saeng (บ้านแสง) เป็นแบรนด์สมมติ</footer>
+
+<script>
+(() => {
+  const CONFIG = {
+    // story acts as fractions of the story's scroll length
+    lineStart: 0.06, curveEnd: 0.60, houseEnd: 0.76, winEnd: 0.80, windowOn: [0.79, 0.85], dawn: [0.85, 0.97],
+    beats: { b0: [-1, 0, 0.03, 0.07], b1: [0.10, 0.15, 0.27, 0.31], b2: [0.33, 0.38, 0.52, 0.56], b3: [0.62, 0.66, 0.79, 0.84], b4: [0.90, 0.95, 2, 2] },
+    tail: 1.15,               // bright part of the trail, in multiples of the short viewport side; the rest cools to embers
+    stars: 16, starsFrom: 0.30, starsTo: 0.50,
+    sparkCap: 220, smoothingMs: 140, dawnFeather: 180,
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const capture = /[?&]capture\b/.test(location.search);
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), story = $('story'), glow = $('glow'), core = $('core'), win = $('win'), orb = $('orb'),
+        dawn = $('dawn'), fx = $('fx'), ctx = fx.getContext('2d'), art = stage.querySelector('.art');
+  // three drawn paths, each in a glow (blurred) and core (soft + hot) layer: the night trail, the house, its window
+  const seg = {
+    curve: { layers: [$('gFresh'), $('sFresh'), $('hFresh')], len: 0 },
+    house: { layers: [$('gHouse'), $('sHouse'), $('hHouse')], len: 0 },
+    win:   { layers: [$('gWin'), $('sWin'), $('hWin')], len: 0 },
+  };
+  const ember = $('cEmber');
+  const beats = Object.keys(CONFIG.beats).map((id) => ({ el: $(id), range: CONFIG.beats[id], ox: 0, oy: 0 }));
+  if (!reduce) document.documentElement.classList.remove('rm');
+
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = (t) => t * t * (3 - 2 * t);
+  const span = (p, a, b) => clamp((p - a) / (b - a));
+  let rnd = 7; const rand = () => ((rnd = (rnd * 16807) % 2147483647) / 2147483647); // seeded: same sky every load
+
+  // ---------- geometry ----------
+  let W = 0, H = 0, DPR = 1, tail = 600, stars = [], wc = { x: 0, y: 0, s: 0 };
+  function catmull(pts) {                       // smooth curve through points -> cubic Béziers
+    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  const xy = (p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+  function setPath(sg, d) {                     // one continuous subpath per element: Chrome restarts dashes per subpath
+    sg.layers.forEach((el) => el.setAttribute('d', d));
+    sg.len = sg.layers[2].getTotalLength();
+  }
+  function build() {
+    W = art.clientWidth; H = art.clientHeight; DPR = Math.min(2, devicePixelRatio || 1);
+    const portrait = W / H < 0.8;
+    [glow, core].forEach((el) => el.setAttribute('viewBox', `0 0 ${W} ${H}`));
+    fx.width = Math.round(W * DPR); fx.height = Math.round(H * DPR); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    tail = CONFIG.tail * Math.min(W, H);
+    const s = Math.min(W, H) * (portrait ? 0.34 : 0.26);                     // house size
+    const hc = portrait ? [0.5 * W, 0.52 * H] : [0.64 * W, 0.6 * H];          // house centre
+    const BL = [hc[0] - s / 2, hc[1] + s * 0.42], BR = [hc[0] + s / 2, hc[1] + s * 0.42];
+    const EL = [hc[0] - s / 2, hc[1] - s * 0.08], ER = [hc[0] + s / 2, hc[1] - s * 0.08], AP = [hc[0], hc[1] - s * 0.5];
+    const rel = portrait
+      ? [[.5, .4], [.3, .52], [.18, .36], [.36, .2], [.66, .18], [.84, .3], [.8, .45], [.62, .5], [.5, .58]]
+      : [[.5, .45], [.42, .62], [.22, .7], [.11, .5], [.22, .28], [.48, .2], [.75, .27], [.88, .46], [.82, .7], [.66, .82], [.52, .8]];
+    const pts = rel.map(([x, y]) => [x * W, y * H]); pts.push(BL);
+    const curve = catmull(pts);
+    setPath(seg.curve, curve); ember.setAttribute('d', curve);
+    ember.style.strokeDasharray = `${seg.curve.len} ${seg.curve.len}`;
+    setPath(seg.house, `M${xy(BL)} L${xy(EL)} L${xy(AP)} L${xy(ER)} L${xy(BR)} Z`);
+    const ws = s * 0.26; wc = { x: hc[0], y: hc[1] + s * 0.02 + ws / 2, s: ws };
+    const w0 = [wc.x - ws / 2, wc.y - ws / 2];
+    setPath(seg.win, `M${xy(w0)} h${ws.toFixed(1)} v${ws.toFixed(1)} h${(-ws).toFixed(1)} Z`);
+    seg.curve.layers.forEach((el) => { el.style.strokeDasharray = `${tail} ${seg.curve.len + tail * 2}`; });
+    [seg.house, seg.win].forEach((sg) => sg.layers.forEach((el) => { el.style.strokeDasharray = `${sg.len} ${sg.len}`; }));
+    win.setAttribute('x', w0[0]); win.setAttribute('y', w0[1]); win.setAttribute('width', ws); win.setAttribute('height', ws);
+    rnd = 7; stars = Array.from({ length: CONFIG.stars }, (_, i) => ({
+      x: (0.06 + rand() * 0.88) * W, y: (0.06 + rand() * (portrait ? 0.6 : 0.88)) * H,
+      r: 0.8 + rand() * 1.6, ph: rand() * 6.28, at: lerp(CONFIG.starsFrom, CONFIG.starsTo, i / CONFIG.stars),
+    }));
+    const sr = stage.getBoundingClientRect();
+    beats.forEach((b) => { const r = b.el.getBoundingClientRect(); b.ox = r.left - sr.left; b.oy = r.top - sr.top; });
+    if (reduce) drawStatic(); else if (capture) frame(16);
+  }
+
+  // ---------- sparks (canvas, additive) ----------
+  const sprite = document.createElement('canvas'); sprite.width = sprite.height = 32;
+  { const g = sprite.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gr.addColorStop(0, 'rgba(255,248,235,1)'); gr.addColorStop(.25, 'rgba(255,200,140,.8)'); gr.addColorStop(1, 'rgba(255,140,80,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 32, 32); }
+  const sparks = [];
+  function emit(x, y, n, speed) {
+    for (let i = 0; i < n && sparks.length < CONFIG.sparkCap; i++) {
+      const a = rand() * 6.283, v = (0.15 + rand() * 0.6) * (0.4 + speed * 0.04);
+      sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 0, max: 600 + rand() * 900, s: 3 + rand() * 7 });
+    }
+  }
+  const drawLen = (sg, len) => { const off = `${sg.len - len}`; sg.layers.forEach((el) => { el.style.strokeDashoffset = off; }); };
+
+  // ---------- frame ----------
+  let P = 0, t = 0, prevHead = null, running = false, visible = true, last = 0;
+  const target = () => {
+    const r = story.getBoundingClientRect(), len = story.offsetHeight - innerHeight;
+    return len > 0 ? clamp(-r.top / len) : 0;
+  };
+  function frame(dt) {
+    t += dt;
+    const p = target();
+    P = capture ? p : lerp(P, p, 1 - Math.exp(-dt / CONFIG.smoothingMs));
+    const c = CONFIG;
+    // act 1-2: the night trail; only its newest part burns bright, the rest cools to embers
+    const cLen = P <= c.lineStart ? 0 : seg.curve.len * smooth(span(P, c.lineStart, c.curveEnd));
+    seg.curve.layers.forEach((el) => { el.style.strokeDashoffset = `${tail - cLen}`; });
+    const fade = 1 - span(P, c.curveEnd, c.curveEnd + 0.06);
+    seg.curve.layers.forEach((el) => { el.style.opacity = String(fade); });
+    ember.style.strokeDashoffset = `${seg.curve.len - cLen}`;
+    // act 3: the house, then its window (each its own continuous path)
+    const hLen = seg.house.len * span(P, c.curveEnd, c.houseEnd);
+    const wLen = seg.win.len * span(P, c.houseEnd, c.winEnd);
+    drawLen(seg.house, hLen); drawLen(seg.win, wLen);
+    let head;
+    if (P < c.curveEnd) head = seg.curve.layers[2].getPointAtLength(Math.max(0.01, cLen));
+    else if (P < c.houseEnd) head = seg.house.layers[2].getPointAtLength(Math.max(0.01, hLen));
+    else head = seg.win.layers[2].getPointAtLength(Math.min(wLen, seg.win.len - 0.01));
+    const inT = smooth(span(P, c.windowOn[0], c.windowOn[1]));   // the light flies into the window
+    head = { x: lerp(head.x, wc.x, inT), y: lerp(head.y, wc.y, inT) };
+    const speed = prevHead ? Math.hypot(head.x - prevHead.x, head.y - prevHead.y) : 0; prevHead = head;
+    const dawnT = smooth(span(P, c.dawn[0], c.dawn[1]));
+    const breathe = P < c.lineStart ? 1 + Math.sin(t / 650) * 0.14 : 1 + Math.min(speed, 30) * 0.01 + inT * 0.5;
+    orb.style.transform = `translate3d(${head.x.toFixed(1)}px, ${head.y.toFixed(1)}px, 0) scale(${breathe.toFixed(3)})`;
+    orb.style.opacity = String(1 - dawnT);
+    win.style.opacity = String(inT);
+    // act 4: dawn opens from the window with a feathered edge
+    const f = c.dawnFeather, maxR = Math.hypot(Math.max(wc.x, W - wc.x), Math.max(wc.y, H - wc.y)) + f;
+    const r = dawnT * maxR - f * (1 - dawnT);
+    const m = dawnT <= 0 ? 'radial-gradient(circle, #000 0, transparent 0)'
+      : `radial-gradient(circle at ${wc.x.toFixed(1)}px ${wc.y.toFixed(1)}px, #000 ${Math.max(0, r).toFixed(1)}px, transparent ${(Math.max(0, r) + f).toFixed(1)}px)`;
+    dawn.style.webkitMaskImage = m; dawn.style.maskImage = m;
+    stage.style.setProperty('--wx', `${wc.x}px`); stage.style.setProperty('--wy', `${wc.y}px`);
+    stage.style.setProperty('--amb', String(span(P, 0.3, 0.8) * (1 - dawnT)));
+    // beats: fade in/out per act; the light position lights the headline letters
+    beats.forEach((b) => {
+      const [a0, a1, a2, a3] = b.range;
+      const o = P < a1 ? span(P, a0, a1) : 1 - span(P, a2, a3);
+      b.el.style.opacity = String(o);
+      if (b.el.id !== 'b0' && b.el.id !== 'b4') b.el.style.translate = `0 ${((1 - o) * 18).toFixed(1)}px`;
+      if (b.el.id === 'b4') b.el.style.visibility = o < 0.01 ? 'hidden' : 'visible'; // no focus on an invisible CTA
+      b.el.style.setProperty('--lx', `${(head.x - b.ox).toFixed(1)}px`); b.el.style.setProperty('--ly', `${(head.y - b.oy).toFixed(1)}px`);
+    });
+    // sparks + stars
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    if (P > c.lineStart && P < c.winEnd) emit(head.x, head.y, Math.min(8, speed * 0.35), speed);
+    else if (P < c.lineStart && rand() < 0.06) emit(head.x, head.y, 1, 0);
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const sp = sparks[i]; sp.life += dt;
+      if (sp.life > sp.max) { sparks.splice(i, 1); continue; }
+      sp.x += sp.vx * dt * 0.06; sp.y += sp.vy * dt * 0.06; sp.vy += 0.0009 * dt;
+      const k = 1 - sp.life / sp.max; ctx.globalAlpha = k * k * (1 - dawnT);
+      ctx.drawImage(sprite, sp.x - sp.s / 2, sp.y - sp.s / 2, sp.s, sp.s);
+    }
+    for (const st of stars) {                           // neighbouring homes that kept their light
+      const on = smooth(span(P, st.at, st.at + 0.04)) * (1 - dawnT);
+      if (on <= 0) continue;
+      const tw = 0.7 + 0.3 * Math.sin(t / 500 + st.ph), d = Math.hypot(st.x - head.x, st.y - head.y);
+      if (d < 300 && P < c.curveEnd + 0.04) {         // constellation threads to the passing light
+        ctx.globalAlpha = on * (1 - d / 300) * 0.45; ctx.strokeStyle = '#ffd7a8'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(st.x, st.y); ctx.lineTo(head.x, head.y); ctx.stroke();
+      }
+      ctx.globalAlpha = on * tw; const z = st.r * 11;
+      ctx.drawImage(sprite, st.x - z / 2, st.y - z / 2, z, z);
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    return Math.abs(p - P) > 0.0004 || sparks.length > 0 || P < c.lineStart;
+  }
+  function loop(now) {
+    const dt = Math.min(50, now - (last || now)); last = now;
+    running = frame(dt) && visible;
+    if (running) requestAnimationFrame(loop); else last = 0;
+  }
+  // Never start the loop under reduced motion or capture: the frame sets beat opacities and would hide copy.
+  const kick = () => { if (reduce || capture) return; if (!running && visible) { running = true; requestAnimationFrame(loop); } };
+  function drawStatic() {                               // reduced motion: the finished composition, nothing moves
+    ember.style.strokeDashoffset = '0'; ember.style.opacity = '.55';
+    seg.curve.layers.forEach((el) => { el.style.opacity = '0'; });
+    drawLen(seg.house, seg.house.len); drawLen(seg.win, seg.win.len);
+    ctx.clearRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter';
+    for (const st of stars) { const z = st.r * 11; ctx.globalAlpha = .8; ctx.drawImage(sprite, st.x - z / 2, st.y - z / 2, z, z); }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { build(); kick(); }, 150); });
+  if (document.fonts) document.fonts.ready.then(build);   // beat offsets depend on font metrics
+  build();
+  if (reduce) return;
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting && !visible) { P = target(); prevHead = null; } // re-entering: snap, don't replay the gap
+    visible = e.isIntersecting; kick();
+  }).observe(story);
+  addEventListener('scroll', kick, { passive: true });
+  document.addEventListener('visibilitychange', () => { visible = !document.hidden; kick(); });
+  if (capture) window.__frame = (dt = 33.3) => frame(dt); else kick();
+})();
+</script>
+</body>
+</html>

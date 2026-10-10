@@ -1,0 +1,233 @@
+<!doctype html>
+<!--
+  LIGHT TEXT · design-atlas signature recipe (vanilla, no library)
+  What: a huge Thai + English headline that stays dark until a moving light passes over it. Each line
+    is painted with background-clip:text; its radial-gradient centre follows one shared light point.
+    Scroll sweeps the light across the lines one by one like a lighthouse beam (a rotating beam wedge
+    from the lamp + a blurred bloom copy of the text); lines keep a warm afterglow once lit, and the
+    sequence ends on a composed, fully lit headline.
+  Feeling / story: guidance, arrival, "a light left on for you" (hospitality, travel, a launch
+    manifesto, a foundation, a night-time brand, an anniversary).
+  Use when: the headline IS the hero and is worth reading slowly, 2-5 short lines.
+  Avoid when: long copy, body text, small type (the effect needs >= ~48 px glyphs), or pages people
+    must scan quickly. Never use the dark-until-lit treatment on information users need first.
+  Ambition: cinematic.
+  Knobs: CSS --unlit / --ember / --gold / --night, --lines (pin length = (lines + 1.4) x 100vh);
+    JS CFG: drive ('scroll' | 'time', or add ?time to the URL), smooth (scroll lerp), period (time
+    mode, ms per full sweep), bloom (blurred text copy, auto-off under 700 px), radius (x font size).
+  Perf: per frame while the light moves: one gradient repaint per line (+ the bloom copy, blurred on the
+    GPU) and two transform-only layers (beam, halo). Loop sleeps when settled or offscreen.
+    Budget: <= 6 ms per frame on a mid laptop; turn bloom off first if you need headroom.
+  A11y: the h1 is real text in reading order (Thai lines carry lang="th"); beam, halo, bloom copy and
+    lighthouse are aria-hidden. Reduced motion = no pin, no sweep: the headline is shown fully lit with
+    a static beam. Thai glyph marks are kept inside each line box with padding (background-clip:text
+    clips anything outside the box).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phare Lanta — Light finds its way home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,800&family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ease-standard:cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out:cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
+  --night:#06080d; --sea:#0a1420; --unlit:#191c24; --ember:#b07440; --gold:#ffcf7d; --fog:#8fa3b8; --paper:#f3ead9;
+  --lines:4;
+  --en:"Bricolage Grotesque",system-ui,sans-serif; --th:"Kanit","Bricolage Grotesque",sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--night);color:#e9e2d4;font:300 18px/1.6 var(--en)}
+body{overflow-x:clip}
+:lang(th){font-family:var(--th)}
+a{color:inherit}
+.bar{position:fixed;inset:0 0 auto;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px clamp(16px,4vw,56px)}
+.brand{font-weight:800;letter-spacing:.24em;font-size:15px}
+.brand span{display:block;font:300 12px/1.3 var(--th);letter-spacing:.06em;opacity:.65}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,207,125,.5);text-decoration:none;font-weight:500;font-size:15px;transition:background .3s var(--ease-standard),color .3s var(--ease-standard)}
+.btn:hover{background:var(--gold);color:var(--night)}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+.sweep{position:relative;height:calc((var(--lines) + 1.4) * 100vh)}
+.pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
+  background:radial-gradient(90% 70% at 80% 100%,#13243a 0%,rgba(10,20,32,0) 70%),linear-gradient(#05070b 0%,#08101a 62%,#0b1826 78%,#081019 100%)}
+.stars{position:absolute;left:0;top:0;width:2px;height:2px;border-radius:50%;background:#cfd8e6;opacity:.5;
+  box-shadow:12vw 9vh #cfd8e6,23vw 21vh #9fb0c4,37vw 6vh #cfd8e6,48vw 15vh #9fb0c4,61vw 8vh #cfd8e6,72vw 24vh #9fb0c4,86vw 11vh #cfd8e6,93vw 30vh #9fb0c4,5vw 33vh #9fb0c4,55vw 31vh #cfd8e6,79vw 4vh #cfd8e6,31vw 38vh #9fb0c4}
+.horizon{position:absolute;left:0;right:0;top:84%;height:1px;background:linear-gradient(90deg,transparent,rgba(143,163,184,.35) 30%,rgba(143,163,184,.35) 70%,transparent)}
+.land{position:absolute;right:-10vw;bottom:0;width:56vw;height:22%;background:linear-gradient(#070a11,#020306 60%);border-radius:60% 0 0 0/100% 0 0 0;box-shadow:inset 0 1px 0 rgba(143,163,184,.16)}
+.house{position:absolute;right:clamp(16px,8vw,140px);bottom:calc(22% - 6px);height:clamp(170px,40vh,380px);width:auto}
+.glow{position:absolute;left:0;top:0;pointer-events:none;mix-blend-mode:screen}
+.glow{width:240px;height:240px;margin:-120px 0 0 -120px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,220,160,.5),rgba(255,190,110,.14) 45%,rgba(255,180,100,0))}
+.beam,.halo{position:absolute;left:0;top:0;pointer-events:none;will-change:transform,opacity}
+.beam{width:150vmax;height:34vmax;transform-origin:0 50%;mix-blend-mode:screen;opacity:0;
+  clip-path:polygon(0 49%,100% 0,100% 100%,0 51%);
+  background:linear-gradient(90deg,rgba(255,224,170,.6),rgba(255,200,120,.16) 38%,rgba(255,190,110,0) 80%)}
+.halo{width:100px;height:100px;border-radius:50%;mix-blend-mode:screen;opacity:0;
+  background:radial-gradient(closest-side,rgba(255,206,140,.34),rgba(255,170,90,.12) 45%,rgba(255,160,80,0))}
+
+.headwrap{position:absolute;left:clamp(16px,7vw,120px);right:clamp(16px,4vw,64px);top:clamp(96px,17vh,170px)}
+.head{font-weight:800;font-size:clamp(44px,min(12.6vw,15.5vh),164px);line-height:.9;letter-spacing:-.035em}
+.ln{--rad:240px;--x:-9999px;--y:50%;--base:var(--unlit);display:block;width:fit-content;max-width:100%;padding:.1em .06em .12em;margin:-.1em -.06em -.12em;
+  --light:radial-gradient(circle var(--rad) at var(--x) var(--y),#fff8e8 0,#ffd88f calc(var(--rad)*.16),#f39a3c calc(var(--rad)*.42),rgba(190,90,30,0) var(--rad));
+  color:transparent;background:var(--light) no-repeat,var(--base);-webkit-background-clip:text;background-clip:text}
+.ln:lang(th){font-weight:700;letter-spacing:0;line-height:1.08;padding-top:.16em;padding-bottom:.14em}
+.bloom{position:absolute;inset:0;pointer-events:none;filter:blur(16px);opacity:.8;mix-blend-mode:screen}
+.bloom .ln{background:var(--light) no-repeat;-webkit-background-clip:text;background-clip:text}
+.kicker{position:absolute;left:clamp(16px,7vw,120px);bottom:clamp(18px,5vh,44px);right:40%;font-size:15px;color:var(--fog);display:flex;gap:14px;align-items:center}
+.kicker b{font-weight:500;color:#e9e2d4}
+.cue{width:1px;height:38px;background:linear-gradient(var(--gold),transparent)}
+
+.stay{position:relative;padding:clamp(96px,14vw,180px) clamp(16px,7vw,120px) 80px;background:linear-gradient(#081019,#0d1a29 40%,#13263a)}
+.stay h2{font-weight:800;font-size:clamp(34px,5.4vw,80px);line-height:1;letter-spacing:-.03em;max-width:13em;color:var(--paper)}
+.stay h2 + p{margin-top:16px;font-size:20px;color:var(--fog);max-width:36em}
+.facts{list-style:none;padding:0;margin:56px 0 48px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,3vw,40px);max-width:1100px}
+.facts li{border-top:1px solid rgba(255,207,125,.35);padding-top:16px;color:var(--fog)}
+.facts b{display:block;font-size:clamp(30px,3.4vw,48px);font-weight:800;color:var(--gold);letter-spacing:-.02em}
+footer{margin-top:72px;font-size:14px;color:var(--fog);opacity:.7}
+
+@supports not ((background-clip:text) or (-webkit-background-clip:text)){.ln{color:var(--gold)}.bloom{display:none}}
+@media (max-width:700px){
+  .bloom{display:none}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .kicker{right:16px;font-size:14px}
+  .house{bottom:12%}
+}
+@media (prefers-reduced-motion:reduce){
+  .sweep{height:auto}
+  .pin{position:relative;height:100vh;height:100svh;min-height:560px}
+  .btn{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <span class="brand">PHARE<span lang="th">ประภาคารลันตา · เกาะลันตา</span></span>
+  <a class="btn" href="#stay">Reserve</a>
+</header>
+<main>
+<section class="sweep" id="sweep" aria-labelledby="h">
+  <div class="pin">
+    <div class="stars" aria-hidden="true"></div>
+    <div class="horizon" aria-hidden="true"></div>
+    <div class="land" aria-hidden="true"></div>
+    <svg class="house" viewBox="0 0 100 300" aria-hidden="true">
+      <defs><linearGradient id="tw" x1="0" x2="1"><stop offset="0" stop-color="#26324a"/><stop offset=".5" stop-color="#0f1622"/><stop offset="1" stop-color="#05080d"/></linearGradient></defs>
+      <path d="M33 300 41 92h18l8 208z" fill="url(#tw)"/>
+      <path d="M36.7 206h26.6l1 26H35.7zM38.9 140h22.2l.9 26H38z" fill="#3a1f17" opacity=".85"/>
+      <path d="M32 86h36v6H32z" fill="#0d131c"/>
+      <path d="M34 79v7m6-7v7m6-7v7m6-7v7m6-7v7m6-7v7M33 79h34" stroke="#26324a" stroke-width="1.2" fill="none"/>
+      <rect x="41" y="58" width="18" height="21" rx="1.5" fill="#ffe6b0"/>
+      <path d="M41 65h18M50 58v21" stroke="#b9823f" stroke-width=".8" opacity=".55"/>
+      <path d="M38 58h24l-12-13z" fill="#0d131c"/><circle cx="50" cy="43.5" r="1.8" fill="#0d131c"/>
+    </svg>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="beam" aria-hidden="true"></div>
+    <div class="halo" aria-hidden="true"></div>
+    <div class="headwrap">
+      <h1 class="head" id="h">
+        <span class="ln">Light finds</span>
+        <span class="ln">its way home.</span>
+        <span class="ln" lang="th">แสงนำทางคุณ</span>
+        <span class="ln" lang="th">กลับบ้านเสมอ</span>
+      </h1>
+    </div>
+    <p class="kicker"><span class="cue" aria-hidden="true"></span><span><b>Phare Lanta</b> — six rooms in a working lighthouse, Koh Lanta. Scroll to sweep the light.</span></p>
+  </div>
+</section>
+<section class="stay" id="stay">
+  <h2>Six rooms. One light that never goes out.</h2>
+  <p lang="th">หกห้องพักในประภาคารที่ยังส่องแสงจริงทุกคืน เหนือทะเลอันดามัน</p>
+  <ul class="facts">
+    <li><b>1908</b>First lit by the harbour master of Lanta.</li>
+    <li><b>46 m</b>Above the Andaman at high tide.</li>
+    <li><b>22 nm</b>The distance its beam still reaches.</li>
+  </ul>
+  <a class="btn" href="#sweep">Reserve a night · จองห้องพัก</a>
+  <footer>Phare Lanta is a fictional brand made for a design-atlas recipe.</footer>
+</section>
+</main>
+<script>
+(() => {
+  const CFG = { drive: /[?&]time\b/.test(location.search) ? 'time' : 'scroll', smooth: 0.14, period: 14000, bloom: true, radius: 1.5 };
+  const sweep = document.getElementById('sweep'), pin = sweep.querySelector('.pin'), head = document.getElementById('h');
+  const glow = pin.querySelector('.glow'), beam = pin.querySelector('.beam'), halo = pin.querySelector('.halo'), house = pin.querySelector('.house');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const UNLIT = [25, 28, 36], EMBER = [176, 116, 64];
+  // bloom: a blurred, aria-hidden copy of the lines (a div, so the page keeps one h1)
+  const bloom = document.createElement('div');
+  bloom.className = 'head bloom'; bloom.setAttribute('aria-hidden', 'true'); bloom.innerHTML = head.innerHTML;
+  head.parentNode.appendChild(bloom);
+  const L = [...head.querySelectorAll('.ln')].map((el, i) => ({ el, b: bloom.querySelectorAll('.ln')[i] }));
+  let lamp = [0, 0], R = 240, centre = [0, 0], cur = 0, target = 0, raf = 0, onScreen = true, last = 0;
+
+  function measure() {
+    const P = pin.getBoundingClientRect(), hr = house.getBoundingClientRect(), hb = head.getBoundingClientRect();
+    lamp = [hr.left - P.left + hr.width * 0.5, hr.top - P.top + hr.height * 0.228];
+    glow.style.left = lamp[0] + 'px'; glow.style.top = lamp[1] + 'px';
+    centre = [hb.left - P.left + hb.width * 0.5, hb.top - P.top + hb.height * 0.5];
+    R = parseFloat(getComputedStyle(head).fontSize) * CFG.radius;
+    for (const l of L) { const r = l.el.getBoundingClientRect(); l.x = r.left - P.left; l.y = r.top - P.top; l.w = r.width; l.h = r.height; }
+    bloom.style.display = CFG.bloom && innerWidth > 700 ? '' : 'none';
+  }
+  const smooth = (t) => t * t * (3 - 2 * t);
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  function render(p, now) {
+    const N = L.length, A = 0.07, B = 0.84;
+    let hx, hy, r = R, inten = 1, q;
+    if (p < A) { const t = p / A; q = 0; hx = L[0].x - R * 0.45; hy = L[0].y + L[0].h * 0.55; inten = smooth(t); }
+    else if (p < B) {
+      q = (p - A) / (B - A) * N; const i = Math.min(N - 1, Math.floor(q)), e = smooth(q - i), l = L[i];
+      hx = l.x - R * 0.45 + (l.w + R * 0.9) * e; hy = l.y + l.h * 0.55;
+      inten = Math.min(1, 0.35 + Math.sin(Math.PI * e) * 0.9);      // dims at the line ends: the beam "turns away"
+    } else {
+      const e = smooth((p - B) / (1 - B)), l = L[N - 1]; q = N;
+      hx = l.x + l.w + R * 0.45 + (centre[0] - (l.x + l.w + R * 0.45)) * e; hy = l.y + l.h * 0.55 + (centre[1] - (l.y + l.h * 0.55)) * e;
+      r = R * (1 + 2.4 * e); inten = 1 - 0.3 * e;
+    }
+    r *= Math.max(0.004, inten) * (now ? 1 + 0.03 * Math.sin(now / 700) : 1);   // the light grows from nothing and narrows at line ends
+    head.style.setProperty('--rad', r.toFixed(1) + 'px');
+    L.forEach((l, j) => {
+      const g = Math.min(1, Math.max(0, (q - j - 0.7) / 0.5));              // afterglow once the light has passed
+      const base = `rgb(${mix(UNLIT, EMBER, g)})`, x = (hx - l.x).toFixed(1) + 'px', y = (hy - l.y).toFixed(1) + 'px';
+      for (const el of [l.el, l.b]) { el.style.setProperty('--x', x); el.style.setProperty('--y', y); el.style.setProperty('--rad', r.toFixed(1) + 'px'); }
+      l.el.style.setProperty('--base', base);
+    });
+    const ang = Math.atan2(hy - lamp[1], hx - lamp[0]), dist = Math.hypot(hx - lamp[0], hy - lamp[1]);
+    const len = innerWidth > innerHeight ? 1.5 * Math.max(innerWidth, innerHeight) : 1.5 * innerHeight;
+    beam.style.transform = `translate(${lamp[0]}px,${lamp[1] - beam.offsetHeight / 2}px) rotate(${ang}rad) scaleX(${Math.max(0.35, (dist * 1.7) / len).toFixed(3)})`;
+    beam.style.opacity = (inten * 0.85).toFixed(3);
+    halo.style.transform = `translate(${hx - 50}px,${hy - 50}px) scale(${(r * 2.2 / 100).toFixed(3)})`;
+    halo.style.opacity = (inten * 0.9).toFixed(3);
+  }
+  function progress() {
+    const r = sweep.getBoundingClientRect(), span = r.height - innerHeight;
+    return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 1;
+  }
+  function frame(now) {
+    raf = 0;
+    const dt = Math.min(64, last ? now - last : 16.7); last = now;
+    if (CFG.drive === 'time') { target = (now % CFG.period) / CFG.period * 0.84; cur = target; }
+    else { target = progress(); cur += (target - cur) * (1 - Math.pow(1 - CFG.smooth, dt / 16.7)); }
+    render(cur, now);
+    if (onScreen && (CFG.drive === 'time' || Math.abs(target - cur) > 0.0004)) raf = requestAnimationFrame(frame); else last = 0;
+  }
+  const wake = () => { if (!raf && !reduce.matches) raf = requestAnimationFrame(frame); };
+  function setup() {
+    measure();
+    if (reduce.matches) { cancelAnimationFrame(raf); raf = 0; render(1); return; }   // composed final state
+    if (CFG.drive === 'time') sweep.style.height = '100vh';
+    cur = target = CFG.drive === 'time' ? 0 : progress(); render(cur); wake();
+  }
+  addEventListener('scroll', wake, { passive: true });
+  addEventListener('resize', setup);
+  reduce.addEventListener('change', setup);
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; if (onScreen) wake(); }).observe(sweep);
+  document.fonts.ready.then(setup); setup();
+})();
+</script>
+</body>
+</html>

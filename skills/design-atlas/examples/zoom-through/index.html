@@ -1,0 +1,219 @@
+<!doctype html>
+<!--
+  ZOOM-THROUGH · design-atlas signature recipe (vanilla: position:sticky + one lerped rAF loop)
+  What: a pinned interior with an arched window onto a misty mountain range. Scrolling flies the camera
+    through the window: the wall (a hole with a giant box-shadow) scales around the window centre until
+    it leaves the frame, objects on the sill pass under the camera, each mountain layer scales at its own
+    depth, the near headline rushes past faster than the wall, and a far headline settles into the sky.
+  Feeling / story: "step into the picture", escape, arrival in a place (travel, retreats, real estate
+    with a view, a film or game launch, a museum collection, moving from a brand intro into its world).
+  Use when: the next section IS a place or a world, and the pin is the doorway between two sections.
+  Avoid when: content-dense pages, frequent visits, or when the destination is not visual.
+  Ambition: cinematic.
+  Knobs: CFG below (pinVh = scroll length, smooth = lerp, wallExit = progress where the wall is gone,
+    depth[] = per-layer scale gain, sink[] = per-layer downward drift); CSS --hx/--hy/--hw (window
+    centre and width), --wall, palette; mist drift speed in the @keyframes.
+  Perf: transform/opacity only, on 8 layers, while the lerp is unsettled; the loop sleeps when settled
+    or offscreen. Mist drift is a compositor CSS animation paused offscreen. Budget: < 3 ms per frame.
+    The wall layer is rasterised once and scaled (slightly soft at 10x, invisible in motion).
+  A11y: h1 + h2 + copy are real text in reading order; all scene layers aria-hidden. Reduced motion:
+    no pin, no zoom - the window view with both headlines on the wall (static, composed); mist still.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doi Mok Retreat — Step into the mist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Noto+Sans+Thai:wght@300..600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ease-standard:cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out:cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
+  --wall:#14211d; --timber:#5a3c25; --cream:#efe7d8; --forest:#1d3029; --mist:#e9eef0;
+  --hx:62vw; --hy:50vh; --hw:min(27vw,40vh); --hh:calc(var(--hw) / .64);
+  --serif:"Fraunces",Georgia,serif; --sans:"Noto Sans Thai",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--wall);color:var(--cream);font:300 17px/1.7 var(--sans)}
+body{overflow-x:clip}
+a{color:inherit}
+:focus-visible{outline:2px solid #f3c7a1;outline-offset:3px}
+.bar{position:fixed;inset:0 0 auto;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:14px clamp(16px,4vw,48px);transition:color .5s var(--ease-standard)}
+.bar.on-light{color:var(--forest)}
+.bar.on-light .book{border-color:rgba(29,48,41,.45)}
+.brand{font:500 22px/1 var(--serif);letter-spacing:.01em;text-decoration:none}
+.brand small{display:block;font:300 12px/1.4 var(--sans);opacity:.7;letter-spacing:.04em}
+.book{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(239,231,216,.45);text-decoration:none;font-size:15px;backdrop-filter:blur(6px)}
+
+.zoom{position:relative;height:400vh}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#c9d4d8}
+.layer,.room,.fx{position:absolute;inset:0;pointer-events:none}
+.layer svg{position:absolute;inset:0;width:100%;height:100%}
+.sky{background:linear-gradient(#e7b38f 0%,#f2cfb2 34%,#e5e2dc 60%,#c8d5da 100%)}
+.sun{position:absolute;left:calc(var(--hx) - 7vh);top:calc(var(--hy) - 19vh);width:14vh;height:14vh;border-radius:50%;background:radial-gradient(circle,#fff8ec 0 30%,rgba(255,236,210,.6) 48%,rgba(255,226,190,0) 70%)}
+.mist{position:absolute;left:-25%;width:150%;height:20%;background:radial-gradient(50% 50% at 50% 50%,rgba(240,244,246,.85),rgba(240,244,246,0));animation:drift 38s linear infinite alternate}
+.mist.b{animation-duration:52s;animation-direction:alternate-reverse}
+@keyframes drift{from{transform:translateX(-7%)}to{transform:translateX(7%)}}
+.paused .mist{animation-play-state:paused}
+
+.room{will-change:transform}
+.hole{position:absolute;left:calc(var(--hx) - var(--hw) / 2);top:calc(var(--hy) - var(--hh) / 2);width:var(--hw);height:var(--hh);border-radius:999px 999px 4px 4px;
+  box-shadow:inset 0 18px 40px rgba(10,16,14,.35),0 0 0 3px #2a1b10,0 0 0 15px var(--timber),0 0 0 17px #2a1b10,0 0 0 160vmax var(--wall)}
+.hole::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,rgba(255,255,255,0) 38%,rgba(255,255,255,.12) 44%,rgba(255,255,255,0) 52%)}
+.lamp{position:absolute;left:calc(22vw - 34vh);top:-4vh;width:68vh;height:68vh;border-radius:50%;background:radial-gradient(closest-side,rgba(255,196,130,.2),rgba(255,180,110,.06) 55%,rgba(255,180,110,0))}
+.pendant{position:absolute;left:calc(22vw - 40px);top:0;width:80px;height:26vh}
+.sill{position:absolute;left:calc(var(--hx) - var(--hw) / 2 - 34px);top:calc(var(--hy) + var(--hh) / 2 - 4px);width:calc(var(--hw) + 68px);height:18px;border-radius:3px;background:linear-gradient(#7a5434,#4a311d);box-shadow:0 14px 24px rgba(0,0,0,.35)}
+.things{position:absolute;left:calc(var(--hx) - var(--hw) / 2);top:calc(var(--hy) + var(--hh) / 2 - var(--hw) * .3);width:var(--hw);height:calc(var(--hw) * .3)}
+.vignette{background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 60%,rgba(0,0,0,.28))}
+
+.h-near,.h-far,.cue{position:absolute;z-index:3}
+.h-near{left:clamp(16px,6vw,96px);top:26vh;max-width:min(42vw,560px);will-change:transform,opacity}
+.eyebrow{display:block;font:400 13px/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:#f3c7a1;margin-bottom:18px}
+.h-near .t{display:block;font:340 clamp(48px,6.4vw,104px)/.95 var(--serif);letter-spacing:-.02em}
+.h-near .t em{font-style:italic;color:#f3c7a1}
+.h-near .th{display:block;margin-top:18px;font:300 clamp(18px,1.6vw,24px)/1.6 var(--sans);color:rgba(239,231,216,.8)}
+.h-far{left:0;right:0;top:15vh;text-align:center;color:var(--forest);opacity:0;will-change:transform,opacity;padding:0 16px}
+.h-far .t{display:block;font:340 clamp(40px,5.6vw,92px)/1 var(--serif);letter-spacing:-.02em}
+.h-far .th{display:block;margin-top:12px;font:400 clamp(17px,1.5vw,22px)/1.6 var(--sans)}
+.cue{left:50%;bottom:4vh;transform:translateX(-50%);display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;color:rgba(239,231,216,.7)}
+.cue i{width:1px;height:28px;background:linear-gradient(#f3c7a1,transparent)}
+
+.stay{position:relative;padding:clamp(88px,12vw,150px) clamp(16px,6vw,96px) 72px;background:linear-gradient(#24382f,#1a2924 40%,#14211d)}
+.stay h2{font:340 clamp(38px,5vw,78px)/1 var(--serif);max-width:12em}
+.stay h2 + p{margin-top:14px;max-width:34em;font-size:19px;opacity:.8}
+.facts{list-style:none;padding:0;margin:56px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,3vw,40px);max-width:1100px}
+.facts li{border-top:1px solid rgba(243,199,161,.35);padding-top:16px;opacity:.85}
+.facts b{display:block;font:400 clamp(30px,3.4vw,50px)/1.1 var(--serif);color:#f3c7a1}
+.btn{display:inline-flex;align-items:center;min-height:50px;padding:0 26px;border-radius:999px;background:#f3c7a1;color:#1a2924;text-decoration:none;font-weight:500}
+footer{margin-top:64px;font-size:14px;opacity:.55}
+
+@media (max-width:760px){
+  :root{--hx:50vw;--hy:57vh;--hw:56vw}
+  .h-near{top:13vh;max-width:none;right:16px}
+  .h-near .t{font-size:clamp(42px,12vw,60px)}
+  .lamp,.pendant{display:none}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .cue{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  .zoom{height:auto}
+  .stage{position:relative}
+  .mist{animation:none}
+  .h-far{opacity:1;top:auto;bottom:7vh;left:clamp(16px,6vw,96px);right:auto;text-align:left;color:var(--cream);max-width:min(42vw,560px);padding:0}
+  .h-far .t{font-size:clamp(26px,2.6vw,40px)}
+  .cue{display:none}
+}
+@media (prefers-reduced-motion:reduce) and (max-width:760px){.h-far{bottom:3vh;max-width:none;right:16px}.h-far .t{font-size:24px}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#top">Doi Mok<small lang="th">ดอยหมอก · เชียงใหม่</small></a>
+  <a class="book" href="#stay">Reserve</a>
+</header>
+<main id="top">
+<section class="zoom" data-story aria-labelledby="h">
+  <div class="stage">
+    <div class="layer sky" aria-hidden="true"><div class="sun"></div></div>
+    <div class="layer" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><path d="M0 560C160 500 260 468 420 498s290-70 450-28 300-62 470-10 200 12 260-12V1000H0z" fill="#a8b8c1"/><path d="M1060 250l10 7 10-7M1100 232l8 6 8-6M1030 276l7 5 7-5" stroke="#6f7f86" stroke-width="2.5" fill="none"/></svg><div class="mist" style="top:50%"></div></div>
+    <div class="layer" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><path d="M0 646c180-60 340-40 500-72s320-50 500 22 300-40 460 0 140-6 140-6V1000H0z" fill="#7e9694"/></svg><div class="mist b" style="top:60%"></div></div>
+    <div class="layer" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><path d="M0 726c200-60 380-20 560-52s340-24 520 30 340-44 520-12V1000H0z" fill="#4f695f"/><path d="M270 708l14-46 14 46zM300 704l11-38 11 38zM880 690l13-44 13 44zM906 694l10-34 10 34zM1290 700l14-46 14 46zM1318 704l11-36 11 36z" fill="#3e574e"/></svg><div class="mist" style="top:70%;opacity:.7"></div></div>
+    <div class="layer" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><path d="M0 868c260-60 520-24 760-44s440-36 840 4V1000H0z" fill="#2c4238"/><path d="M120 860l22-80 22 80zM160 856l17-62 17 62zM1380 846l24-86 24 86zM1424 850l18-64 18 64z" fill="#22362e"/></svg></div>
+    <div class="room" aria-hidden="true">
+      <div class="hole"></div>
+      <div class="lamp"></div>
+      <svg class="pendant" viewBox="0 0 80 200" preserveAspectRatio="xMidYMax meet"><path d="M40 0v150" stroke="#0b1210" stroke-width="1.5"/><path d="M22 176l8-26h20l8 26z" fill="#2a1b10"/><ellipse cx="40" cy="178" rx="9" ry="4" fill="#ffd9a0"/></svg>
+      <div class="sill"></div>
+      <svg class="things" viewBox="0 0 300 90" preserveAspectRatio="xMidYMax meet"><path d="M30 90V58h34v32zM24 58h46l-4-6H28z" fill="#1b130d"/><path d="M47 52c-14-14-22-30-14-44 6 10 12 24 14 44zM47 52c4-18 14-30 28-34-4 14-14 26-28 34zM47 52c-8-10-24-14-36-8 10 6 22 10 36 8z" fill="#22342a"/><path d="M196 90V66h40v24zM236 70h8a8 8 0 0 1 0 16h-8" fill="#1b130d" stroke="#1b130d" stroke-width="3"/><path d="M208 58c-4-6 4-9 0-16M222 58c-4-6 4-9 0-16" stroke="#e9e3da" stroke-width="2" fill="none" opacity=".6" stroke-linecap="round"/><path d="M250 90h44v-8h-44zM254 82h38v-7h-38z" fill="#2a1b10"/></svg>
+    </div>
+    <div class="fx vignette" aria-hidden="true"></div>
+    <h1 class="h-near" id="h"><span class="eyebrow">Doi Mok Retreat · 1,640 m</span><span class="t">Step into</span><span class="t"><em>the mist.</em></span><span class="th" lang="th">ก้าวผ่านหน้าต่าง เข้าสู่ทะเลหมอกของดอยหมอก</span></h1>
+    <h2 class="h-far"><span class="t">Where the clouds come to rest.</span><span class="th" lang="th">ที่ซึ่งเมฆลงมาพักบนยอดดอย ทุกเช้า</span></h2>
+    <p class="cue" aria-hidden="true"><i></i>Scroll to step through</p>
+  </div>
+</section>
+<section class="stay" id="stay">
+  <h2>Six cabins above the clouds.</h2>
+  <p lang="th">บ้านไม้หกหลังบนสันดอย ตื่นมาพร้อมทะเลหมอกตั้งแต่พฤศจิกายนถึงกุมภาพันธ์</p>
+  <ul class="facts">
+    <li><b>1,640 m</b>Above sea level, Chiang Mai.</li>
+    <li><b>6 cabins</b>Each with one window that faces east.</li>
+    <li><b>Nov – Feb</b>Sea-of-mist season, sunrise 06:38.</li>
+  </ul>
+  <a class="btn" href="#top">Reserve a cabin · จองบ้านพัก</a>
+  <footer>Doi Mok Retreat is a fictional brand made for a design-atlas recipe.</footer>
+</section>
+</main>
+<script>
+(() => {
+  const CFG = { smooth: 0.11, wallExit: 0.6, depth: [0.05, 0.12, 0.3, 0.75, 1.6], sink: [0, 0, 0.02, 0.08, 0.22] };
+  const zoom = document.querySelector('.zoom'), stage = zoom.querySelector('.stage');
+  const layers = [...stage.querySelectorAll('.layer')], room = stage.querySelector('.room'), hole = stage.querySelector('.hole');
+  const bar = document.querySelector('.bar'), near = stage.querySelector('.h-near'), far = stage.querySelector('.h-far'), cue = stage.querySelector('.cue');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let G = { cx: 0, cy: 0, w: 1, h: 1, W: 1 }, wallScale = 1, exitScale = 8, cur = 0, target = 0, raf = 0, last = 0, onScreen = true, H = innerHeight;
+  const clamp = (v) => Math.min(1, Math.max(0, v));
+  const inCubic = (t) => t * t * t, inOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2), out = (t) => 1 - Math.pow(1 - t, 3);
+
+  function measure() {
+    const s = stage.getBoundingClientRect(), r = hole.getBoundingClientRect();
+    const cx = r.left - s.left + r.width / 2, cy = r.top - s.top + r.height / 2, W = s.width; H = s.height;
+    G = { cx, cy, w: r.width, h: r.height, W };
+    // scale at which the straight part of the opening covers the whole stage, plus margin
+    const straight = r.height - r.width / 2;
+    exitScale = Math.max((2 * Math.max(cx, W - cx)) / r.width, (2 * Math.max(cy, H - cy)) / straight) * 1.25;
+    const origin = `${cx.toFixed(1)}px ${cy.toFixed(1)}px`;
+    room.style.transformOrigin = origin; layers.forEach((l) => (l.style.transformOrigin = origin));
+  }
+  function render(p) {
+    const w = inCubic(clamp(p / CFG.wallExit));                       // wall: slow start, then rushes past
+    wallScale = 1 + (exitScale - 1) * w;
+    room.style.transform = `scale(${wallScale.toFixed(4)})`;
+    room.style.opacity = p >= CFG.wallExit ? 0 : 1;
+    const d = inOut(clamp(p / 0.95));
+    layers.forEach((l, i) => (l.style.transform = `translate3d(0,${(CFG.sink[i] * d * H).toFixed(1)}px,0) scale(${(1 + CFG.depth[i] * d).toFixed(4)})`));
+    const n = clamp((p - 0.02) / 0.3);                                  // near headline: faster than the wall
+    near.style.opacity = (1 - out(n)).toFixed(3);
+    near.style.transform = `translate3d(${(-n * 9).toFixed(2)}vw,${(-n * 7).toFixed(2)}vh,0) scale(${(1 + n * 0.7).toFixed(3)})`;
+    const f = clamp((p - 0.58) / 0.27);                                 // far headline: settles slowly, deep in the scene
+    far.style.opacity = out(f).toFixed(3);
+    far.style.transform = `translate3d(0,${((1 - out(f)) * 4).toFixed(2)}vh,0) scale(${(0.92 + 0.08 * out(f)).toFixed(4)})`;
+    cue.style.opacity = (1 - clamp(p / 0.08)).toFixed(3);
+    headerTone();
+  }
+  // header text turns dark while the bright landscape sits under it
+  const inOpening = (x, y) => {                       // is a stage point inside the scaled arched opening?
+    const s = wallScale, hw = (s * G.w) / 2, archY = G.cy - s * (G.h / 2 - G.w / 2);
+    if (Math.abs(x - G.cx) > hw) return false;
+    return y >= archY || Math.hypot(x - G.cx, y - archY) <= hw;
+  };
+  const headerTone = () => bar.classList.toggle('on-light', zoom.getBoundingClientRect().bottom > 64 &&
+    (cur >= CFG.wallExit || (inOpening(40, 34) && inOpening(G.W - 40, 34))));
+  const progress = () => { const r = zoom.getBoundingClientRect(), span = r.height - H; return span > 0 ? clamp(-r.top / span) : 0; };
+  function frame(now) {
+    raf = 0;
+    const dt = Math.min(64, last ? now - last : 16.7); last = now;
+    target = progress();
+    cur += (target - cur) * (1 - Math.pow(1 - CFG.smooth, dt / 16.7));
+    if (Math.abs(target - cur) < 0.0003) cur = target;
+    render(cur);
+    if (onScreen && cur !== target) raf = requestAnimationFrame(frame); else last = 0;
+  }
+  const wake = () => { if (!raf && !reduce.matches) raf = requestAnimationFrame(frame); };
+  function setup() {
+    measure();
+    if (reduce.matches) { cancelAnimationFrame(raf); raf = 0; cur = 0; render(0); far.style.cssText = ''; return; }
+    cur = target = progress(); render(cur); wake();
+  }
+  addEventListener('scroll', () => { wake(); headerTone(); }, { passive: true });
+  addEventListener('resize', setup);
+  reduce.addEventListener('change', setup);
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; stage.classList.toggle('paused', !onScreen); if (onScreen) wake(); }).observe(stage);
+  document.fonts.ready.then(setup); setup();
+})();
+</script>
+</body>
+</html>

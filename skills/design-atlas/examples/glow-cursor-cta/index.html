@@ -1,0 +1,285 @@
+<!doctype html>
+<!--
+  RECIPE · glow-cursor-cta
+  What: a magnetic call-to-action on a dark hero, with a glowing comet-trail cursor drawn on a 2D canvas.
+        The button leans toward the pointer inside a radius, blooms as the pointer nears it (and on
+        keyboard focus), squashes on press, and springs back with a ring and a burst of sparks on release.
+        Touch: no custom cursor, no trail. The CTA breathes with a gentle idle glow pulse instead.
+  Feeling / story: ignition, "one action matters here". Use for launches, event tickets, a waitlist,
+        a single conversion moment on a dark, energetic brand.
+  Use when: the page has one primary action and the hero has room around it (≥ 160 px clear radius).
+  Avoid when: forms or dense UI (a hidden native cursor hurts precision), several competing CTAs, light
+        themes (the glow needs a dark ground), or brands that should feel quiet and clinical.
+  Ambition: bold.
+  Knobs: CONFIG in the script (trailMs, trailWidth, radius, pull, labelPull, spring, sparks, hideCursor);
+        CSS custom properties (--bg, --ink, --ember-1..3, --glow, --pulse-ms). Test hooks: ?touch forces
+        touch mode.
+  Perf: one fixed 2D canvas that only redraws while there is a trail, sparks or a moving button. It sleeps
+        when the pointer rests. Each frame is ≤ 48 segments, a 1/4-size glow layer and ≤ 30 sparks: measured
+        ≈ 1.3 ms main thread per frame while moving (headless Chrome, M3). Button motion is transform-only;
+        the bloom is a pre-blurred sibling behind the button, animating opacity and transform.
+-->
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember/26 · จุดประกาย — glow cursor CTA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a090b; --bg-2: #141014; --ink: #f7efe8; --muted: #a1958c; --line: #ffffff1a;
+  --ember-1: #ffd27a; --ember-2: #ff7a2f; --ember-3: #ff2d6f; --glow: #ff6a2b;
+  --pulse-ms: 2800ms;
+  --ease-standard: cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
+  --font: "Chakra Petch", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 300 18px/1.65 var(--font); background: var(--bg); overflow-x: clip; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ember-1); outline-offset: 5px; }
+.mono { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+canvas.trail { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; mix-blend-mode: screen; }
+.fine.trail-on .hero, .fine.trail-on .hero a { cursor: none; }
+
+.hero { position: relative; min-height: 100vh; min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; padding: 22px clamp(16px, 5vw, 64px) 28px; overflow: hidden; isolation: isolate; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(46% 38% at 50% 64%, #ff6a2b26, transparent 70%),
+    radial-gradient(90% 60% at 50% 120%, #ff2d6f1f, transparent 70%),
+    radial-gradient(circle at 1px 1px, #ffffff14 1px, transparent 1.5px) 0 0 / 28px 28px, var(--bg);
+  -webkit-mask: radial-gradient(80% 80% at 50% 50%, #000 40%, #0008 100%); mask: radial-gradient(80% 80% at 50% 50%, #000 40%, #0008 100%); }
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.logo { font: 700 20px var(--font); letter-spacing: .12em; text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; }
+.logo b { color: var(--ember-2); font-weight: 700; }
+.center { display: grid; justify-items: center; align-content: center; text-align: center; gap: 18px; padding: 40px 0; }
+h1 { margin: 0; font-weight: 600; font-size: clamp(34px, 7vw, 104px); line-height: 1.22; letter-spacing: -.01em; text-wrap: balance; }
+h1 .l { display: block; }
+h1 .en { display: block; font-weight: 300; font-size: .34em; line-height: 1.4; letter-spacing: .02em; color: var(--muted); margin-top: .4em; }
+h1 .hot { background: linear-gradient(100deg, var(--ember-1), var(--ember-2) 45%, var(--ember-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ---------- the magnetic CTA ---------- */
+.magnet { position: relative; margin-top: 26px; padding: 6px; }
+.cta { position: relative; display: inline-flex; align-items: center; gap: 18px; min-height: 84px; padding: 0 16px 0 38px; border-radius: 999px; text-decoration: none;
+  color: #1a0d07; background: linear-gradient(100deg, var(--ember-1), var(--ember-2) 55%, #ff5a3c); font-weight: 700; font-size: 24px;
+  box-shadow: inset 0 1px 0 #ffffff80, inset 0 -2px 0 #0000002e, 0 10px 30px -12px #ff6a2b; will-change: transform; }
+/* the bloom lives on a sibling BEHIND the button (a pseudo-element of a transformed button would paint over it) */
+.glow-wrap { position: absolute; inset: 6px; pointer-events: none; z-index: 0; }
+.glow { position: absolute; inset: -70% -26%; border-radius: 999px; background: radial-gradient(closest-side, #ff8a3df2, #ff2d6f80 50%, transparent); filter: blur(22px);
+  opacity: calc(.2 + var(--near) * .55); transform: scale(calc(.78 + var(--near) * .2)); transition: opacity .45s var(--ease-standard), transform .6s var(--ease-emphasized-out); }
+.magnet { --near: 0; }
+.magnet.is-hot .glow, .magnet:has(.cta:hover) .glow, .magnet:has(.cta:focus-visible) .glow { opacity: 1; transform: scale(1.18); }
+.cta { z-index: 1; }
+.shine { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.shine::before { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: 0; background: linear-gradient(100deg, transparent, #ffffffb0 50%, transparent); transform: translateX(-160%) skewX(-18deg); }
+.is-hot .cta .shine::before, .cta:hover .shine::before, .cta:focus-visible .shine::before { animation: sweep .95s var(--ease-emphasized-out) both; }
+@keyframes sweep { to { transform: translateX(330%) skewX(-18deg); } }
+.is-hot .cta, .cta:focus-visible { box-shadow: inset 0 1px 0 #ffffffa0, inset 0 -2px 0 #0000002e, 0 0 0 1px #ffd27a, 0 18px 50px -10px #ff6a2b; }
+.cta:focus-visible { outline-color: #fff; }
+.cta .label { display: grid; text-align: left; line-height: 1.15; will-change: transform; }
+.cta .label small { font: 600 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; opacity: .7; }
+.cta .arrow { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #1a0d07; color: var(--ember-1); transition: transform .5s var(--ease-emphasized-out); }
+.is-hot .cta .arrow, .cta:focus-visible .arrow { transform: rotate(-45deg); }
+.ring { position: absolute; inset: 6px; border-radius: 999px; border: 2px solid var(--ember-1); opacity: 0; pointer-events: none; }
+.sub { margin: 6px 0 0; font-size: 15px; color: var(--muted); }
+.sub b { color: var(--ink); font-weight: 600; }
+.stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 40px; border-top: 1px solid var(--line); padding-top: 20px; }
+.stats div { display: grid; text-align: center; }
+.stats b { font-size: 26px; font-weight: 600; }
+
+/* touch: no trail, a breathing glow instead */
+.touch .glow { animation: breathe var(--pulse-ms) ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: .35; transform: scale(.9); } 50% { opacity: .95; transform: scale(1.1); } }
+
+.tickets { padding: clamp(72px, 14vh, 140px) clamp(16px, 5vw, 64px); background: linear-gradient(var(--bg), var(--bg-2)); }
+.tickets h2 { margin: 0 0 8px; font-weight: 600; font-size: clamp(32px, 4.6vw, 56px); line-height: 1.3; }
+.tickets > p { margin: 0 0 40px; color: var(--muted); }
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; max-width: 900px; }
+.tier { border: 1px solid var(--line); border-radius: 20px; padding: 28px; background: #ffffff05; display: grid; gap: 10px; }
+.tier .price { font-size: 40px; font-weight: 600; line-height: 1.2; }
+.tier ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 16px; }
+.tier a { justify-self: start; margin-top: 8px; padding: 12px 22px; min-height: 48px; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--ember-2); text-decoration: none; font-weight: 600; }
+.tier a:hover { background: #ff7a2f22; }
+footer { padding: 28px clamp(16px, 5vw, 64px); color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .glow, .cta .arrow { transition-duration: .01ms; }
+  .shine { display: none; }
+  .touch .glow { animation: none; opacity: .6; transform: none; }
+}
+</style>
+</head>
+<body>
+<canvas class="trail" aria-hidden="true"></canvas>
+<main>
+  <section class="hero">
+    <div class="bar">
+      <a class="logo" href="#top" lang="en">EMBER<b>/</b>26</a>
+      <span class="mono" lang="en">14–15.11.2026 · Bangkok</span>
+    </div>
+    <div class="center" id="top">
+      <p class="mono" lang="en">Creative technology summit</p>
+      <h1><span class="l">จุดประกาย</span> <span class="l">ให้ไอเดีย<span class="hot">ลุกเป็นไฟ</span></span> <span class="en" lang="en">Light the idea. Let it burn.</span></h1>
+      <div class="magnet">
+        <span class="glow-wrap" aria-hidden="true"><span class="glow"></span></span>
+        <a class="cta" href="#tickets">
+          <span class="shine" aria-hidden="true"></span>
+          <span class="label"><span>จองที่นั่ง</span><small lang="en">Reserve a seat</small></span>
+          <span class="arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h11M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <span class="ring" aria-hidden="true"></span>
+      </div>
+      <p class="sub">เหลือ <b>120</b> ที่ · ราคา <span lang="en">Early bird</span> ถึง 31 ต.ค.</p>
+    </div>
+    <div class="stats">
+      <div><b>2</b><span class="mono">วัน · days</span></div>
+      <div><b>40</b><span class="mono">ผู้บรรยาย · speakers</span></div>
+      <div><b>1,200</b><span class="mono">เมกเกอร์ · makers</span></div>
+    </div>
+  </section>
+  <section class="tickets" id="tickets">
+    <h2 tabindex="-1">เลือกบัตรของคุณ</h2>
+    <p>ทุกบัตรรวมเวิร์กช็อป อาหารกลางวัน และปาร์ตี้ปิดงานริมแม่น้ำ</p>
+    <div class="tiers">
+      <div class="tier"><span class="mono" lang="en">Early bird</span><span class="price">฿2,900</span><ul><li>เข้างานทั้ง 2 วัน</li><li>เวิร์กช็อป 1 รอบ</li></ul><a href="#tickets">เลือกบัตรนี้</a></div>
+      <div class="tier"><span class="mono" lang="en">Maker pass</span><span class="price">฿4,500</span><ul><li>เข้างานทั้ง 2 วัน</li><li>เวิร์กช็อปไม่จำกัด</li><li>ห้องรับรองผู้บรรยาย</li></ul><a href="#tickets">เลือกบัตรนี้</a></div>
+    </div>
+  </section>
+</main>
+<footer><span lang="en">Ember/26</span> · งานสมมติสำหรับสาธิต <span lang="en">— a fictional event for this demo.</span></footer>
+
+<script>
+(() => {
+  const CONFIG = {
+    trailMs: 650,        // how long a trail point lives
+    trailWidth: 9,       // px at the head
+    radius: 150,         // px of magnetic field beyond the button edge
+    pull: 0.32,          // share of the pointer offset the button follows
+    labelPull: 0.18,     // extra offset for the label (depth)
+    spring: { k: 520, c: 20 }, // press spring stiffness / damping
+    sparks: 28,
+    hideCursor: true,    // replace the native cursor with the comet head inside the hero
+  };
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const touch = /[?&]touch/.test(location.search) || !matchMedia('(hover: hover) and (pointer: fine)').matches;
+  root.classList.add(touch ? 'touch' : 'fine');
+  const cta = document.querySelector('.cta'), label = cta.querySelector('.label'), magnet = cta.parentElement, ring = magnet.querySelector('.ring'), glowWrap = magnet.querySelector('.glow-wrap');
+  const setHot = (on) => magnet.classList.toggle('is-hot', on), isHot = () => magnet.classList.contains('is-hot');
+  const canvas = document.querySelector('canvas.trail'), ctx = canvas.getContext('2d');
+  const trailOn = !touch && !reduce;
+  if (trailOn && CONFIG.hideCursor) root.classList.add('trail-on');
+  if (!trailOn) canvas.remove();
+
+  let W = 0, H = 0, dpr = 1;
+  const gc = document.createElement('canvas'), gx = gc.getContext('2d'), GS = 0.25; // low-res glow layer
+  function resize() { if (!trailOn) return; dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; gc.width = Math.ceil(W * GS); gc.height = Math.ceil(H * GS);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  resize(); addEventListener('resize', () => { resize(); measure(); });
+
+  // ---- state ----
+  const pts = [], sparks = [];
+  let px = -1e4, py = -1e4, hasPointer = false, raf = 0, last = 0;
+  const hero = document.querySelector('.hero');
+  let box = null, heroBottom = 0; const measure = () => { const r = magnet.getBoundingClientRect(); box = { cx: r.left + r.width / 2, cy: r.top + r.height / 2, hw: r.width / 2, hh: r.height / 2 }; heroBottom = hero.getBoundingClientRect().bottom; };
+  measure(); addEventListener('scroll', measure, { passive: true });
+  const m = { x: 0, y: 0, tx: 0, ty: 0, near: 0, s: 1, v: 0, st: 1 }; // magnet + press spring
+  const wake = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+
+  addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch') return;
+    const list = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    (list.length ? list : [e]).forEach((c) => pts.push({ x: c.clientX, y: c.clientY, t: performance.now() }));
+    px = e.clientX; py = e.clientY; hasPointer = true; wake();
+  }, { passive: true });
+  document.addEventListener('pointerleave', () => { hasPointer = false; wake(); });
+
+  // ---- press: squash on down, spring + ring + sparks on release (pointer or keyboard) ----
+  const press = () => { if (!reduce) { m.st = 0.94; wake(); } };
+  const release = (x, y) => {
+    m.st = 1; m.v += reduce ? 0 : 2.4; wake();
+    if (reduce) return;
+    ring.animate([{ transform: 'scale(1)', opacity: 0.9 }, { transform: 'scale(1.35, 1.9)', opacity: 0 }], { duration: 700, easing: 'cubic-bezier(0.05,0.7,0.1,1)' });
+    if (!trailOn) return;
+    for (let i = 0; i < CONFIG.sparks; i++) { const a = Math.random() * Math.PI * 2, sp = 140 + Math.random() * 420;
+      sparks.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0, max: 420 + Math.random() * 380 }); }
+  };
+  cta.addEventListener('pointerdown', press);
+  cta.addEventListener('pointerup', (e) => release(e.clientX, e.clientY));
+  cta.addEventListener('pointercancel', () => { m.st = 1; wake(); });
+  cta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.repeat) press(); });
+  cta.addEventListener('keyup', (e) => { if (e.key === 'Enter') { measure(); release(box.cx, box.cy); } });
+  cta.addEventListener('focus', () => setHot(true));
+  cta.addEventListener('blur', () => setHot(false));
+  cta.addEventListener('click', (e) => { // scroll to tickets and move focus there (works with or without motion)
+    e.preventDefault(); const h = document.querySelector('#tickets h2');
+    h.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); h.focus({ preventScroll: true });
+    history.replaceState(null, '', '#tickets');
+  });
+
+  function frame(now) {
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
+    // magnet: follow a share of the pointer offset, eased out toward the field edge
+    let active = false;
+    if (!touch && !reduce && hasPointer && box) {
+      const dx = px - box.cx, dy = py - box.cy, R = CONFIG.radius + Math.max(box.hw, box.hh);
+      const near = Math.max(0, 1 - Math.hypot(dx, dy) / R), e = near * near * (3 - 2 * near);
+      m.tx = dx * CONFIG.pull * e; m.ty = dy * CONFIG.pull * e; m.near = e;
+      const inside = Math.abs(dx) < box.hw && Math.abs(dy) < box.hh;
+      if (inside !== isHot() && document.activeElement !== cta) setHot(inside);
+    } else { m.tx = m.ty = 0; m.near = 0; if (document.activeElement !== cta) setHot(false); }
+    const k = 1 - Math.pow(0.82, dt * 60);
+    m.x += (m.tx - m.x) * k; m.y += (m.ty - m.y) * k;
+    m.v += ((m.st - m.s) * CONFIG.spring.k - m.v * CONFIG.spring.c) * dt; m.s += m.v * dt; // damped spring
+    cta.style.transform = `translate3d(${m.x.toFixed(2)}px,${m.y.toFixed(2)}px,0) scale(${m.s.toFixed(4)})`;
+    label.style.transform = `translate3d(${(m.x * CONFIG.labelPull).toFixed(2)}px,${(m.y * CONFIG.labelPull).toFixed(2)}px,0)`;
+    glowWrap.style.transform = `translate3d(${m.x.toFixed(2)}px,${m.y.toFixed(2)}px,0)`;
+    magnet.style.setProperty('--near', m.near.toFixed(3));
+    active = Math.abs(m.tx - m.x) > 0.05 || Math.abs(m.ty - m.y) > 0.05 || Math.abs(m.st - m.s) > 0.001 || Math.abs(m.v) > 0.001;
+
+    if (trailOn) {
+      ctx.clearRect(0, 0, W, H);
+      while (pts.length && now - pts[0].t > CONFIG.trailMs) pts.shift();
+      if (pts.length > 48) pts.splice(0, pts.length - 48);
+      ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      // Core: opaque strokes in source-over, faded by darkening (the canvas is screen-blended, so black = invisible).
+      // Additive strokes would double up where round caps overlap and bead the line.
+      ctx.globalCompositeOperation = 'source-over';
+      gx.setTransform(1, 0, 0, 1, 0, 0); gx.clearRect(0, 0, gc.width, gc.height); gx.setTransform(GS, 0, 0, GS, 0, 0);
+      gx.lineCap = gx.lineJoin = 'round';
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i], life = 1 - (now - b.t) / CONFIG.trailMs; if (life <= 0) continue;
+        const w = CONFIG.trailWidth * Math.pow(life, 1.3);
+        ctx.strokeStyle = `hsl(${22 + life * 24}, 100%, ${(life * (58 + life * 34)).toFixed(1)}%)`;
+        ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        gx.strokeStyle = `hsl(${345 + life * 35}, 100%, ${(life * 42).toFixed(1)}%)`; // glow, drawn at 1/4 size
+        gx.lineWidth = w * 4; gx.beginPath(); gx.moveTo(a.x, a.y); gx.lineTo(b.x, b.y); gx.stroke();
+      }
+      ctx.globalCompositeOperation = 'lighter';
+      if (pts.length > 1) ctx.drawImage(gc, 0, 0, W, H); // upscaling the 1/4-size layer = a free soft blur
+      for (let i = sparks.length - 1; i >= 0; i--) { const s = sparks[i]; s.life += dt * 1000; if (s.life > s.max) { sparks.splice(i, 1); continue; }
+        const f = 1 - s.life / s.max; s.vx *= Math.pow(0.08, dt); s.vy = s.vy * Math.pow(0.08, dt) + 260 * dt; s.x += s.vx * dt; s.y += s.vy * dt;
+        ctx.strokeStyle = `hsla(${30 + f * 20}, 100%, ${60 + f * 35}%, ${f})`; ctx.lineWidth = 3.2 * f + 0.8;
+        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - s.vx * 0.05, s.y - s.vy * 0.05); ctx.stroke(); }
+      if (hasPointer && CONFIG.hideCursor && py < heroBottom) { // comet head = the cursor (hero only): exact position, no lag
+        const hot = isHot(), r = hot ? 22 : 16;
+        const g = ctx.createRadialGradient(px, py, 0, px, py, r * 2.2);
+        g.addColorStop(0, '#fff6e8'); g.addColorStop(0.18, '#ffd27acc'); g.addColorStop(0.5, '#ff6a2b33'); g.addColorStop(1, '#ff2d6f00');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r * 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = '#fff6e8cc'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(px, py, hot ? 18 : 3.5, 0, Math.PI * 2); hot ? ctx.stroke() : (ctx.fillStyle = '#fff', ctx.fill());
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      active = active || pts.length > 0 || sparks.length > 0;
+    }
+    raf = active ? requestAnimationFrame(frame) : 0; // sleep when nothing moves (the head stays drawn)
+  }
+  wake();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!doctype html>
+<!--
+  RECIPE · particle-constellation
+  What: a night sky of drifting particles (canvas 2D, additive "lighter" blending) that gathers, as the
+        user scrolls, into a Thai word, then an English word, then a logo mark, holds each one, and bursts
+        into the next. Scroll position drives the formation; time only drives the twinkle and drift.
+        Targets come from glyph pixels: each word is drawn on an offscreen canvas and sampled.
+  Feeling / story: scattered stars find their form. Use it for a brand name assembling out of the
+        dark: launches, origin stories, a name or mark reveal for a night, luxury, perfume or
+        observatory brand.
+  Use when: one memorable name or mark reveal near the top of a landing page; the brand has a short word
+        (≤ 8 glyphs) or a bold, simple mark; dark art direction.
+  Avoid when: long words or thin, detailed logos (they sample into mush), light themes (additive glow
+        needs a dark ground), task pages where people need the content immediately.
+  Ambition: cinematic.
+  Knobs: CONFIG in the script (shapes, areaPerParticle, maxParticles, freeShare, timeline, burst, trail,
+        smooth, idleMs) and CSS custom properties on :root (--sky, --ink, --muted, --star, --story-len).
+  Perf: one 2D canvas and N sprite drawImage calls per frame. N = screen area / 210, capped at 3000 desktop
+        and 1200 mobile (−30 % on ≤ 4 cores); phones draw at 1.5× DPR. Measured main thread (headless Chrome, M3):
+        5.7 ms/frame at 1440×900 (3000 particles), 2.4–3.0 ms/frame at 390×844@2x. The loop pauses
+        offscreen, on a hidden tab and after 8 s with no scroll or pointer movement.
+-->
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naksat · นักษัตร — particle constellation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Noto+Serif+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root {
+  --sky: #05060d; --sky-2: #0c1030; --plum: #24112c;
+  --ink: #f1e8d4; --muted: #a49c8b; --star: #ffe2ae; --star-cool: #a8d4ff;
+  --story-len: 640vh;
+  --ease-standard: cubic-bezier(0.2,0,0,1);
+  --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
+  --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
+  --serif-en: "Cormorant Garamond", "Times New Roman", serif;
+  --serif-th: "Noto Serif Thai", "Cormorant Garamond", serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--sky); color: var(--ink); }
+body { margin: 0; font-family: var(--serif-th); font-weight: 300; line-height: 1.6; background: var(--sky); overflow-x: clip; }
+[lang="en"] { font-family: var(--serif-en); }
+a { color: inherit; }
+.top { position: fixed; inset: 0 0 auto; z-index: 5; display: flex; justify-content: space-between; align-items: center;
+  padding: 20px clamp(16px, 4vw, 48px); font-size: 13px; letter-spacing: .22em; text-transform: uppercase; }
+.top .brand { font-family: var(--serif-en); font-weight: 600; text-decoration: none; letter-spacing: .32em; min-height: 24px; display: inline-flex; align-items: center; }
+.top nav a { text-decoration: none; color: var(--muted); padding: 8px 0; }
+.top nav a:hover, .top nav a:focus-visible { color: var(--ink); }
+
+/* ---------- story (JS + motion) ---------- */
+.story { position: relative; }
+.stage { position: relative; }
+.sky-bg { position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 28% 22%, color-mix(in srgb, var(--sky-2) 90%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 82% 78%, color-mix(in srgb, var(--plum) 85%, transparent), transparent 70%),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, #000 100%), var(--sky); }
+canvas.field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.js .story { height: var(--story-len); }
+.js .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.caps { position: relative; z-index: 2; }
+.js .caps { position: absolute; inset: 0; pointer-events: none; }
+.js .cap { position: absolute; left: 50%; bottom: clamp(56px, 11vh, 120px); width: min(92vw, 640px);
+  transform: translate(-50%, 0); text-align: center; opacity: 0; will-change: opacity, transform; }
+.js .cap.intro { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+.js .cap::before { content: ""; position: absolute; inset: -30% -12%; z-index: -1; background: radial-gradient(closest-side, #05060dd9, #05060d00); }
+.cap .eyebrow { font-family: var(--serif-en); font-style: italic; color: var(--muted); font-size: 15px; letter-spacing: .06em; margin: 0 0 14px; }
+.cap h1 { font-weight: 400; font-size: clamp(32px, 5.4vw, 64px); line-height: 1.45; margin: 0; letter-spacing: 0; text-wrap: balance; }
+.cap h2 { font-weight: 600; font-size: 13px; letter-spacing: .3em; color: var(--star); margin: 0 0 8px; font-family: var(--serif-en); text-transform: uppercase; }
+.cap p { margin: 0; font-size: clamp(17px, 2vw, 21px); line-height: 1.7; text-wrap: balance; }
+.cap p[lang="en"] { font-style: italic; color: var(--muted); font-size: clamp(17px, 1.9vw, 21px); margin-top: 4px; }
+.cap .cta { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 12px 24px; min-height: 48px; border: 1px solid color-mix(in srgb, var(--star) 55%, transparent);
+  border-radius: 999px; text-decoration: none; font-size: 16px; color: var(--ink); transition: background .3s var(--ease-standard), border-color .3s var(--ease-standard); }
+.cap .cta:hover, .cap .cta:focus-visible { background: color-mix(in srgb, var(--star) 14%, transparent); border-color: var(--star); }
+:focus-visible { outline: 2px solid var(--star); outline-offset: 4px; }
+.hint { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 2; display: grid; justify-items: center; gap: 10px;
+  font: italic 14px var(--serif-en); color: var(--muted); letter-spacing: .14em; }
+.hint i { width: 1px; height: 42px; background: linear-gradient(var(--star), transparent); transform-origin: top; animation: drip 2.4s var(--ease-emphasized-out) infinite; }
+@keyframes drip { 0% { transform: scaleY(0); opacity: 1 } 70% { transform: scaleY(1); opacity: 1 } 100% { transform: scaleY(1); opacity: 0 } }
+.ticks { position: absolute; right: clamp(16px, 3vw, 40px); top: 50%; transform: translateY(-50%); z-index: 2; display: grid; gap: 18px; }
+.ticks i { width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--muted); transition: background .4s var(--ease-standard), box-shadow .4s var(--ease-standard), border-color .4s; }
+.ticks i.on { background: var(--star); border-color: var(--star); box-shadow: 0 0 12px var(--star); }
+
+/* ---------- after ---------- */
+.after { position: relative; padding: clamp(96px, 16vh, 180px) clamp(16px, 6vw, 96px) 72px; background: linear-gradient(var(--sky), #080a18 60%, var(--sky)); }
+.after h2 { font-weight: 400; font-size: clamp(30px, 4.6vw, 54px); line-height: 1.45; margin: 0 0 12px; max-width: 18ch; }
+.after > p { color: var(--muted); max-width: 52ch; margin: 0 0 48px; font-size: 18px; }
+.notes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 1px; background: #ffffff1a; border: 1px solid #ffffff1a; }
+.notes li { background: var(--sky); padding: 28px 24px 32px; }
+.notes b { display: block; font: 600 13px var(--serif-en); letter-spacing: .28em; text-transform: uppercase; color: var(--star); margin-bottom: 10px; }
+.notes span { display: block; font-size: 18px; }
+.notes em { display: block; font: italic 17px var(--serif-en); color: var(--muted); }
+footer { padding: 40px clamp(16px, 6vw, 96px); color: var(--muted); font-size: 14px; border-top: 1px solid #ffffff14; }
+
+/* no JS or reduced motion: a composed, static page — the finished mark + every caption in reading order */
+html:not(.js) .hint, html:not(.js) .ticks { display: none; }
+html:not(.js) .stage { min-height: 70vh; }
+html:not(.js) .caps { padding: 40vh 16px 48px; display: grid; gap: 56px; text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .js .story { height: auto; }
+  .js .stage { position: relative; height: auto; overflow: visible; }
+  .js canvas.field { position: relative; height: 62vh; }
+  .js .sky-bg { position: absolute; }
+  .js .caps { position: relative; inset: auto; pointer-events: auto; display: grid; gap: 64px; padding: 24px 16px 40px; }
+  .js .cap::before { display: none; }
+  .js .cap, .js .cap.intro { position: relative; inset: auto; left: auto; bottom: auto; top: auto; transform: none; opacity: 1; margin: 0 auto; }
+  .js .cap.intro { order: -1; }
+  .hint, .ticks { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#story" lang="en">NAKSAT</a>
+  <nav><a href="#collection" lang="en">Collection</a></nav>
+</header>
+<main>
+  <section class="story" id="story" data-story aria-label="นักษัตร — เรื่องของแบรนด์">
+    <div class="stage">
+      <div class="sky-bg" aria-hidden="true"></div>
+      <canvas class="field" aria-hidden="true"></canvas>
+      <div class="caps">
+        <article class="cap intro" data-key="0">
+          <p class="eyebrow" lang="en">Naksat Night Atelier — Bangkok</p>
+          <h1>ทุกกลิ่น เริ่มจากดาวหนึ่งดวง</h1>
+          <p lang="en">Every scent begins with a single star.</p>
+        </article>
+        <article class="cap" data-key="1">
+          <h2 lang="en">I · The word</h2>
+          <p>“นักษัตร” ในภาษาไทย แปลว่ากลุ่มดาว</p>
+          <p lang="en">In Thai, naksat means a gathering of stars.</p>
+        </article>
+        <article class="cap" data-key="2">
+          <h2 lang="en">II · The house</h2>
+          <p>น้ำหอมสิบสองกลิ่น กลั่นจากท้องฟ้าสิบสองคืน</p>
+          <p lang="en">Twelve fragrances, distilled from twelve night skies.</p>
+        </article>
+        <article class="cap" data-key="3">
+          <h2 lang="en">III · The mark</h2>
+          <p>ดาวหนึ่งดวง ในอ้อมกอดของจันทร์เสี้ยว</p>
+          <p lang="en">One star, held by a crescent moon.</p>
+          <a class="cta" href="#collection">ดูคอลเลกชัน <span lang="en">· Explore</span></a>
+        </article>
+      </div>
+      <div class="hint" aria-hidden="true"><span lang="en">scroll</span><i></i></div>
+      <div class="ticks" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+  <section class="after" id="collection">
+    <h2>สิบสองคืน สิบสองกลิ่น</h2>
+    <p>แต่ละขวดบันทึกท้องฟ้าของคืนหนึ่งในกรุงเทพฯ — ความชื้นหลังฝน ควันธูปจากศาลเจ้า และมะลิที่บานตอนตีสอง</p>
+    <ul class="notes">
+      <li><b lang="en">Rahu 01</b><span>แฝกรมควัน ไม้กฤษณา</span><em lang="en">Smoked vetiver, agarwood</em></li>
+      <li><b lang="en">Chandra 04</b><span>มะลิขาว ฝนแรก</span><em lang="en">White jasmine, first rain</em></li>
+      <li><b lang="en">Dao Nuea 09</b><span>อำพันเย็น ดาวเหนือ</span><em lang="en">Cold amber, the north star</em></li>
+    </ul>
+  </section>
+</main>
+<footer><span lang="en">Naksat Night Atelier</span> · แบรนด์สมมติสำหรับสาธิต <span lang="en">— a fictional brand for this demo.</span></footer>
+
+<script>
+(() => {
+  const CONFIG = {
+    shapes: [ // drawn on an offscreen canvas and sampled into particle targets
+      { type: 'text', text: 'นักษัตร', font: '700 100px "Noto Serif Thai"', fit: 0.64, fitMobile: 0.88 },
+      { type: 'text', text: 'NAKSAT', font: '600 100px "Cormorant Garamond"', fit: 0.56, fitMobile: 0.86, tracking: 0.14 },
+      { type: 'mark', fit: 0.4, fitMobile: 0.66 },
+    ],
+    areaPerParticle: 210,                       // css px² of screen per particle
+    maxParticles: { desktop: 3000, mobile: 1200 },
+    freeShare: 0.14,                            // share that stays behind as sky
+    timeline: { intro: 0.8, move: 1, hold: 1.1, outro: 1.5 }, // relative scroll lengths
+    burst: 0.2,                                 // fly-out distance between shapes, × min(w, h)
+    swirl: 0.9,                                 // radians of galaxy-like spin mid-transition
+    trail: 0.3,                                 // streak length while moving (0–0.6)
+    smooth: 0.1,                                // scroll easing per 60 fps frame
+    idleMs: 8000,
+    maxDpr: { desktop: 2, mobile: 1.5 },        // soft glows don't need 2× on phones; saves ~45 % fill
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const story = document.getElementById('story');
+  const canvas = story.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  const caps = [...story.querySelectorAll('.cap')];
+  const ticks = [...story.querySelectorAll('.ticks i')];
+  const hint = story.querySelector('.hint');
+  const TAU = Math.PI * 2, DELAY = 0.35;
+  let W = 0, H = 0, dpr = 1, N = 0, P = null, targets = [], sprites = null;
+
+  // ---- glow sprites (pre-rendered once; drawImage is far cheaper than arc + shadowBlur) ----
+  function sprite(rgb) {
+    const s = document.createElement('canvas'); s.width = s.height = 64;
+    const g = s.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, `rgba(255,255,255,1)`); gr.addColorStop(0.12, `rgba(${rgb},0.95)`);
+    gr.addColorStop(0.32, `rgba(${rgb},0.22)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return s;
+  }
+
+  // ---- sample a shape into n target points (stage coordinates) ----
+  function sampleShape(shape, n) {
+    const mobile = W < 768, fit = mobile ? shape.fitMobile : shape.fit;
+    const bw = Math.round(W * fit), bh = Math.round(Math.min(H * 0.42, bw * (shape.type === 'mark' ? 1 : 0.5)));
+    const c = document.createElement('canvas'); c.width = bw; c.height = bh;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.fillStyle = '#fff'; g.strokeStyle = '#fff';
+    if (shape.type === 'text') {
+      g.font = shape.font; g.letterSpacing = (shape.tracking || 0) * 100 + 'px';
+      const m = g.measureText(shape.text);
+      const tw = m.width, th = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+      const k = Math.min(bw / tw, bh / th) * 0.96;
+      g.font = shape.font.replace('100px', (100 * k).toFixed(1) + 'px'); g.letterSpacing = (shape.tracking || 0) * 100 * k + 'px';
+      g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.fillText(shape.text, bw / 2, bh / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) * k / 2);
+    } else drawMark(g, bw, bh);
+    const data = g.getImageData(0, 0, bw, bh).data, pts = [];
+    const step = Math.max(1, Math.round(Math.sqrt(bw * bh / (n * 3.2))));
+    for (let y = 0; y < bh; y += step) for (let x = 0; x < bw; x += step) if (data[(y * bw + x) * 4 + 3] > 140) pts.push(x, y);
+    const ox = (W - bw) / 2, oy = H * (mobile ? 0.4 : 0.42) - bh / 2;
+    const out = new Float32Array(n * 2), cnt = pts.length / 2;
+    for (let i = 0; i < n; i++) {
+      const j = (Math.random() * cnt) | 0;
+      out[i * 2] = ox + pts[j * 2] + (Math.random() - 0.5) * step;
+      out[i * 2 + 1] = oy + pts[j * 2 + 1] + (Math.random() - 0.5) * step;
+    }
+    return out;
+  }
+  function drawMark(g, bw, bh) { // crescent + four-point star + orbit ring
+    const s = Math.min(bw, bh), cx = bw / 2, cy = bh / 2;
+    g.lineWidth = s * 0.018; g.beginPath(); g.arc(cx, cy, s * 0.47, 0, TAU); g.stroke();
+    g.beginPath(); g.arc(cx, cy, s * 0.33, 0, TAU); g.fill();
+    g.globalCompositeOperation = 'destination-out';
+    g.beginPath(); g.arc(cx + s * 0.13, cy - s * 0.08, s * 0.29, 0, TAU); g.fill();
+    g.globalCompositeOperation = 'source-over';
+    const star = (x, y, R, r) => { g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, d = i % 2 ? r : R; g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); } g.fill(); };
+    star(cx + s * 0.14, cy - s * 0.06, s * 0.16, s * 0.035);
+    [[-0.62, 0.5], [2.2, 0.47], [3.6, 0.47]].forEach(([a]) => { g.beginPath(); g.arc(cx + Math.cos(a) * s * 0.47, cy + Math.sin(a) * s * 0.47, s * 0.03, 0, TAU); g.fill(); });
+  }
+
+  // ---- particles (struct of arrays) ----
+  function build() {
+    const mobile = W < 768;
+    const cap = CONFIG.maxParticles[mobile ? 'mobile' : 'desktop'] * ((navigator.hardwareConcurrency || 8) <= 4 ? 0.7 : 1);
+    N = Math.round(Math.min(cap, Math.max(500, W * H / CONFIG.areaPerParticle)));
+    P = { fx: new Float32Array(N), fy: new Float32Array(N), depth: new Float32Array(N), d: new Float32Array(N),
+      bx: new Float32Array(N), by: new Float32Array(N), size: new Float32Array(N), a: new Float32Array(N),
+      tw: new Float32Array(N), ph: new Float32Array(N), cool: new Uint8Array(N), free: new Uint8Array(N) };
+    for (let i = 0; i < N; i++) {
+      P.fx[i] = Math.random() * W; P.fy[i] = Math.random() * H; P.depth[i] = Math.random();
+      P.d[i] = Math.random() * DELAY; const ang = Math.random() * TAU, m = 0.4 + Math.random() * 0.6;
+      P.bx[i] = Math.cos(ang) * m; P.by[i] = Math.sin(ang) * m;
+      P.size[i] = 0.6 + Math.pow(Math.random(), 2.4) * 2.2; P.a[i] = 0.35 + Math.random() * 0.55;
+      P.tw[i] = 0.6 + Math.random() * 2.2; P.ph[i] = Math.random() * TAU;
+      P.cool[i] = Math.random() < 0.28 ? 1 : 0; P.free[i] = Math.random() < CONFIG.freeShare ? 1 : 0;
+    }
+    targets = CONFIG.shapes.map((s) => sampleShape(s, N));
+  }
+  function resize() {
+    const r = canvas.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height);
+    const rebuild = !P || w !== W || Math.abs(h - H) > 160; // ignore mobile URL-bar height jitter
+    W = w; H = h; dpr = Math.min(CONFIG.maxDpr[W < 768 ? 'mobile' : 'desktop'], devicePixelRatio || 1);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (rebuild) build();
+  }
+
+  // ---- timeline: keys = [sky, shape1, shape2, shape3]; segments hold or move between keys ----
+  const T = CONFIG.timeline, segs = [{ a: 0, b: 0, len: T.intro }];
+  CONFIG.shapes.forEach((_, i) => { segs.push({ a: i, b: i + 1, len: T.move }); segs.push({ a: i + 1, b: i + 1, len: i === CONFIG.shapes.length - 1 ? T.outro : T.hold }); });
+  const total = segs.reduce((s, x) => s + x.len, 0);
+  function locate(u) { let t = u * total; for (const s of segs) { if (t <= s.len) return { a: s.a, b: s.b, e: t / s.len }; t -= s.len; } const l = segs[segs.length - 1]; return { a: l.a, b: l.b, e: 1 }; }
+  const ease = (p) => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+  let storyTop = 0, storyLen = 1, uTarget = 0, u = 0, last = 0, lastActive = 0, running = false, visible = true;
+  const measure = () => { storyTop = story.offsetTop; storyLen = Math.max(1, story.offsetHeight - innerHeight); };
+  const readScroll = () => { uTarget = Math.min(1, Math.max(0, (scrollY - storyTop) / storyLen)); };
+
+  function draw(time, still) {
+    const { a, b, e } = locate(u), moving = a !== b, burst = CONFIG.burst * Math.min(W, H);
+    if (still || CONFIG.trail <= 0) ctx.clearRect(0, 0, W, H);
+    else { // fade the previous frame instead of clearing: moving particles leave light streaks
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = `rgba(0,0,0,${moving ? 1 - CONFIG.trail : 0.6})`; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.globalCompositeOperation = 'lighter';
+    const cx = W / 2, cy = H * 0.42, t = time * 0.001, par = u * 60, ta = a ? targets[a - 1] : null, tb = b ? targets[b - 1] : null;
+    for (let i = 0; i < N; i++) {
+      const dep = P.depth[i];
+      const sx = P.fx[i] + Math.sin(t * 0.13 * P.tw[i] + P.ph[i]) * (6 + dep * 10);
+      const sy = P.fy[i] + Math.cos(t * 0.11 * P.tw[i] + P.ph[i]) * (5 + dep * 8) - par * (0.3 + dep);
+      let ax = sx, ay = sy, bx = sx, by = sy;
+      if (ta && !P.free[i]) { ax = ta[i * 2] + Math.sin(t * P.tw[i] + P.ph[i]) * 0.7; ay = ta[i * 2 + 1] + Math.cos(t * P.tw[i] * 0.8 + P.ph[i]) * 0.7; }
+      if (tb && !P.free[i]) { bx = tb[i * 2] + Math.sin(t * P.tw[i] + P.ph[i]) * 0.7; by = tb[i * 2 + 1] + Math.cos(t * P.tw[i] * 0.8 + P.ph[i]) * 0.7; }
+      let x = ax, y = ay, p = 0;
+      if (moving) {
+        p = Math.min(1, Math.max(0, (e - P.d[i]) / (1 - DELAY))); p = ease(p);
+        const s = Math.sin(Math.PI * p) * burst * (P.free[i] ? 0.15 : 1);
+        x = ax + (bx - ax) * p + P.bx[i] * s; y = ay + (by - ay) * p + P.by[i] * s;
+        const sw = Math.sin(Math.PI * p) * CONFIG.swirl * (P.free[i] ? 0.15 : 0.6 + 0.4 * dep);
+        if (sw) { const dx = x - cx, dy = y - cy, cs = Math.cos(sw), sn = Math.sin(sw); x = cx + dx * cs - dy * sn; y = cy + dx * sn + dy * cs; }
+      }
+      // f: 0 = loose star in the sky, 1 = locked into a shape (tighter, brighter, steadier)
+      const f = P.free[i] ? 0 : moving ? (a ? 1 - 0.8 * Math.sin(Math.PI * p) : p) : (a ? 1 : 0);
+      const tw = 0.55 + 0.45 * Math.sin(t * P.tw[i] * 1.7 + P.ph[i]);
+      const r = P.size[i] * (3.4 + dep * 2 + (2.6 - 3.4 - dep * 2) * f);
+      ctx.globalAlpha = Math.min(1, P.a[i] * (0.35 + 0.65 * tw + (0.55 - 0.45 * tw) * f));
+      ctx.drawImage(sprites[P.cool[i]], x - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    if (still) return;
+    // captions + ticks: crossfade by distance from their key on a continuous "key position"
+    const kpos = moving ? a + ease(e) : a;
+    caps.forEach((c) => {
+      const k = +c.dataset.key, d = kpos - k, o = Math.max(0, 1 - Math.abs(d) * 2.4);
+      c.style.opacity = o.toFixed(3);
+      c.style.transform = c.classList.contains('intro') ? `translate(-50%, calc(-50% + ${(-d * 40).toFixed(1)}px))` : `translate(-50%, ${(-d * 40).toFixed(1)}px)`;
+      c.style.pointerEvents = o > 0.6 ? 'auto' : 'none';
+    });
+    ticks.forEach((tk, i) => tk.classList.toggle('on', kpos >= i + 0.98));
+    hint.style.opacity = Math.max(0, 1 - u * 30).toFixed(2);
+  }
+
+  function frame(now) {
+    const dt = Math.min(64, now - last); last = now;
+    readScroll();
+    const k = 1 - Math.pow(1 - CONFIG.smooth, dt / 16.67);
+    u += (uTarget - u) * k;
+    const settled = Math.abs(uTarget - u) < 1e-4;
+    if (settled) u = uTarget;
+    draw(now, false);
+    if (!visible || document.hidden || (settled && now - lastActive > CONFIG.idleMs)) { running = false; return; }
+    requestAnimationFrame(frame);
+  }
+  function wake() { lastActive = performance.now(); if (!running && visible && !document.hidden && !reduce) { running = true; last = performance.now(); requestAnimationFrame(frame); } }
+
+  async function init() {
+    try { await Promise.all([document.fonts.load('700 100px "Noto Serif Thai"', 'นักษัตร'), document.fonts.load('600 100px "Cormorant Garamond"', 'NAKSAT')]); } catch (e) { /* fall back to system fonts */ }
+    sprites = [sprite('255,226,174'), sprite('168,212,255')];
+    measure(); resize();
+    if (reduce) { // composed still: the finished mark, no particles moving, no scrubbing
+      u = 1; draw(0, true); return;
+    }
+    readScroll(); u = uTarget;
+    addEventListener('scroll', wake, { passive: true });
+    addEventListener('pointermove', wake, { passive: true });
+    addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(() => { measure(); resize(); wake(); }, 150); });
+    document.addEventListener('visibilitychange', wake);
+    new IntersectionObserver(([en]) => { visible = en.isIntersecting; wake(); }).observe(story);
+    // keyboard: focusing the CTA inside a hidden caption scrolls the story to where it is shown
+    story.addEventListener('focusin', (ev) => { const c = ev.target.closest('.cap'); if (c && +c.style.opacity < 0.6) scrollTo({ top: storyTop + storyLen * 0.97, behavior: 'auto' }); });
+    wake();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
