@@ -5,6 +5,7 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | Skill | What it does |
 |---|---|
 | [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems, motion, scroll/parallax, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. |
+| [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, plus a git-based structure check (wiring budget, file/function budgets, copied blocks) for any language. |
 
 ## Install a skill into Claude Code
 
@@ -27,7 +28,12 @@ skills/design-atlas/
   scripts/shoot.mjs   headless-Chrome screenshots + layout/a11y probes for design QA
   scripts/scrollfilm.mjs  scroll-through film (mp4) + frame scan for scroll stories
   examples/<slug>/    tested cinematic effects (light trail, spotlight, particles, shader...) to adapt
-research/design-atlas/  raw research notes with sources (provenance, not loaded by the skill)
+skills/n-dev/
+  SKILL.md            four rules, scope dial, seven steps with completion criteria
+  references/*.md     structure, extension, state (single source of truth)
+  templates/design-note.md  module map, state ownership, extension plan, test seams
+  scripts/structure_check.py  git-based structure gate (stdlib only)
+research/<skill>/     raw research notes with sources (provenance, not loaded by the skill)
 tools/validate_skill.py structure, cross-link and source-URL checks
 ```
 
@@ -36,6 +42,14 @@ tools/validate_skill.py structure, cross-link and source-URL checks
 ```bash
 python3 tools/validate_skill.py skills/design-atlas --urls --report .logs/urls.tsv
 ```
+
+## Structure check (n-dev)
+
+```bash
+python3 skills/n-dev/scripts/structure_check.py --repo path/to/repo --base main
+```
+
+Reports pre-existing files that gained more than a wiring diff, new or grown files and touched functions over budget, and added blocks that repeat existing code. Exit 0 clean, 1 findings, 2 error. Tests: `python3 -m unittest discover -s skills/n-dev/scripts/tests -p 'test_*.py'`.
 
 ## Palette from a logo
 
