@@ -1,0 +1,13 @@
+{
+  "name": "north-ai-skills",
+  "owner": { "name": "ThanaphatNorth", "email": "north.thanaphat@gmail.com" },
+  "metadata": { "description": "North's Claude Code plugins" },
+  "plugins": [
+    {
+      "name": "90north-develop",
+      "version": "0.2.0",
+      "source": "./plugins/90north-develop",
+      "description": "North's development plugin: n-dev discipline + Jira defect loop (repro → root cause → test-first fix → review/QA → inline videos → 3-part comment → PR → QA lane) for any repo."
+    }
+  ]
+}

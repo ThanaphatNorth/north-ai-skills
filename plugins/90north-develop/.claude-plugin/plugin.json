@@ -1,0 +1,28 @@
+{
+  "name": "90north-develop",
+  "version": "0.2.0",
+  "description": "North's development plugin. n-dev: structured development discipline (design before code, modular functional modules, reuse first, extension files beside existing code, single source of truth, test-first, verified). defect-loop: runs a Jira defect board end-to-end in any repo — pulls every open defect (board and backlog), triages, reproduces each with a red e2e on an isolated stack, finds the root cause, fixes it test-first with n-dev through subagents, verifies with code review + QA, records before/after videos that play inline in the Jira comment, writes the 3-part comment (1. Can it be reproduced? 2. Root cause 3. Solution) and moves the ticket to the QA lane. Project facts live in each repo's .claude/defect-loop/config.md, written by /90north-develop:defect-loop-init.",
+  "skills": "./skills/",
+  "agents": [
+    "./agents/defect-repro.md",
+    "./agents/defect-fixer.md"
+  ],
+  "author": {
+    "name": "ThanaphatNorth",
+    "email": "north.thanaphat@gmail.com"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "n-dev",
+    "development",
+    "tdd",
+    "jira",
+    "defect",
+    "qa",
+    "bugfix",
+    "e2e",
+    "playwright",
+    "loop"
+  ],
+  "repository": "https://github.com/ThanaphatNorth/north-ai-skills"
+}
