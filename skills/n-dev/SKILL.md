@@ -56,6 +56,15 @@ Pick the size first; it decides how much of the process runs.
 - **The repo's own conventions** win over this skill on style, layout and patterns. Follow them, and mention the disagreement in the report when one blocks a rule.
 - **Bugs:** diagnose first (the `diagnosing-bugs` skill if installed), then fix through steps 4–7.
 
+## Inside a 90north-develop flow
+
+When this skill ships in the 90north-develop plugin, the loops split its steps between two roles. A tracked story runs in `dev-loop`, a tracked defect in `defect-loop`; an untracked change uses this skill alone.
+
+| Role | Steps it owns |
+|---|---|
+| Orchestrator (dev-loop, defect-loop) | 1–3: orient, success criteria, design note and its gate; 6: review (as review + QA in parallel); 7: push, PR and the tracker |
+| Builder or fixer subagent (`dev-builder`, `defect-fixer`) | 4–5 inside one work package or one root cause, and a local commit — never a push |
+
 ## Reference map
 
 | Open | When |

@@ -1,13 +1,18 @@
 {
   "name": "north-ai-skills",
-  "owner": { "name": "ThanaphatNorth", "email": "north.thanaphat@gmail.com" },
-  "metadata": { "description": "North's Claude Code plugins" },
+  "owner": {
+    "name": "ThanaphatNorth",
+    "email": "north.thanaphat@gmail.com"
+  },
+  "metadata": {
+    "description": "North's Claude Code plugins"
+  },
   "plugins": [
     {
       "name": "90north-develop",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "./plugins/90north-develop",
-      "description": "North's development plugin: n-dev discipline + Jira defect loop (repro → root cause → test-first fix → review/QA → inline videos → 3-part comment → PR → QA lane) for any repo."
+      "description": "North's development plugin: dev-loop (story → design gate → acceptance red → test-first build → review/QA → demo video → PR → review lane) and defect-loop (repro → root cause → test-first fix → review/QA → before/after videos → PR → QA lane) on the n-dev discipline, for any repo."
     }
   ]
 }

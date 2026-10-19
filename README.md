@@ -6,19 +6,21 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 |---|---|
 | [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems, motion, scroll/parallax, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. |
 | [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, plus a git-based structure check (wiring budget, file/function budgets, copied blocks) for any language. |
-| [`defect-loop`](skills/defect-loop/SKILL.md) | Runs a Jira defect board end-to-end in any repo: pull every open defect (board and backlog), triage, reproduce with a red e2e, root cause at `path:line`, test-first fix with n-dev, code review + QA, before/after videos inline in the Jira comment, PR, move to the QA lane, learn. Needs the plugin's agents. |
-| [`defect-loop-init`](skills/defect-loop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and transitions, writes `.claude/defect-loop/` for `defect-loop`. |
+| [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which flow a piece of work belongs to, the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), core lessons and the Jira REST scripts. |
+| [`dev-loop`](skills/dev-loop/SKILL.md) | Development flow: one story, task or spec from ready to reviewed PR — ready check, n-dev design note with a gate for Large or schema/interface changes, acceptance spec red first, work packages built test-first by subagents, review + QA, inline demo video, 3-part Jira comment, review lane. Needs the plugin. |
+| [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a Jira defect board end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
+| [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects, writes `.claude/90north-develop/` for both loops. |
 
 ## Install as a Claude Code plugin
 
-`90north-develop` bundles `n-dev`, `defect-loop`, `defect-loop-init` and the loop's two agents ([plugin README](plugins/90north-develop/README.md)):
+`90north-develop` bundles `workflow`, `develop-init`, `dev-loop`, `defect-loop`, `n-dev` and the loops' three agents ([plugin README](plugins/90north-develop/README.md)):
 
 ```
 /plugin marketplace add ThanaphatNorth/north-ai-skills
 /plugin install 90north-develop@north-ai-skills
 ```
 
-Skills are then `/90north-develop:n-dev`, `/90north-develop:defect-loop-init`, `/90north-develop:defect-loop`.
+Skills are then `/90north-develop:workflow`, `/90north-develop:develop-init`, `/90north-develop:dev-loop`, `/90north-develop:defect-loop`, `/90north-develop:n-dev`.
 
 ## Install a skill into Claude Code
 
@@ -46,13 +48,20 @@ skills/n-dev/
   references/*.md     structure, extension, state (single source of truth)
   templates/design-note.md  module map, state ownership, extension plan, test seams
   scripts/structure_check.py  git-based structure gate (stdlib only)
-skills/defect-loop/
-  SKILL.md            orchestrator playbook (before sweep, per ticket A-H, learn, never)
-  references/core-lessons.md  rules from real sweeps, read before every sweep
-  templates/jira-comment.md   3-section Jira comment (markdown dialect -> ADF)
+skills/workflow/
+  SKILL.md            flow map, router, handoffs, per-repo state
+  references/stages.md        shared stages S0-S6 + dispatch safety block
+  references/core-lessons.md  rules from real runs, both loops
   scripts/jira-*.sh, md2adf.py  Jira REST v3: search, get, download, transition, attach, comment
-skills/defect-loop-init/
-  SKILL.md            per-repo setup; templates/config.md, templates/tracker.env
+skills/dev-loop/
+  SKILL.md            development flow D0-D5 and its gates
+  templates/jira-comment.md   3-section comment: what was built, how it works, verification
+skills/defect-loop/
+  SKILL.md            defect flow F0-F5
+  references/core-lessons.md  triage and reproduction rules from real sweeps
+  templates/jira-comment.md   3-section comment: reproduced?, root cause, solution
+skills/develop-init/
+  SKILL.md            per-repo setup for both loops; templates/config.md, templates/tracker.env
 plugins/90north-develop/  plugin manifest, agents, symlinks to the skills above
 .claude-plugin/marketplace.json  this repo as a plugin marketplace
 research/<skill>/     raw research notes with sources (provenance, not loaded by the skill)

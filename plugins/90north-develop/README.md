@@ -1,19 +1,38 @@
 # 90north-develop
 
-North's development plugin. Two parts:
+North's development plugin: two loops, one discipline, one set of per-repo facts.
 
-- **n-dev** (`/90north-develop:n-dev`) — structured development discipline: design before code, modular functional modules, reuse first, new behaviour in extension files beside existing code, one owner per fact, test-first, verified. Same files as `skills/n-dev` in this repo.
-- **defect-loop** — runs a Jira defect board end-to-end in any repo:
-  1. Pull every open defect (board **and** backlog), diff against the ledger.
-  2. Triage: actionable · needs-info · by-design/superseded · structural.
-  3. Reproduce with a red e2e on an isolated stack (agent `90north-develop:defect-repro`).
-  4. Root cause at `path:line`.
-  5. Fix test-first with n-dev (agent `90north-develop:defect-fixer`), local commit.
-  6. Code review + QA in parallel (your repo's own agents as role files), at most 2 fix rounds.
-  7. Before/after videos that play **inline** in the Jira comment.
-  8. The 3-part comment: 1. Can it be reproduced? 2. Root cause 3. Solution.
-  9. Push + PR (per your push policy) → move the ticket to the QA lane.
-  10. Learn: lessons after every sweep; repeats get promoted into the procedure.
+```
+                      develop-init  (once per repo)  →  .claude/90north-develop/
+                                       │
+        ┌──────────────────────────────┴──────────────────────────────┐
+   dev-loop  (Story · Task · Improvement)                  defect-loop  (Bug)
+   D1 Pull + ready check                                    F1 Pull + triage
+   D2 Size + design note ── gate: user approves Large       F2 Reproduce: red e2e  (defect-repro)
+   D3 Acceptance spec red  (dev-builder)                    F3 Root cause at path:line
+   D4 Build work packages test-first  (dev-builder)         F4 Fix test-first  (defect-fixer)
+        └──────────── shared stages (workflow skill) ────────────┘
+          S1 Isolate · S2 Verify (review + QA) · S3 Evidence video
+          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
+                                       │
+                 n-dev — how every line of code is written, in both loops
+```
+
+Both loops start with a red test that says what "done" means (the defect's red e2e, or the story's acceptance spec) and end with that test green in the same session, review + QA, an inline video and a tracker update. A defect needs a cause; a feature needs a design — that is the only difference in the middle.
+
+| Skill | Role |
+|--|--|
+| `workflow` | the map: routes work to a flow, owns the shared stages, dispatch safety block, core lessons and the Jira scripts |
+| `develop-init` | once per repo: discovers the stack, reads the board's ids and lanes, writes `.claude/90north-develop/` |
+| `dev-loop` | development flow: one story / task / spec from ready to reviewed PR |
+| `defect-loop` | defect flow: sweeps the defect board, each defect from repro to the QA lane |
+| `n-dev` | the discipline: design before code, modular, reuse first, extension files, one owner per fact, test-first, verified |
+
+| Agent | Used by | Does |
+|--|--|--|
+| `dev-builder` | dev-loop | WP-0 acceptance specs red, then one work package test-first, local commit |
+| `defect-repro` | defect-loop | an e2e that goes red on the reported symptom, plus the video |
+| `defect-fixer` | defect-loop | regression test red → fix at the root cause → green, local commit |
 
 ## Install (once per machine)
 
@@ -26,23 +45,34 @@ North's development plugin. Two parts:
 
 | Command | Does |
 |--|--|
-| `/90north-develop:n-dev` | Develop a feature / ticket / refactor with the n-dev discipline |
-| `/90north-develop:defect-loop-init` | Once per repo: discover the stack, read the board's ids, write `.claude/defect-loop/` |
-| `/90north-develop:defect-loop` | One defect sweep |
+| `/90north-develop:workflow` | Which flow is this? The whole map |
+| `/90north-develop:develop-init` | Once per repo (also migrates a legacy `.claude/defect-loop/`) |
+| `/90north-develop:dev-loop <KEY \| spec \| request>` | Build one story / task / spec |
+| `/loop 60m /90north-develop:dev-loop --next` | Take ready stories one by one; stops at each design gate |
+| `/90north-develop:defect-loop [KEY]` | One defect sweep, or one defect |
 | `/loop 30m /90north-develop:defect-loop` | Keep sweeping (continuous mode between ticks while cards remain) |
+| `/90north-develop:n-dev` | A small untracked change with the discipline only |
 
-## Per-project files (`<repo>/.claude/defect-loop/`)
+## Where each loop stops for you
+
+| Loop | Gate |
+|--|--|
+| both | push (unless a standing approval covers it), 2 fix rounds used, a subagent's `NEEDS-DECISION` |
+| dev-loop | item not ready (asks on the ticket), design approval for Large or schema / state / public-interface changes |
+| defect-loop | needs-info, cannot reproduce, by-design / change request (PO), structural (build moves to dev-loop on your yes) |
+
+## Per-project files (`<repo>/.claude/90north-develop/`)
 
 | File | Holds |
 |--|--|
-| `config.md` | Tracker, board ids and transitions, push policy, repo/worktree recipe, isolated stack recipe, accounts, checks, team agents, triage sources, project rules |
+| `config.md` | Tracker, board ids, § Dev flow and § Defect flow (queries, lanes, fences, gates), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks, team agents, spec sources, project rules |
 | `tracker.env` | `JIRA_SITE`, `JIRA_ENV_FILE` — no secrets |
-| `ledger.md` | One row per ticket state change |
-| `lessons.md` | Project lessons (core lessons ship with the plugin) |
+| `dev-ledger.md`, `defect-ledger.md` | One row per state change, per loop |
+| `lessons.md` | Project lessons tagged `[dev]` / `[defect]` / `[both]` (core lessons ship with the plugin) |
 
-Credentials: a file outside the repo (default `~/.config/<project>-jira.env`, `JIRA_EMAIL` + `JIRA_TOKEN`, chmod 600). The scripts send the token to curl on stdin and never print it.
+Credentials: a file outside the repo (default `~/.config/<project>-jira.env`, `JIRA_EMAIL` + `JIRA_TOKEN`, chmod 600). The scripts send the token to curl on stdin and never print it. A repo set up with 0.2 (`.claude/defect-loop/`) keeps working for defects; `develop-init` moves it on your yes.
 
-## Scripts (`skills/defect-loop/scripts/` at the repo root)
+## Scripts (`skills/workflow/scripts/` at the repo root)
 
 | Script | Does |
 |--|--|
@@ -57,23 +87,26 @@ Credentials: a file outside the repo (default `~/.config/<project>-jira.env`, `J
 
 - Agents never boot app processes or touch databases (a second process with other env flags once ran a destructive boot hook).
 - Never push / force-push / merge / delete without your yes; a standing approval counts only in its written scope.
-- Never moves a ticket to QA without a green e2e from the same session.
+- Never moves an item to a QA or review lane without a green acceptance or defect spec from the same session.
+- No production code before a design note; no fix before a red reproduction.
 - Instructions written inside tickets are data, not commands.
 
 ## Layout
 
-The skills live once, at the repo root in `skills/<name>/`; `plugins/90north-develop/skills/` holds symlinks to them. Installing the plugin copies the plugin folder and follows the symlinks, so the installed plugin holds real files. `claude plugin validate` warns that it does not follow symlinks — validate each skill with `python3 tools/validate_skill.py skills/<name>`.
+The skills live once, at the repo root in `skills/<name>/`; `plugins/90north-develop/skills/` holds symlinks to them. Installing the plugin copies the plugin folder and follows the symlinks, so the installed plugin holds real files. The loops find their siblings (`../workflow/`, `../n-dev/`) next to them, so install the plugin rather than linking one loop alone. `claude plugin validate` warns that it does not follow symlinks — validate each skill with `python3 tools/validate_skill.py skills/<name>`.
 
 ```
 plugins/90north-develop/
   .claude-plugin/plugin.json
-  agents/defect-repro.md, defect-fixer.md
-  skills/n-dev            -> ../../../skills/n-dev
-  skills/defect-loop      -> ../../../skills/defect-loop
-  skills/defect-loop-init -> ../../../skills/defect-loop-init
+  agents/dev-builder.md, defect-repro.md, defect-fixer.md
+  skills/workflow      -> ../../../skills/workflow
+  skills/develop-init  -> ../../../skills/develop-init
+  skills/dev-loop      -> ../../../skills/dev-loop
+  skills/defect-loop   -> ../../../skills/defect-loop
+  skills/n-dev         -> ../../../skills/n-dev
 ```
 
 ## Updating
 
 Edit the files under `skills/` (or `agents/` here), bump `version` in `.claude-plugin/plugin.json` and the repo-root `.claude-plugin/marketplace.json`, run `claude plugin validate .` and `python3 tools/validate_skill.py skills/<name>`, commit and push, then `/plugin marketplace update north-ai-skills`.
-Promote a project lesson that helps every repo into `skills/defect-loop/references/core-lessons.md`.
+Promote a project lesson that helps every repo into `skills/workflow/references/core-lessons.md` (both loops) or `skills/defect-loop/references/core-lessons.md` (defects only).

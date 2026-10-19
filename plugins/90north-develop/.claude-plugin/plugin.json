@@ -1,9 +1,10 @@
 {
   "name": "90north-develop",
-  "version": "0.2.0",
-  "description": "North's development plugin. n-dev: structured development discipline (design before code, modular functional modules, reuse first, extension files beside existing code, single source of truth, test-first, verified). defect-loop: runs a Jira defect board end-to-end in any repo — pulls every open defect (board and backlog), triages, reproduces each with a red e2e on an isolated stack, finds the root cause, fixes it test-first with n-dev through subagents, verifies with code review + QA, records before/after videos that play inline in the Jira comment, writes the 3-part comment (1. Can it be reproduced? 2. Root cause 3. Solution) and moves the ticket to the QA lane. Project facts live in each repo's .claude/defect-loop/config.md, written by /90north-develop:defect-loop-init.",
+  "version": "0.3.0",
+  "description": "North's development plugin: two loops on one discipline. workflow: the map — routes work to the right flow and holds the shared stages (isolate, review + QA, evidence video, ship, learn) and the Jira REST scripts. dev-loop: a story, task or spec from ready to reviewed PR — ready check, n-dev design note with a gate for Large or schema/interface changes, acceptance spec red first, work packages built test-first by dev-builder subagents, review + QA, inline demo video, 3-part Jira comment, review lane. defect-loop: sweeps the Jira defect board — triage, red e2e repro, root cause at path:line, test-first fix, review + QA, before/after videos inline, 3-part comment, QA lane. n-dev: how every change is written (design first, modular, reuse, extension files, one owner per fact, test-first, verified). Project facts live in each repo's .claude/90north-develop/, written by /90north-develop:develop-init.",
   "skills": "./skills/",
   "agents": [
+    "./agents/dev-builder.md",
     "./agents/defect-repro.md",
     "./agents/defect-fixer.md"
   ],
@@ -22,7 +23,10 @@
     "bugfix",
     "e2e",
     "playwright",
-    "loop"
+    "loop",
+    "feature",
+    "story",
+    "workflow"
   ],
   "repository": "https://github.com/ThanaphatNorth/north-ai-skills"
 }
