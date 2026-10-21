@@ -11,26 +11,89 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a Jira defect board end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
 | [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects, writes `.claude/90north-develop/` for both loops. |
 
-## Install as a Claude Code plugin
+## Install
 
-`90north-develop` bundles `workflow`, `develop-init`, `dev-loop`, `defect-loop`, `n-dev` and the loops' three agents ([plugin README](plugins/90north-develop/README.md)):
+Pick a path. **A** for the development loops, **B** for the standalone skills (`design-atlas`, `n-dev`), or both.
+
+| You want | Use |
+|---|---|
+| dev-loop, defect-loop, develop-init, workflow and n-dev, plus the loops' agents | **A. Plugin** |
+| design-atlas and/or n-dev in every project | **B. Personal skills** |
+| a skill in one repo only, shared with that repo's team | **C. Project skills** |
+
+Then restart Claude Code (or start a new session) and type `/`. The skills show up as slash commands.
+
+### A. Plugin: 90north-develop (recommended for the loops)
+
+Inside Claude Code:
 
 ```
 /plugin marketplace add ThanaphatNorth/north-ai-skills
 /plugin install 90north-develop@north-ai-skills
 ```
 
-Skills are then `/90north-develop:workflow`, `/90north-develop:develop-init`, `/90north-develop:dev-loop`, `/90north-develop:defect-loop`, `/90north-develop:n-dev`.
-
-## Install a skill into Claude Code
-
-Link it into your personal skills folder so every project can use it:
+Or from a terminal:
 
 ```bash
-ln -s "$(pwd)/skills/design-atlas" ~/.claude/skills/design-atlas
+claude plugin marketplace add ThanaphatNorth/north-ai-skills
 ```
 
-Or copy it into one project's `.claude/skills/` folder to scope it to that repo.
+```bash
+claude plugin install 90north-develop@north-ai-skills
+```
+
+The commands are namespaced: `/90north-develop:workflow`, `/90north-develop:develop-init`, `/90north-develop:dev-loop`, `/90north-develop:defect-loop`, `/90north-develop:n-dev`. In each repo where you use the loops, run `/90north-develop:develop-init` once. See the [plugin README](plugins/90north-develop/README.md) for what each loop does and where it stops for you.
+
+| Task | Command |
+|---|---|
+| Update | `claude plugin marketplace update north-ai-skills`, then `claude plugin update 90north-develop@north-ai-skills` |
+| Check what's installed | `claude plugin list` |
+| Remove | `claude plugin uninstall 90north-develop@north-ai-skills` |
+
+Install the whole plugin. Linking `dev-loop` or `defect-loop` on its own leaves out the agents and the sibling skills the loops depend on.
+
+### B. Personal skills: every project on this machine
+
+Clone once, then link the skills you want into `~/.claude/skills/`:
+
+```bash
+git clone https://github.com/ThanaphatNorth/north-ai-skills.git ~/north-ai-skills
+```
+
+```bash
+mkdir -p ~/.claude/skills && for s in design-atlas n-dev; do ln -sn ~/north-ai-skills/skills/$s ~/.claude/skills/$s; done
+```
+
+Drop either name from `design-atlas n-dev` if you only want one. The commands are `/design-atlas` and `/n-dev`. `ln -sn` refuses to overwrite: if it says `File exists`, that name is already taken in `~/.claude/skills/`. An earlier install of this repo is fine to leave; anything else, rename or remove it first.
+
+| Task | Command |
+|---|---|
+| Update (the links pick it up at once) | `git -C ~/north-ai-skills pull` |
+| Check the links | `ls -l ~/.claude/skills/` |
+| Remove one skill (deletes only the link) | `rm ~/.claude/skills/n-dev` |
+
+If you have the plugin (A) and a personal `n-dev` (B), both load as `/90north-develop:n-dev` and `/n-dev`. Keep one.
+
+### C. Project skills: one repo, committed with it
+
+Copy the folder into the project, so teammates get it from git without installing anything:
+
+```bash
+mkdir -p .claude/skills && cp -R ~/north-ai-skills/skills/n-dev .claude/skills/
+```
+
+A copy does not update itself. Copy it again after a `git pull` here.
+
+### Requirements
+
+The skills are Markdown and load with no extra setup. Only their helper scripts need tools:
+
+| Skill | Script | Needs |
+|---|---|---|
+| n-dev | `scripts/structure_check.py` | Python 3.8+ and git (stdlib only) |
+| design-atlas | `scripts/palette.py` | Python 3.8+, plus Pillow for PNG/JPG logos (`pip install pillow`) |
+| design-atlas | `scripts/shoot.mjs`, `scripts/scrollfilm.mjs` | Node 22+ and Google Chrome (ffmpeg for `--mp4`) |
+| plugin loops | `skills/workflow/scripts/jira-*.sh` | bash, curl, jq, python3, a Jira API token in `~/.config/<project>-jira.env` (`develop-init` walks you through it), `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
 
 ## Layout
 
