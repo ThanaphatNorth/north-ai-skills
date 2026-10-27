@@ -143,7 +143,7 @@ python3 tools/validate_skill.py skills/design-atlas --urls --report .logs/urls.t
 python3 skills/n-dev/scripts/structure_check.py --repo path/to/repo --base main
 ```
 
-Reports pre-existing files that gained more than a wiring diff, new or grown files and touched functions over budget, and added blocks that repeat existing code. Exit 0 clean, 1 findings, 2 error. Tests: `python3 -m unittest discover -s skills/n-dev/scripts/tests -p 'test_*.py'`.
+Reports pre-existing files that gained more than a wiring diff, new or grown files and touched functions over budget, and added blocks that repeat existing code. Files and functions already over budget at the base ref are listed apart as existing debt and do not fail the check. Exit 0 clean, 1 findings, 2 error. Tests: `python3 -m unittest discover -s skills/n-dev/scripts/tests -p 'test_*.py'`.
 
 ## Palette from a logo
 

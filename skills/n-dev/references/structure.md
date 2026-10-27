@@ -104,6 +104,8 @@ No study isolates file length as the cause of agent or human errors; the budgets
 | Parameters | 4 (beyond that, one options object) | — |
 | Nesting depth | 3 (beyond that, early return or extract) | — |
 
+The check judges the change, not the codebase: a file or function that was already over budget at the base ref is reported apart as existing debt and does not fail it; growth of that debt still trips the wiring budget.
+
 UI components count as functions: a 90-line component usually holds two or three components (a form, a field group, a summary). Over budget means *split by responsibility*, never by line count. `orderForm.part2.ts` is not a split; `orderForm.validation.ts` beside `orderForm.ts` is.
 
 ## Interfaces, types and errors

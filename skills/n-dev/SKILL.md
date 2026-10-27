@@ -46,7 +46,7 @@ Pick the size first; it decides how much of the process runs.
    ```bash
    python3 <skill-dir>/scripts/structure_check.py --base <base-ref>
    ```
-   It reports pre-existing files that changed beyond a wiring diff, files and functions over budget, and blocks copied from code that already exists. Set the budgets to the repo's norms (`--help` lists the flags). *Done when* everything is green, and each structure finding is fixed or carries a one-line reason in the report.
+   It reports pre-existing files that changed beyond a wiring diff, files and functions over budget, and blocks copied from code that already exists. A file or function that was already over budget at the base ref is listed apart as existing debt and does not fail the check: mention it in the report, and refactor it only when the task asks. Set the budgets to the repo's norms (`--help` lists the flags). *Done when* everything is green, and each structure finding is fixed or carries a one-line reason in the report.
 6. **Review.** Run the `code-review` skill if installed; otherwise review the diff against the checklist in `references/structure.md`, reading every changed line of a pre-existing file. Fix the findings and re-run step 5. *Done when* no finding is open.
 7. **Commit and report.** Commit on a feature branch (create one if on the default branch), following the repo's commit convention and the user's rules on commit messages; stage only files this task changed. Push only when the user asks. Report: what was built, the checks and their results, the structure-check result, each pre-existing file touched and why, and anything left unverified.
 

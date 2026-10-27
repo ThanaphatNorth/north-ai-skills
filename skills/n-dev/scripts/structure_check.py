@@ -7,7 +7,10 @@ Reports, for code changed since the base ref (committed, staged, unstaged and un
   function-size  functions written or touched by the change that are over budget
   duplicate      added blocks that repeat code already in the repository
 
-  python3 structure_check.py                     # base = merge-base with the default branch
+A file or function that was already over budget at the base ref is listed apart as existing debt:
+informational, it does not fail the check (growth of it still trips the wiring budget).
+
+  python3 structure_check.py                    # base = merge-base with the default branch
   python3 structure_check.py --base main --max-func 40 --json
 
 Exit status: 0 clean, 1 findings, 2 usage or git error. Needs Python 3.8+ and git.
@@ -47,12 +50,12 @@ def main(argv=None):
     try:
         root = gitdiff.repo_root(a.repo)
         base = gitdiff.resolve_base(root, a.base)
-        findings = run(root, base, budgets, a.exclude)
+        findings, existing = run(root, base, budgets, a.exclude)
     except gitdiff.GitError as e:
         print("error: %s" % e, file=sys.stderr)
         return 2
     render = report.as_json if a.json else report.as_text
-    print(render(findings, base, budgets))
+    print(render(findings, base, budgets, existing))
     return 1 if findings else 0
 
 

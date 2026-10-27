@@ -105,3 +105,13 @@ def tracked_files(root: str) -> List[str]:
 
 def read_text(root: str, path: str) -> Optional[str]:
     return _read(root, path)
+
+
+def text_at(root: str, base: str, path: str) -> Optional[str]:
+    """The file's text at the base ref, or None when it did not exist there or is binary."""
+    if base == EMPTY_TREE:
+        return None
+    proc = subprocess.run(["git", "show", "%s:%s" % (base, path)], cwd=root, capture_output=True)
+    if proc.returncode != 0 or b"\0" in proc.stdout[:8192]:
+        return None
+    return proc.stdout.decode("utf-8", errors="replace")
