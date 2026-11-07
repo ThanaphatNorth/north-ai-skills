@@ -42,5 +42,28 @@ def check_function_size(f: ChangedFile, b: Budgets) -> List[Finding]:
     return out
 
 
+def _breakable(line: str, limit: int) -> bool:
+    """False when one unbreakable token (URL, hash, long string) makes the line long: a formatter cannot split it."""
+    longest = max((len(t) for t in line.split()), default=0)
+    return len(line) - longest >= limit // 2
+
+
+def check_line_length(f: ChangedFile, b: Budgets) -> List[Finding]:
+    """Added lines over the width budget, one finding per file (first line, count, longest). Only lines
+    this change wrote count, so existing dense code is never reported. Test files are exempt."""
+    if not b.max_line or classify.is_test(f.path):
+        return []
+    rows = f.text.split("\n")
+    long = [n for n in sorted(f.added) if n <= len(rows) and len(rows[n - 1]) > b.max_line
+            and _breakable(rows[n - 1], b.max_line)]
+    if not long:
+        return []
+    widest = max(len(rows[n - 1]) for n in long)
+    return [Finding("long-line", f.path, long[0], widest, b.max_line,
+                    "%d added line(s) wider than %d characters (longest %d); break them up or run the "
+                    "repo's formatter" % (len(long), b.max_line, widest))]
+
+
 def check_all(f: ChangedFile, b: Budgets) -> List[Finding]:
-    return check_wiring(f, b) + check_file_size(f, b) + check_function_size(f, b)
+    return (check_wiring(f, b) + check_file_size(f, b) + check_function_size(f, b)
+            + check_line_length(f, b))

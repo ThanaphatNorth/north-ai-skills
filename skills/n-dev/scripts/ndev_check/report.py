@@ -10,6 +10,7 @@ _TITLES = {
     "wiring": "Pre-existing files changed beyond a wiring diff",
     "file-size": "Files over budget",
     "function-size": "Functions over budget",
+    "long-line": "Added lines over the width budget",
     "duplicate": "Blocks that repeat existing code",
 }
 _EXISTING_TITLE = ("Already over budget at the base ref (%d) — not caused by this change; "
@@ -17,9 +18,9 @@ _EXISTING_TITLE = ("Already over budget at the base ref (%d) — not caused by t
 
 
 def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = ()) -> str:
-    head = "n-dev structure check against %s (file %d, test file %d, function %d, wiring %d, dup %d lines)" % (
+    head = "n-dev structure check against %s (file %d, test file %d, function %d, wiring %d, dup %d lines, line %d)" % (
         base[:12], budgets.max_file, budgets.max_test_file, budgets.max_func,
-        budgets.max_wiring, budgets.dup_lines)
+        budgets.max_wiring, budgets.dup_lines, budgets.max_line)
     out = [head]
     for kind, title in _TITLES.items():
         group = [f for f in findings if f.kind == kind]

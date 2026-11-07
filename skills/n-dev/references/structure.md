@@ -131,6 +131,8 @@ Name modules for what they hold (`invoiceTotals`, `seat_allocation`), functions 
 - [ ] Pre-existing files carry only a wiring diff, or the edit is a recorded exception (`extension.md`).
 - [ ] Every fact has one owner and derived values are computed (`state.md`).
 - [ ] Each success criterion has a test that was seen red and then green.
+- [ ] Anything taken from outside the process passed the `security.md` table, or the report says "no external input".
+- [ ] Added lines are within the width budget (`long-line` in the structure check).
 
 ## Sources
 

@@ -18,6 +18,7 @@ class Budgets:
     max_func: int = 50
     max_wiring: int = 20
     dup_lines: int = 6
+    max_line: int = 140          # characters per added line; 0 turns the check off
 
 
 @dataclass(frozen=True)

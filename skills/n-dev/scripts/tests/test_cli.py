@@ -168,6 +168,29 @@ class StructureCheckCli(unittest.TestCase):
         self.assertIn("src/legacy.py:1", out)
         self.assertIn("RESULT: clean", out)
 
+    def test_long_added_lines_are_one_finding_per_file(self):
+        long = "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n"
+        self.write("src/dense.py", long * 3)
+        code, data, _ = self.check()
+        hit = [f for f in data["findings"] if f["kind"] == "long-line"]
+        self.assertEqual((code, [f["path"] for f in hit]), (1, ["src/dense.py"]))
+        self.assertEqual((hit[0]["line"], hit[0]["limit"]), (1, 140))
+        self.assertIn("3 added line", hit[0]["message"])
+
+    def test_long_line_budget_is_configurable_and_off_at_zero(self):
+        self.write("src/dense.py", "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n")
+        self.assertEqual(self.check("--max-line", "400")[0], 0)
+        self.assertEqual(self.check("--max-line", "0")[0], 0)
+
+    def test_only_added_lines_count_and_urls_and_tests_are_exempt(self):
+        long = "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n"
+        self.commit_file("src/legacy.py", long)
+        self.append("src/legacy.py", "y = 1\n")
+        self.write("src/links.py", "URL = '" + "a" * 300 + "'\n")
+        self.write("tests/test_dense.py", long)
+        code, data, _ = self.check("--base", "HEAD")
+        self.assertEqual((code, data["findings"]), (0, []))
+
     def test_unknown_base_is_a_usage_error(self):
         code, data, err = self.check("--base", "no-such-ref")
         self.assertEqual(code, 2)
