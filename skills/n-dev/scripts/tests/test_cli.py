@@ -49,8 +49,21 @@ class StructureCheckCli(unittest.TestCase):
         data = json.loads(proc.stdout) if proc.stdout.strip().startswith("{") else None
         return proc.returncode, data, proc.stderr
 
+    def check_text(self, *args):
+        proc = subprocess.run([sys.executable, "-I", SCRIPT, "--repo", self.repo, *args],
+                              capture_output=True, text=True, env=ENV)
+        return proc.returncode, proc.stdout
+
     def kinds(self, data):
         return sorted((f["kind"], f["path"]) for f in data["findings"])
+
+    def existing(self, data):
+        return sorted((f["kind"], f["path"]) for f in data.get("existing") or [])
+
+    def commit_file(self, rel, text):
+        self.write(rel, text)
+        self.git("add", "-A")
+        self.git("commit", "-qm", "add " + rel)
 
     def test_small_wiring_diff_is_clean(self):
         self.append("src/app.py", "from coupons import register\nregister(ROUTES)\n")
@@ -121,6 +134,62 @@ class StructureCheckCli(unittest.TestCase):
         self.append("src/app.py", lines("extra", 25))
         code, data, _ = self.check("--max-wiring", "40")
         self.assertEqual(code, 0)
+
+    def test_file_already_over_budget_is_listed_apart_and_does_not_fail(self):
+        self.commit_file("src/legacy.py", lines("old", 320))
+        self.append("src/legacy.py", lines("fix", 2))
+        code, data, _ = self.check("--base", "HEAD")
+        self.assertEqual((code, data["findings"]), (0, []))
+        self.assertEqual(self.existing(data), [("file-size", "src/legacy.py")])
+
+    def test_file_that_crosses_the_budget_in_this_change_is_a_finding(self):
+        self.commit_file("src/grow.py", lines("old", 290))
+        self.append("src/grow.py", lines("new", 15))
+        code, data, _ = self.check("--base", "HEAD")
+        self.assertEqual(code, 1)
+        self.assertEqual(self.kinds(data), [("file-size", "src/grow.py")])
+        self.assertEqual(data.get("existing"), [])
+
+    def test_function_that_was_already_long_is_listed_apart(self):
+        head = "export function build() {\n"
+        body = "".join("  const v%d = load(%d);\n" % (i, i) for i in range(60)) + "}\n"
+        self.commit_file("src/report.ts", head + body)
+        self.write("src/report.ts", head + "  const extra = 1;\n" + body)
+        code, data, _ = self.check("--base", "HEAD")
+        self.assertEqual((code, data["findings"]), (0, []))
+        self.assertEqual(self.existing(data), [("function-size", "src/report.ts")])
+
+    def test_text_report_shows_the_existing_debt_in_its_own_section(self):
+        self.commit_file("src/legacy.py", lines("old", 320))
+        self.append("src/legacy.py", lines("fix", 2))
+        code, out = self.check_text("--base", "HEAD")
+        self.assertEqual(code, 0)
+        self.assertIn("Already over budget at the base ref (1)", out)
+        self.assertIn("src/legacy.py:1", out)
+        self.assertIn("RESULT: clean", out)
+
+    def test_long_added_lines_are_one_finding_per_file(self):
+        long = "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n"
+        self.write("src/dense.py", long * 3)
+        code, data, _ = self.check()
+        hit = [f for f in data["findings"] if f["kind"] == "long-line"]
+        self.assertEqual((code, [f["path"] for f in hit]), (1, ["src/dense.py"]))
+        self.assertEqual((hit[0]["line"], hit[0]["limit"]), (1, 140))
+        self.assertIn("3 added line", hit[0]["message"])
+
+    def test_long_line_budget_is_configurable_and_off_at_zero(self):
+        self.write("src/dense.py", "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n")
+        self.assertEqual(self.check("--max-line", "400")[0], 0)
+        self.assertEqual(self.check("--max-line", "0")[0], 0)
+
+    def test_only_added_lines_count_and_urls_and_tests_are_exempt(self):
+        long = "x = compute(" + ", ".join("arg%d" % i for i in range(40)) + ")\n"
+        self.commit_file("src/legacy.py", long)
+        self.append("src/legacy.py", "y = 1\n")
+        self.write("src/links.py", "URL = '" + "a" * 300 + "'\n")
+        self.write("tests/test_dense.py", long)
+        code, data, _ = self.check("--base", "HEAD")
+        self.assertEqual((code, data["findings"]), (0, []))
 
     def test_unknown_base_is_a_usage_error(self):
         code, data, err = self.check("--base", "no-such-ref")

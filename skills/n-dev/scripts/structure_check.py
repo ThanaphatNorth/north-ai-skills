@@ -5,9 +5,13 @@ Reports, for code changed since the base ref (committed, staged, unstaged and un
   wiring         pre-existing files changed by more than a wiring diff
   file-size      new or grown files over the line budget
   function-size  functions written or touched by the change that are over budget
+  long-line      added lines wider than the width budget (one finding per file)
   duplicate      added blocks that repeat code already in the repository
 
-  python3 structure_check.py                     # base = merge-base with the default branch
+A file or function that was already over budget at the base ref is listed apart as existing debt:
+informational, it does not fail the check (growth of it still trips the wiring budget).
+
+  python3 structure_check.py                    # base = merge-base with the default branch
   python3 structure_check.py --base main --max-func 40 --json
 
 Exit status: 0 clean, 1 findings, 2 usage or git error. Needs Python 3.8+ and git.
@@ -35,6 +39,8 @@ def parse_args(argv):
                     help="changed lines allowed in a pre-existing file (%(default)s)")
     ap.add_argument("--dup-lines", type=int, default=d.dup_lines,
                     help="meaningful lines that make a copied block (%(default)s)")
+    ap.add_argument("--max-line", type=int, default=d.max_line,
+                    help="characters per added line, 0 = off (%(default)s)")
     ap.add_argument("--exclude", action="append", default=[], metavar="GLOB",
                     help="path glob to ignore; repeatable")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
@@ -43,16 +49,16 @@ def parse_args(argv):
 
 def main(argv=None):
     a = parse_args(argv)
-    budgets = Budgets(a.max_file, a.max_test_file, a.max_func, a.max_wiring, a.dup_lines)
+    budgets = Budgets(a.max_file, a.max_test_file, a.max_func, a.max_wiring, a.dup_lines, a.max_line)
     try:
         root = gitdiff.repo_root(a.repo)
         base = gitdiff.resolve_base(root, a.base)
-        findings = run(root, base, budgets, a.exclude)
+        findings, existing = run(root, base, budgets, a.exclude)
     except gitdiff.GitError as e:
         print("error: %s" % e, file=sys.stderr)
         return 2
     render = report.as_json if a.json else report.as_text
-    print(render(findings, base, budgets))
+    print(render(findings, base, budgets, existing))
     return 1 if findings else 0
 
 
