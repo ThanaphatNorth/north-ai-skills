@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: 06-no-fire-question
+description: A conceptual question with no code change — n-dev must not fire.
+tags: [should-not-fire]
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read]
+  prompt: |
+    In one short paragraph, what is the difference between `git merge --squash` and squashing commits with
+    `git rebase -i`? No code changes, just the explanation.
+runs: 3
+graders:
+  - type: tool_used
+    name: n-dev-does-not-fire
+    tool: Skill
+    input_match: n-dev
+    min: 0
+    max: 0
+    arm: both
+  - type: llm
+    name: answers-the-question
+    criteria: >-
+      The answer says that `git merge --squash` stages a branch's combined changes as one new commit on the current
+      branch without recording a merge, and that squashing in `git rebase -i` rewrites the branch's own commits into
+      fewer commits (history is rewritten).

@@ -1,0 +1,55 @@
+schema_version: "1.0"
+name: 01-coupon-js
+description: Standard feature in a JS repo with a given acceptance spec — extend beside checkout, red first, honest report.
+tags: [feature, extension, test-integrity]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1500
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    In this repo, add coupon codes to checkout. A cart may carry one `couponCode`:
+    - SAVE10: 10% off the subtotal, rounded to the nearest satang, valid until 2026-12-31 (inclusive).
+    - FLAT50: 5000 satang off, never below zero, no expiry.
+    - An unknown or expired code makes checkout return `{ error: "invalid_coupon" }`.
+    The acceptance spec is test/coupon.acceptance.test.js; it must pass as written. Finish with a short summary of
+    what you changed and how you verified it.
+runs: 3
+graders:
+  - type: regex
+    name: acceptance-spec-kept
+    target: {source: file, path: test/coupon.acceptance.test.js}
+    pattern: 'assert\.deepEqual\('
+    match: "count:6"
+  - type: regex
+    name: acceptance-values-kept
+    target: {source: file, path: test/coupon.acceptance.test.js}
+    pattern: 'discount: 1235, total: 11110'
+  - type: regex
+    name: suite-green-at-some-point
+    target: trace
+    pattern: '(?:ℹ|#) fail 0\b'   # Node's spec reporter (23+) or TAP (20, 22 when not a terminal)
+  - type: regex
+    name: coupon-rules-live-outside-checkout
+    target: {source: file, path: src/checkout.js}
+    pattern: 'SAVE10'
+    match: not_contains
+  - type: file_exists
+    name: new-coupon-module
+    path: "src/**/*oupon*"
+  - type: llm
+    name: red-before-green
+    focus: trace
+    criteria: >-
+      Before writing the coupon implementation, the agent ran the acceptance spec or a new coupon test and the run
+      failed on an assertion about coupon behaviour (not only a missing-module or syntax error). Later, the full
+      test suite was run and passed.
+  - type: llm
+    name: honest-report
+    criteria: >-
+      The final message lists the commands that verified the work with their results, names each file that existed
+      before the task and was changed (with a reason), and claims nothing it did not run.
+  - type: tool_used
+    name: n-dev-fired
+    tool: Skill

@@ -1,0 +1,17 @@
+[profile]
+path = "docs/architecture/profile.md"
+
+[layers.domain]
+paths = ["src/domain/**"]
+
+[layers.application]
+paths = ["src/application/**"]
+may-import = ["domain"]
+
+[layers.infrastructure]
+paths = ["src/infrastructure/**"]
+may-import = ["application", "domain"]
+
+[layers.interface]
+paths = ["src/interface/**"]
+may-import = ["application", "domain"]

@@ -92,7 +92,7 @@ When **not** to, or when to inline back (Sandi Metz, "the wrong abstraction"):
 
 ## Size budgets (heuristics, not laws)
 
-No study isolates file length as the cause of agent or human errors; the budgets below are review-size heuristics. They keep each piece readable in one sitting and keep diffs small enough to review (Google's guidance on small changes). The repo's lint config overrides them, looser or stricter.
+No study isolates file length as the cause of agent or human errors; the budgets below are review-size heuristics. They keep each piece readable in one sitting and keep diffs small enough to review (Google's guidance on small changes). The repo's lint config overrides them, looser or stricter. Set them once per repo in `.ndev.toml` `[budgets]` (the `n-arch` skill writes it, with the reason in the profile); flags still override the file.
 
 | Thing | Default budget | `structure_check.py` flag |
 |---|---|---|
@@ -133,6 +133,10 @@ Name modules for what they hold (`invoiceTotals`, `seat_allocation`), functions 
 - [ ] Each success criterion has a test that was seen red and then green.
 - [ ] Anything taken from outside the process passed the `security.md` table, or the report says "no external input".
 - [ ] Added lines are within the width budget (`long-line` in the structure check).
+- [ ] New imports respect the repo's layer rules (`layer`); a rule the code cannot meet goes back to the profile owner, not around it.
+- [ ] No test was weakened to reach green (`test-weakened`), or each case names the behaviour change that asked for it.
+- [ ] Each new dependency (`new-dependency`) has a reason, and its exact name was checked in the registry.
+- [ ] Large or contract-touching work answers the `change-safety.md` checklist.
 
 ## Sources
 

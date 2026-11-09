@@ -1,0 +1,53 @@
+schema_version: "1.0"
+name: 02-layered-js
+description: Hexagonal repo with an architecture profile and .ndev.toml layer rules — the new route must not reach storage from a handler.
+tags: [feature, architecture, profile]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1500
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    Add GET /orders/large?min=<satang> to this service: it returns the orders whose total is at least `min`,
+    newest first, and answers 400 when `min` is missing or not a number. The acceptance spec is
+    test/large.acceptance.test.js; it must pass as written. Finish with a short summary of what you changed and
+    how you verified it.
+runs: 3
+graders:
+  - type: regex
+    name: handler-does-not-import-storage
+    target: {source: file, path: src/interface/orderRoutes.js}
+    pattern: 'infrastructure'
+    match: not_contains
+  - type: file_exists
+    name: rule-in-a-new-use-case
+    path: "src/application/*.js"
+  - type: regex
+    name: acceptance-spec-kept
+    target: {source: file, path: test/large.acceptance.test.js}
+    pattern: 'assert\.'
+    match: "count:4"
+  - type: regex
+    name: suite-green-at-some-point
+    target: trace
+    pattern: '(?:ℹ|#) fail 0\b'   # Node's spec reporter (23+) or TAP (20, 22 when not a terminal)
+  - type: llm
+    name: no-handler-reaches-storage
+    focus: trace
+    criteria: >-
+      Every file the agent created or edited under src/interface/ imports only from src/application/ or src/domain/
+      (or nothing); none imports anything from src/infrastructure/.
+  - type: regex
+    name: read-the-profile
+    target: trace
+    # an actual read (Read tool or a cat/head of the file or folder), not the path quoted in SKILL.md or .ndev.toml
+    pattern: '"file_path":\s*"[^"]*docs/architecture/profile\.md"|"command":\s*"[^"]*\b(?:cat|head|less|bat|sed)\b[^"]*docs/architecture/(?:profile\.md|\*)'
+  - type: llm
+    name: report-names-the-layer-check
+    criteria: >-
+      The final message reports how the change respects the repo's layers (handler -> use case -> port), and states
+      the result of a structure or layer check that was actually run, or says plainly that none was run.
+  - type: tool_used
+    name: n-dev-fired
+    tool: Skill

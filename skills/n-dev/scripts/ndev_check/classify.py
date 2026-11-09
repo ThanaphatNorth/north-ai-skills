@@ -41,11 +41,15 @@ def is_test(path: str) -> bool:
     return bool(_TEST_NAME.search(path) or _TEST_DIR.search(path))
 
 
+def matches_any(path: str, globs: Iterable[str]) -> bool:
+    return any(fnmatch.fnmatch(path, g) for g in globs)
+
+
 def is_noise(path: str, extra_globs: Iterable[str] = ()) -> bool:
     name = os.path.basename(path)
     if any(fnmatch.fnmatch(name, g) for g in NOISE_GLOBS):
         return True
-    if any(fnmatch.fnmatch(path, g) for g in extra_globs):
+    if matches_any(path, extra_globs):
         return True
     padded = "/" + path
     return any("/" + d in padded for d in NOISE_DIRS)

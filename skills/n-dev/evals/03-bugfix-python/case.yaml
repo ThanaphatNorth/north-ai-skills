@@ -1,0 +1,44 @@
+schema_version: "1.0"
+name: 03-bugfix-python
+description: A bug report with no test — reproduce red, fix at the cause, keep the existing contract.
+tags: [bugfix, regression-test]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 1200
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    Bug report from support: "Splitting a 10000 satang bill between 3 people gives 3333 + 3333 + 3333, so one satang
+    disappears. Shares must always add up to the bill and differ by at most one satang; the extra satang goes to the
+    first people in the list." Fix it in this repo. Tests run with
+    `python3 -m unittest discover -s tests -t .`. Finish with a short summary of the cause, the fix and how you
+    verified it.
+runs: 3
+graders:
+  - type: regex
+    name: rounding-cause-removed
+    target: {source: file, path: billing/split.py}
+    pattern: 'round\(total / people\)'
+    match: not_contains
+  - type: llm
+    name: fix-is-correct
+    focus: {source: file, path: billing/split.py}
+    criteria: >-
+      split_bill(total, people) returns a list of `people` integers that always sum to `total`, differ by at most
+      one, with the larger shares first (10000 split 3 ways is [3334, 3333, 3333]), and still raises ValueError when
+      people is less than 1.
+  - type: llm
+    name: regression-test-red-first
+    focus: trace
+    criteria: >-
+      The agent wrote a test that reproduces the report (for example 10000 split 3 ways must add up to 10000), ran
+      it and saw it fail before changing billing/split.py, then saw it pass after the fix.
+  - type: llm
+    name: report-names-the-cause
+    criteria: >-
+      The final message names the cause (every share is the same rounded value, so the remainder is lost) and the
+      checks that were run with their results.
+  - type: tool_used
+    name: n-dev-fired
+    tool: Skill

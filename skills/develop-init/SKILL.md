@@ -23,6 +23,7 @@ Goal: one `config.md` where every value was checked, so neither loop guesses. Bo
 - How the app boots locally: docker-compose, README, `.env.example`, launch configs; DB engine/port; **boot hooks** that seed or clean data and the env flags that switch them; dev login (password / OTP dev code / SSO).
 - Agents and skills in the repo (`.claude/agents/*.md`, `.claude/skills/*`) usable as code reviewer, QA, verifier, house rules, demo recorder; spec / decision log, requirements docs, design files and where design notes for Large work belong (docs folder, ADRs).
 - Project memory files and CLAUDE.md for ports, DB and rules already learned.
+- Architecture profile: if `docs/architecture/profile.md` (or `.ndev.toml`'s `[profile] path`) exists, read it and link it in `config.md` instead of re-deriving extension points and state owners; if it does not, run `../n-arch/SKILL.md` (create mode) before step 5, and link what it writes.
 
 ## 3. Jira
 - Ask the user for: site URL, project key, board URL. Ask where the credentials file is (default `~/.config/<project>-jira.env` with `JIRA_EMAIL`, `JIRA_TOKEN`; tell them how to create an API token at id.atlassian.com → Security → API tokens if needed). Never ask them to paste the token in chat.

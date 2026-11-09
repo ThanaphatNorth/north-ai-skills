@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "90north-develop",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "source": "./plugins/90north-develop",
-      "description": "North's development plugin: dev-loop (story → design gate → acceptance red → test-first build → review/QA → demo video → PR → review lane) and defect-loop (repro → root cause → test-first fix → review/QA → before/after videos → PR → QA lane) on the n-dev discipline, for any repo."
+      "description": "North's development plugin: dev-loop (story → design gate → acceptance red → test-first build → review/QA → demo video → PR → review lane) and defect-loop (repro → root cause → test-first fix → review/QA → before/after videos → PR → QA lane) on the n-dev discipline, with n-arch capturing each repo's architecture rules, for any repo."
     }
   ]
 }

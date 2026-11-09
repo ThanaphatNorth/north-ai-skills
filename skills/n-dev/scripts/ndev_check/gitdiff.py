@@ -4,12 +4,13 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 from .model import ChangedFile, count_lines
 
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 _HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+_OLD_START = re.compile(r"^@@ -(\d+)")
 
 
 class GitError(RuntimeError):
@@ -61,6 +62,20 @@ def _added_lines(diff_text: str) -> List[int]:
     return lines
 
 
+def _removed_lines(diff_text: str) -> List[Tuple[int, str]]:
+    """(line number at the base ref, text) of every removed line in a -U0 diff."""
+    out: List[Tuple[int, str]] = []
+    line = 0
+    for row in diff_text.splitlines():
+        m = _OLD_START.match(row)
+        if m:
+            line = int(m.group(1))
+        elif row.startswith("-") and not row.startswith("---"):
+            out.append((line, row[1:]))
+            line += 1
+    return out
+
+
 def _read(root: str, path: str) -> Optional[str]:
     full = os.path.join(root, path)
     try:
@@ -85,7 +100,8 @@ def changed_files(root: str, base: str) -> List[ChangedFile]:
             continue  # deleted
         if _existed_at(root, base, path):
             hunks = _git(root, ["diff", "-U0", "--no-renames", base, "--", path])
-            out.append(ChangedFile(path, False, frozenset(_added_lines(hunks)), int(removed), text))
+            out.append(ChangedFile(path, False, frozenset(_added_lines(hunks)), int(removed), text,
+                                   tuple(_removed_lines(hunks))))
         else:
             out.append(_whole_file(path, text))
     for path in _git(root, ["ls-files", "--others", "--exclude-standard"]).splitlines():
@@ -97,6 +113,13 @@ def changed_files(root: str, base: str) -> List[ChangedFile]:
 
 def _whole_file(path: str, text: str) -> ChangedFile:
     return ChangedFile(path, True, frozenset(range(1, count_lines(text) + 1)), 0, text)
+
+
+def deleted_paths(root: str, base: str) -> List[str]:
+    """Files that existed at the base ref and are gone from the working tree."""
+    if base == EMPTY_TREE:
+        return []
+    return _git(root, ["diff", "--name-only", "-M", "--diff-filter=D", base]).splitlines()  # a rename is not a deletion
 
 
 def tracked_files(root: str) -> List[str]:
