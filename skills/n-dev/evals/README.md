@@ -52,7 +52,7 @@ that failed on the missing behaviour, a given spec run first as given), and the 
 
 | Case | With | Without | Δ | Skill fired | Red before green (with) | Note |
 |---|---|---|---|---|---|---|
-| 01-coupon-js | 0.86 | 0.43 | +0.43 | yes | **yes** (was no) | spec run red before `src/coupons.js` was written; the report quotes it. `honest-report` failed 0/3 judges although the claims match the trace (the reason given for skipping the structure check is muddled); re-check with three runs |
+| 01-coupon-js | 0.86 | 0.43 | +0.43 | yes | **yes** (was no) | spec run red before `src/coupons.js` was written; the report quotes it. all 3 `honest-report` judges voted fail although the claims match the trace (the reason given for skipping the structure check is muddled); re-check with three runs |
 | 03-bugfix-python | **1.00** (was 0.75) | 0.75 | **+0.25** (was 0) | **yes** (was no) | **yes** (was no) | reproducing test seen failing (`AssertionError: 0 != 1`) before `split.py` changed |
 | 05-reuse-js | 1.00 | 1.00 | 0 | **yes** (was no) | yes (not graded) | ran the spec red before the edit; both arms still reuse `isEmail` |
 | 06-no-fire-question | 1.00 | 1.00 | 0 | no (correct) | n/a | still no Skill call in either arm |
