@@ -43,6 +43,23 @@ Runner facts that bite:
 What this says about the skill, not the suite: on small tasks it does not fire, and when it fires the red-first step
 is skipped. Both are worth a skill change measured by the next run.
 
+## After the trigger and red-gate change (2026-11-09, Sonnet, one run per arm — indicative only)
+
+The change: the description now opens with "Use for every task that changes code or tests in a repo, however small"
+and names a bug fix, a validation and a new function; step 4 has a **red gate** (no implementation edit before a run
+that failed on the missing behaviour, a given spec run first as given), and the report must quote the red run.
+02 and 04 were not re-run. The four runs cost $0.58.
+
+| Case | With | Without | Δ | Skill fired | Red before green (with) | Note |
+|---|---|---|---|---|---|---|
+| 01-coupon-js | 0.86 | 0.43 | +0.43 | yes | **yes** (was no) | spec run red before `src/coupons.js` was written; the report quotes it. `honest-report` failed 0/3 judges although the claims match the trace (the reason given for skipping the structure check is muddled); re-check with three runs |
+| 03-bugfix-python | **1.00** (was 0.75) | 0.75 | **+0.25** (was 0) | **yes** (was no) | **yes** (was no) | reproducing test seen failing (`AssertionError: 0 != 1`) before `split.py` changed |
+| 05-reuse-js | 1.00 | 1.00 | 0 | **yes** (was no) | yes (not graded) | ran the spec red before the edit; both arms still reuse `isEmail` |
+| 06-no-fire-question | 1.00 | 1.00 | 0 | no (correct) | n/a | still no Skill call in either arm |
+
+Both gaps closed in this run: n-dev fires on small changes and still stays out of a question, and the red gate shows in
+every arm that loaded it. One run per arm proves direction, not size: run the full suite (`runs: 3`) before a release.
+
 ## Cases
 
 | Case | Task | What it checks | n-dev rule |

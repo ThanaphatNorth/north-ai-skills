@@ -1,6 +1,6 @@
 ---
 name: n-dev
-description: Structured development discipline — design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner (single source of truth), test-first, verified. Use when implementing a feature, spec or ticket; building or adding to a module, API, screen or job; refactoring; or fixing a bug that needs more than a one-line change.
+description: Use for every task that changes code or tests in a repo, however small — a bug fix, a validation, a new function, a feature, spec or ticket, a module, API, screen or job, a refactor. Development discipline — a failing test shown before the fix, reuse before writing, new behaviour beside existing code, one owner per fact (single source of truth), verified with evidence. Not for questions or explanations that change no code.
 ---
 
 # n-dev
@@ -25,7 +25,7 @@ Pick the size first; it decides how much of the process runs.
 
 | Size | Looks like | Run |
 |---|---|---|
-| **Tiny** | typo, config value, one-line fix | Steps 1, 4–5, 7. Rules 2–3 still hold. |
+| **Tiny** | typo, config value, a few-line bug fix or small function | Steps 1, 4–5, 7, red gate included. Rules 2–3 still hold. |
 | **Standard** | a feature, endpoint, screen, job, or a bug touching more than one file | Every step; the design note goes in chat, short. |
 | **Large** | a new module or package, a change to state shape, DB schema or a public interface, several repos | Every step; the design note is saved as a file beside the work (the repo's docs folder, else the scratchpad), the interface is designed twice, and the note's Progress list stays current so another session can resume from it. |
 
@@ -42,14 +42,16 @@ Pick the size first; it decides how much of the process runs.
    - two designs trade off in a way the user would care about;
    - the change alters state shape, a DB schema, or a public interface.
    *Done when* every new file has a one-sentence responsibility, every fact has exactly one owner, and every pre-existing file in the plan has a reason.
-4. **Build test-first, inside out.** Before extending existing behaviour, pin it with a characterization test. Then for each module, core first: write the test at its interface and see it fail (**red**) for the right reason — an assertion about the missing behaviour, not an import or syntax error (add a stub first if needed) — then implement until it passes (**green**), and tidy. Order: pure core, then adapters, then the wiring diff last. Run typecheck and that test file after each module. Use the `tdd` skill if installed. *Done when* every success criterion has a test that was seen red and then green.
+4. **Build test-first, inside out.** Before extending existing behaviour, pin it with a characterization test. Then for each module, core first: write the test at its interface and see it fail (**red**) for the right reason — an assertion about the missing behaviour, not an import or syntax error (add a stub first if needed) — then implement until it passes (**green**), and tidy. Order: pure core, then adapters, then the wiring diff last. Run typecheck and that test file after each module. Use the `tdd` skill if installed.
+   - **Red gate.** Make no implementation edit until a test run in this session has failed on the missing behaviour. An acceptance spec the user gave is that test: run it first, as given. A bug fix starts with a test that reproduces the report. Keep the red run's command and failing line for the report; when no red run is possible (a refactor under green tests, a config or docs change), write down why instead.
+   *Done when* every success criterion has a test that was seen red and then green, and the red evidence (or its reason) is written down.
 5. **Verify.** Run the full suite, lint, typecheck, and the structure check:
    ```bash
    python3 <skill-dir>/scripts/structure_check.py --base <base-ref>
    ```
    It reports pre-existing files that changed beyond a wiring diff, files and functions over budget, added lines wider than the width budget, blocks copied from code that already exists, added imports that break the repo's layer rules, changes that weaken tests, and new dependencies. A file or function that was already over budget at the base ref is listed apart as existing debt and does not fail the check: mention it in the report, and refactor it only when the task asks. Budgets, excludes and layers come from `.ndev.toml` when the repo has one; otherwise set the budgets to the repo's norms with flags (`--help` lists them). *Done when* everything is green, and each structure finding is fixed or carries a one-line reason in the report.
 6. **Review.** Run the `code-review` skill if installed; otherwise review the diff against the checklist in `references/structure.md`, reading every changed line of a pre-existing file. Either way the reviewer gets the diff, the request and the success criteria but not your design reasoning, so it reads the code fresh (a subagent with a new context by default). Fix the findings and re-run step 5. *Done when* no finding is open.
-7. **Commit and report.** Commit on a feature branch (create one if on the default branch), following the repo's commit convention and the user's rules on commit messages; stage only files this task changed. Push only when the user asks. Report: what was built, the checks and their results, the structure-check result, each pre-existing file touched and why, and anything left unverified.
+7. **Commit and report.** Commit on a feature branch (create one if on the default branch), following the repo's commit convention and the user's rules on commit messages; stage only files this task changed. Push only when the user asks. Report: what was built, the red run (its command and failing line, or why there was none) then the green run, the other checks and their results, the structure-check result, each pre-existing file touched and why, and anything left unverified.
 
 ## When skills disagree
 

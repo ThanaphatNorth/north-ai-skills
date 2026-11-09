@@ -44,10 +44,10 @@ Dependency direction: <UI → application → core; confirm no cycle>
 
 ## Test seams
 
-| Module | Test at | Red first? | Fakes needed |
+| Module | Test at | Red run (command → failing line, filled in at step 4) | Fakes needed |
 |---|---|---|---|
-| `<core module>` | its exported function | yes | none |
-| `<shell module>` | its interface | yes | <in-memory adapter> |
+| `<core module>` | its exported function | `<cmd>` → `<assertion that failed>` | none |
+| `<shell module>` | its interface | `<cmd>` → `<assertion that failed>` | <in-memory adapter> |
 | <existing behaviour being extended> | characterization test in `<file>` | n/a (must pass before and after) | <...> |
 
 ## Change safety (Large, or any contract / schema / migration / outbound call / deploy change)
