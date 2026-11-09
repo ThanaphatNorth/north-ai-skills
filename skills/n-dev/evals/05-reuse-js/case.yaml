@@ -1,0 +1,41 @@
+schema_version: "1.0"
+name: 05-reuse-js
+description: An existing validator already does the job — reuse it, add no dependency, no second email regex.
+tags: [feature, reuse, dependencies]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 1200
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    Validate the email address on sign-up in this repo: an invalid email returns `{ error: "invalid_email" }` and
+    stores nothing. The acceptance spec is test/email.acceptance.test.js; it must pass as written. Finish with a
+    short summary of what you changed and how you verified it.
+runs: 3
+graders:
+  - type: regex
+    name: no-dependency-added
+    target: {source: file, path: package.json}
+    pattern: 'ependencies'
+    match: not_contains
+  - type: regex
+    name: reuses-the-existing-validator
+    target: {source: file, path: src/signup.js}
+    pattern: 'isEmail'
+  - type: file_exists
+    name: no-second-email-validator
+    path: "src/**/*mail*"
+    exists: false
+  - type: regex
+    name: acceptance-spec-kept
+    target: {source: file, path: test/email.acceptance.test.js}
+    pattern: 'assert\.'
+    match: "count:3"
+  - type: regex
+    name: suite-green-at-some-point
+    target: trace
+    pattern: '(?:ℹ|#) fail 0\b'   # Node's spec reporter (23+) or TAP (20, 22 when not a terminal)
+  - type: tool_used
+    name: n-dev-fired
+    tool: Skill

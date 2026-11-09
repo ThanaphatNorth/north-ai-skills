@@ -16,6 +16,7 @@ North's development plugin: two loops, one discipline, one set of per-repo facts
           S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
                                        │
                  n-dev — how every line of code is written, in both loops
+                 n-arch — the repo's architecture rules n-dev reads and its check enforces
 ```
 
 Both loops start with a red test that says what "done" means (the defect's red e2e, or the story's acceptance spec) and end with that test green in the same session, review + QA, an inline video and a tracker update. A defect needs a cause; a feature needs a design — that is the only difference in the middle.
@@ -27,6 +28,7 @@ Both loops start with a red test that says what "done" means (the defect's red e
 | `dev-loop` | development flow: one story / task / spec from ready to reviewed PR |
 | `defect-loop` | defect flow: sweeps the defect board, each defect from repro to the QA lane |
 | `n-dev` | the discipline: design before code, modular, reuse first, extension files, one owner per fact, test-first, verified |
+| `n-arch` | once per repo, then on drift: the architecture profile and `.ndev.toml` (layers, budgets) that n-dev and its structure check use; audits debt |
 
 | Agent | Used by | Does |
 |--|--|--|
@@ -52,6 +54,7 @@ Both loops start with a red test that says what "done" means (the defect's red e
 | `/90north-develop:defect-loop [KEY]` | One defect sweep, or one defect |
 | `/loop 30m /90north-develop:defect-loop` | Keep sweeping (continuous mode between ticks while cards remain) |
 | `/90north-develop:n-dev` | A small untracked change with the discipline only |
+| `/90north-develop:n-arch [refresh \| audit]` | Map the repo's architecture (develop-init runs it when there is no profile) |
 
 ## Where each loop stops for you
 
@@ -104,6 +107,7 @@ plugins/90north-develop/
   skills/dev-loop      -> ../../../skills/dev-loop
   skills/defect-loop   -> ../../../skills/defect-loop
   skills/n-dev         -> ../../../skills/n-dev
+  skills/n-arch        -> ../../../skills/n-arch
 ```
 
 ## Updating

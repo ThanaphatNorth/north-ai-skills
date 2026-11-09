@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from typing import List, Sequence
+from typing import List, Optional, Sequence
 
 from .model import Budgets, Finding
 
@@ -12,16 +12,22 @@ _TITLES = {
     "function-size": "Functions over budget",
     "long-line": "Added lines over the width budget",
     "duplicate": "Blocks that repeat existing code",
+    "layer": "Imports that cross a layer rule",
+    "test-weakened": "Changes that weaken tests",
+    "new-dependency": "Dependencies added",
 }
 _EXISTING_TITLE = ("Already over budget at the base ref (%d) — not caused by this change; "
                    "mention it, refactor it only if the task asks")
 
 
-def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = ()) -> str:
+def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = (),
+            config: Optional[str] = None) -> str:
     head = "n-dev structure check against %s (file %d, test file %d, function %d, wiring %d, dup %d lines, line %d)" % (
-        base[:12], budgets.max_file, budgets.max_test_file, budgets.max_func,
+        base if base.startswith("(") else base[:12], budgets.max_file, budgets.max_test_file, budgets.max_func,
         budgets.max_wiring, budgets.dup_lines, budgets.max_line)
-    out = [head]
+    out = [head + (", config %s" % config if config else "")]
+    if base.startswith("("):
+        out.append("Audit: every file counts as new, so read \"new\" and \"added\" below as \"present\".")
     for kind, title in _TITLES.items():
         group = [f for f in findings if f.kind == kind]
         if not group:
@@ -38,7 +44,8 @@ def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequ
     return "\n".join(out)
 
 
-def as_json(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = ()) -> str:
-    return json.dumps({"base": base, "budgets": budgets.__dict__,
+def as_json(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = (),
+            config: Optional[str] = None) -> str:
+    return json.dumps({"base": base, "config": config, "budgets": budgets.__dict__,
                        "findings": [f.as_dict() for f in findings],
                        "existing": [f.as_dict() for f in existing]}, indent=2)

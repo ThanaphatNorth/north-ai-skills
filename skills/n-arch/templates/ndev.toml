@@ -1,0 +1,49 @@
+# .ndev.toml — read by n-dev's structure check (scripts/structure_check.py). Written by the n-arch skill.
+# Reasons for every number and rule live in the architecture profile named below; keep this file to the facts.
+# Format: a strict TOML subset — [tables], "strings", integers, booleans, [arrays]. No inline tables, no dates.
+
+[profile]
+path = "docs/architecture/profile.md"
+
+[budgets]
+# Defaults shown. Change one only with a reason in the profile.
+max-file = 300        # source file lines
+max-test-file = 600   # test file lines
+max-func = 50         # function lines
+max-wiring = 20       # lines a pre-existing file may gain
+dup-lines = 6         # meaningful lines that make a copied block
+max-line = 140        # characters per added line; 0 turns it off
+
+[check]
+# Paths the check ignores, on top of lockfiles, build output and vendored code.
+exclude = [
+  # "src/generated/**",
+]
+
+# One table per layer. A file belongs to the layer whose matching `paths` glob is most specific
+# (longest part before the first wildcard), so a nested folder can be its own layer.
+#   paths      globs of the files in the layer
+#   imports    specifier prefixes that refer to the layer: path aliases ("@/domain"), packages ("app.domain"),
+#              namespaces ("App\\Domain"); relative imports are resolved against `paths` without them
+#   may-import the other layers this layer's files may import (imports inside the same layer are always allowed)
+# Only imports added by a change are judged, so a rule the old code breaks still protects new code.
+
+[layers.domain]
+paths = ["src/domain/**"]
+imports = ["@/domain"]
+may-import = []
+
+[layers.application]
+paths = ["src/application/**"]
+imports = ["@/application"]
+may-import = ["domain"]
+
+[layers.infrastructure]
+paths = ["src/infrastructure/**"]
+imports = ["@/infrastructure"]
+may-import = ["application", "domain"]
+
+[layers.interface]
+paths = ["src/interface/**"]
+imports = ["@/interface"]
+may-import = ["application", "domain"]

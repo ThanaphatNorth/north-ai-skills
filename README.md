@@ -5,7 +5,8 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | Skill | What it does |
 |---|---|
 | [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems, motion, scroll/parallax, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. |
-| [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, plus a git-based structure check (wiring budget, file/function budgets, copied blocks) for any language. |
+| [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, plus a git-based structure check (wiring budget, file/function budgets, copied blocks, layer rules, weakened tests, new dependencies) for any language, and an eval suite. |
+| [`n-arch`](skills/n-arch/SKILL.md) | Architecture profile: maps how a repo is built (shape, layers and import directions, extension recipes, state owners, contracts, commands, budgets) into `docs/architecture/profile.md` and the `.ndev.toml` the n-dev check enforces; refreshes it as the code moves; audits structural debt and hot spots. |
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which flow a piece of work belongs to, the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), core lessons and the Jira REST scripts. |
 | [`dev-loop`](skills/dev-loop/SKILL.md) | Development flow: one story, task or spec from ready to reviewed PR — ready check, n-dev design note with a gate for Large or schema/interface changes, acceptance spec red first, work packages built test-first by subagents, review + QA, inline demo video, 3-part Jira comment, review lane. Needs the plugin. |
 | [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a Jira defect board end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
@@ -17,8 +18,8 @@ Pick a path. **A** for the development loops, **B** for the standalone skills (`
 
 | You want | Use |
 |---|---|
-| dev-loop, defect-loop, develop-init, workflow and n-dev, plus the loops' agents | **A. Plugin** |
-| design-atlas and/or n-dev in every project | **B. Personal skills** |
+| dev-loop, defect-loop, develop-init, workflow, n-dev and n-arch, plus the loops' agents | **A. Plugin** |
+| design-atlas, n-dev and/or n-arch in every project | **B. Personal skills** |
 | a skill in one repo only, shared with that repo's team | **C. Project skills** |
 
 Then restart Claude Code (or start a new session) and type `/`. The skills show up as slash commands.
@@ -61,10 +62,10 @@ git clone https://github.com/ThanaphatNorth/north-ai-skills.git ~/north-ai-skill
 ```
 
 ```bash
-mkdir -p ~/.claude/skills && for s in design-atlas n-dev; do ln -sn ~/north-ai-skills/skills/$s ~/.claude/skills/$s; done
+mkdir -p ~/.claude/skills && for s in design-atlas n-dev n-arch; do ln -sn ~/north-ai-skills/skills/$s ~/.claude/skills/$s; done
 ```
 
-Drop either name from `design-atlas n-dev` if you only want one. The commands are `/design-atlas` and `/n-dev`. `ln -sn` refuses to overwrite: if it says `File exists`, that name is already taken in `~/.claude/skills/`. An earlier install of this repo is fine to leave; anything else, rename or remove it first.
+Drop any name from `design-atlas n-dev n-arch` you don't want; n-arch's audit uses n-dev's script, so link both. The commands are `/design-atlas`, `/n-dev` and `/n-arch`. `ln -sn` refuses to overwrite: if it says `File exists`, that name is already taken in `~/.claude/skills/`. An earlier install of this repo is fine to leave; anything else, rename or remove it first.
 
 | Task | Command |
 |---|---|
@@ -91,6 +92,8 @@ The skills are Markdown and load with no extra setup. Only their helper scripts 
 | Skill | Script | Needs |
 |---|---|---|
 | n-dev | `scripts/structure_check.py` | Python 3.8+ and git (stdlib only) |
+| n-dev | `evals/` | Claude Code with `claude plugin eval`, Node 22+ for the JS fixtures |
+| n-arch | (uses n-dev's script) | n-dev linked beside it |
 | design-atlas | `scripts/palette.py` | Python 3.8+, plus Pillow for PNG/JPG logos (`pip install pillow`) |
 | design-atlas | `scripts/shoot.mjs`, `scripts/scrollfilm.mjs` | Node 22+ and Google Chrome (ffmpeg for `--mp4`) |
 | plugin loops | `skills/workflow/scripts/jira-*.sh` | bash, curl, jq, python3, a Jira API token in `~/.config/<project>-jira.env` (`develop-init` walks you through it), `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
@@ -110,7 +113,13 @@ skills/n-dev/
   SKILL.md            four rules, scope dial, seven steps with completion criteria
   references/*.md     structure, extension, state (single source of truth)
   templates/design-note.md  module map, state ownership, extension plan, test seams
-  scripts/structure_check.py  git-based structure gate (stdlib only)
+  references/change-safety.md  contracts, migrations, rollout, failure modes, signals (Large work)
+  scripts/structure_check.py  git-based structure gate (stdlib only), reads .ndev.toml, --all audits
+  evals/              fixed tasks graded with and without the skill (claude plugin eval)
+skills/n-arch/
+  SKILL.md            create / refresh / audit a repo's architecture profile
+  references/archetypes.md  11 architecture shapes: signals, layers, seams, state, contracts
+  templates/          profile.md, ndev.toml
 skills/workflow/
   SKILL.md            flow map, router, handoffs, per-repo state
   references/stages.md        shared stages S0-S6 + dispatch safety block

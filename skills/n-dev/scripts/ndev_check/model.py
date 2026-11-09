@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import FrozenSet, Optional
+from typing import FrozenSet, Optional, Tuple
 
 
 def count_lines(text: str) -> int:
@@ -28,6 +28,7 @@ class ChangedFile:
     added: FrozenSet[int]        # 1-based line numbers added in the working tree
     removed_count: int           # lines removed relative to the base ref
     text: str                    # current working-tree content
+    removed: Tuple[Tuple[int, str], ...] = ()   # (line number at the base ref, text) of removed lines
 
     @property
     def line_count(self) -> int:
@@ -35,8 +36,19 @@ class ChangedFile:
 
 
 @dataclass(frozen=True)
+class Layer:
+    """One architectural layer from the repo's config: which files belong to it, which import
+    specifiers refer to it, and which other layers its files may import."""
+    name: str
+    paths: Tuple[str, ...]       # globs of files in the layer
+    imports: Tuple[str, ...]     # specifier prefixes that refer to it (aliases, packages, namespaces)
+    may_import: Tuple[str, ...]  # names of the other layers it may depend on
+
+
+@dataclass(frozen=True)
 class Finding:
-    kind: str                    # wiring | file-size | function-size | duplicate
+    kind: str                    # wiring | file-size | function-size | long-line | duplicate | layer
+                                 # | test-weakened | new-dependency
     path: str
     line: int
     value: int

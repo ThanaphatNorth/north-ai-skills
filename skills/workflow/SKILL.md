@@ -33,6 +33,7 @@ Both loops start with a red test that states what "done" means: the defect's red
 | Jira **Bug** / defect type, or "it used to work / it doesn't do what the spec says" | defect flow | `/90north-develop:defect-loop [KEY]` |
 | Story, Task, Improvement, a spec file, or "add / change / build …" | development flow | `/90north-develop:dev-loop <KEY \| spec path \| request>` |
 | Small change with no ticket (one file, one rule, no new module) | discipline only | `/90north-develop:n-dev` |
+| "Map / document / audit the architecture", layer rules, or n-dev says the profile is missing or stale | architecture profile | `/90north-develop:n-arch [refresh \| audit]` |
 | Unclear | read the ticket; behaviour that **exists and is wrong** against the current spec is a defect, behaviour that **does not exist yet** or that the spec now asks to change is development | — |
 
 A ticket's type in Jira is a hint, not the answer: a "Bug" asking for a new screen is a change request (defect-loop triages it `by-design / change`), and a "Task" saying "the total is wrong" is a defect.
@@ -79,4 +80,5 @@ Run them from inside the project (they find `DL` by walking up). The credentials
 | `references/stages.md` | a loop reaches a shared stage (S0–S6), or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of either loop, in full |
 | `../n-dev/SKILL.md` | the discipline every builder and fixer follows; pass its absolute path in each brief |
+| `../n-arch/SKILL.md` | the repo has no `docs/architecture/profile.md` yet, or it is stale; pass the profile's path in each brief once it exists |
 | `../dev-loop/SKILL.md`, `../defect-loop/SKILL.md` | the flow itself |

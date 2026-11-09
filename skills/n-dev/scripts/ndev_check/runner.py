@@ -6,27 +6,44 @@ from typing import Dict, List, Sequence, Tuple
 
 from . import baseline, classify, gitdiff
 from .budgets import check_all
+from .deps import check_deps, is_manifest
 from .duplicates import find_duplicates
-from .model import Budgets, ChangedFile, Finding
+from .layers import check_layers
+from .model import Budgets, ChangedFile, Finding, Layer
+from .testguard import check_tests, is_snapshot
 
 MAX_CORPUS_BYTES = 512 * 1024
 
 
-def run(root: str, base: str, budgets: Budgets,
-        excludes: Sequence[str] = ()) -> Tuple[List[Finding], List[Finding]]:
-    """(findings this change caused, debt that was already over budget at the base ref)."""
-    files = [f for f in gitdiff.changed_files(root, base)
-             if classify.is_code(f.path) and not classify.is_noise(f.path, excludes)]
+def run(root: str, base: str, budgets: Budgets, excludes: Sequence[str] = (), layers: Sequence[Layer] = (),
+        audit: bool = False) -> Tuple[List[Finding], List[Finding]]:
+    """(findings this change caused, debt that was already over budget at the base ref). `audit` means the
+    base is the empty tree: every file counts as new, so change-only checks are skipped."""
+    changed = gitdiff.changed_files(root, base)
+    files = [f for f in changed if classify.is_code(f.path) and not classify.is_noise(f.path, excludes)]
     findings: List[Finding] = []
     for f in files:
         findings.extend(check_all(f, budgets))
     findings.extend(_duplicate_findings(root, files, budgets, excludes))
+    findings.extend(check_layers(files, layers, {f.path: gitdiff.text_at(root, base, f.path)
+                                                 for f in files if layers and not f.is_new}))
+    if not audit:
+        findings.extend(check_tests([f for f in changed if _guarded(f.path, excludes)],
+                                    [p for p in gitdiff.deleted_paths(root, base) if _guarded(p, excludes)]))
+        manifests = [f for f in changed if is_manifest(f.path) and not classify.is_noise(f.path, excludes)]
+        findings.extend(check_deps(manifests, {f.path: None if f.is_new else gitdiff.text_at(root, base, f.path)
+                                               for f in manifests}))
     flagged = {x.path for x in findings}
     current = {f.path: f.text for f in files if f.path in flagged}
     was = {f.path: gitdiff.text_at(root, base, f.path) for f in files if f.path in flagged and not f.is_new}
     new, existing = baseline.split(findings, current, was)
     key = attrgetter("kind", "path", "line")
     return sorted(new, key=key), sorted(existing, key=key)
+
+
+def _guarded(path: str, excludes: Sequence[str]) -> bool:
+    """Inputs of the test guard: everything but excluded paths and noise, except snapshots (noise elsewhere)."""
+    return not classify.matches_any(path, excludes) and (is_snapshot(path) or not classify.is_noise(path))
 
 
 def _duplicate_findings(root: str, files: List[ChangedFile], b: Budgets,
