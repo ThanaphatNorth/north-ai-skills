@@ -93,6 +93,7 @@ folders (`git ls-tree -d --name-only HEAD`). Rows those paths touch are re-check
 |---|---|
 | `n-dev` | reads the profile in step 1; its structure check reads `.ndev.toml`; it suggests n-arch when the profile is missing |
 | `develop-init` (90north-develop) | runs n-arch when a repo has no profile, before writing the loop config |
+| `n-loop` (90north-develop) | triage locates code through the Map and Extension recipes and builds its forbidden areas from Contracts and State owners; without a current profile no card reaches its auto-merge class. It never writes the profile: its learner proposes `refresh` when a locate finds drift, and proposes enforcing a target rule that has reached 0 violations |
 | `improve-codebase-architecture` | after an audit, finds deepening opportunities in the hot spots; n-arch only records rules and debt |
 | `domain-modeling` | records the decisions from step 5 as ADRs, if the repo keeps them |
 
