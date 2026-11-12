@@ -52,6 +52,7 @@ To work on this card, please add:
 **{disclaimer}** · triage
 This card is {a defect: the behaviour exists and is wrong | new or changed behaviour: it does not exist yet or the spec now asks to change it}, so it moves to the {defect | development} queue.
 **Why:** {one sentence in the card's own words, citing the spec or decision when one settles it}
+{Only when config § Docs is on: **Rule:** {`R-n` in `<doc path>` that already says so | proposed rule line, for a person to confirm}}
 ```
 
 ## solution-only

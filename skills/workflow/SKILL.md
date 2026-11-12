@@ -31,7 +31,9 @@ keep code, identifiers and commit messages in the repo's language.
 
 Both loops start with a red test that states what "done" means: the defect's red e2e, or the story's acceptance
 spec. Both end with a green run of that same test in this session, review and QA, evidence, and a tracker update.
-What differs is the middle: a defect needs a cause, a feature needs a design.
+What differs is the middle: a defect needs a cause, a feature needs a design. Both keep each area's **feature doc**
+true in the same PR: its rules with their sources, rule → test, and decisions with reasons
+(`references/feature-docs.md`).
 
 Each loop runs **attended** by default, so a person answers its gates in chat. With `--auto` it runs **unattended**
 (`references/auto-mode.md`): it builds only what needs no gate, puts an adversarial verifier before anything is
@@ -112,6 +114,7 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 |---|---|
 | `references/stages.md` | a loop reaches a shared stage (S0–S6), or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of any loop, in full |
+| `references/feature-docs.md` | step 2 by-design (cite or propose the rule), step 3 (read the area's rules), steps 5–6 (plan and write the doc in the same PR), step 8 (the `Docs:` line), verifier V10 |
 | `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |
 | `../n-dev/SKILL.md` | the discipline every builder and fixer follows; pass its absolute path in each brief |
 | `../n-arch/SKILL.md` | the repo has no `docs/architecture/profile.md` yet, or it is stale; pass the profile's path in each brief once it exists |

@@ -56,7 +56,9 @@ instead.
 
   Record current behaviour with a GREEN verification spec and comment with the by-design variant. Hand it to
   **n-develop-loop** (`W/SKILL.md` § Handoffs; in auto mode, the hand-off label). Name the stale document when
-  there is one.
+  there is one. With config § Docs on, the comment cites the rule that already says so (`R-n` in the area's
+  feature doc) or proposes the rule line. There is no branch and no doc edit until the PO confirms it
+  (`W/references/feature-docs.md` § By-design answers).
 - `structural`: a defect inside config § Defect flow's fence: schema or migration, auth, reported figures, the
   API↔web contract, deploy, or more than 5 files or 200 lines.
   - Run steps 4–5, then comment with the structural variant and the options.
@@ -77,9 +79,10 @@ Turn the ticket into the criteria you will test, numbered `AC-1 … AC-n` in the
 - each expected-result sentence becomes a criterion;
 - a sentence that names two screens is two criteria.
 
-Read every comment newest first and any linked spec or decision log (config § Spec sources). When the latest
-comment or a linked spec disagrees with the description and nobody settled it, ask which one wins. That question is
-`needs-info`; never pick yourself.
+Read every comment newest first, any linked spec or decision log (config § Spec sources), and the area's feature
+doc when config § Docs is on (`W/references/feature-docs.md`): its rules `R-n` say what the area should do. When
+the latest comment, a linked spec or an existing rule disagrees with the ticket and nobody settled it, ask which
+one wins. That question is `needs-info`; never pick yourself.
 
 ## 4 · Reproduce: a failing test, on video
 1. S1 Isolate (`stages.md`), branch `fix/<KEY>-<slug>`. Ticket data from the reporter's files goes into a **copy**
@@ -113,6 +116,14 @@ Dispatch `90north-develop:defect-fixer` with:
 It writes a regression test red → fix → green, runs the checks and commits locally:
 `fix(<area>): <summary> (<KEY>)`.
 
+**Feature doc** (config § Docs on). Write it yourself, never the fixer, per `W/references/feature-docs.md`:
+- the fix changed a rule or made one clearer → change that `R-n`, with the regression test in its row, and create
+  the doc (partial) when the area has none;
+- a plain fix and the doc states the right rule → add the regression test to that rule's row;
+- a plain fix and the area has no doc → no doc.
+
+Commit it locally as `docs(<area>): … (<KEY>)`.
+
 ## 7 · Verify and record
 1. S2 Verify (`stages.md`): the reviewer's spec is the ticket plus the root cause. QA runs the defect spec twice.
    Fix rounds go back to step 6, with a budget of 2.
@@ -122,7 +133,8 @@ It writes a regression test red → fix → green, runs the checks and commits l
 ## 8 · Open the PR
 In auto mode, pick the ship class (step 9) first: it decides the lane.
 
-S4 Ship with `templates/jira-comment.md`: the before video goes under §1, the after video under §3. In auto mode,
+S4 Ship with `templates/jira-comment.md`: the before video goes under §1, the after video and the `Docs:` line
+under §3. In auto mode,
 adjust it as `W/templates/auto-comments.md` § Proof comment says.
 - Push per config § Push policy and open the PR.
 - Lane, by mode and class:

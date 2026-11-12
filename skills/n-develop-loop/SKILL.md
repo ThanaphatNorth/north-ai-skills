@@ -63,8 +63,9 @@ Attachments may hold personal data: describe them, never copy them.
 ## 3 · Check the spec
 1. Write the criteria as a numbered list `AC-1 … AC-n`. Take them from the ticket's own list when it has one; mark
    any you derive `(derived)`.
-2. Read every comment newest first and the decision log. When a comment or linked spec disagrees with the
-   description and nobody settled it, ask which one wins (`needs-info`).
+2. Read every comment newest first, the decision log, and the area's feature doc when config § Docs is on
+   (`W/references/feature-docs.md`). When a comment, a linked spec or an existing rule `R-n` disagrees with the
+   ticket and nobody settled it, ask which one wins (`needs-info`).
 3. Write the **AC → test** table: each criterion → the test level (e2e for user-visible criteria, API or integration
    for the rest) and the spec file.
 
@@ -80,7 +81,8 @@ Attachments may hold personal data: describe them, never copy them.
 1. **Orient** (n-dev step 1) in the base checkout: commands, extension points, state owners, reuse inventory, and
    the architecture profile.
 2. **Design note** from `../n-dev/templates/design-note.md`: module map, state ownership, extension plan, test seams,
-   the AC → test table, and the **work packages** (WP-1 … WP-n). Each WP names:
+   the AC → test table, each feature doc and the rules `R-n` it will add or change, and the **work packages**
+   (WP-1 … WP-n). Each WP names:
    - its files and a one-sentence responsibility;
    - its success criteria and test seam;
    - the WPs it depends on.
@@ -114,7 +116,11 @@ Attachments may hold personal data: describe them, never copy them.
    attended mode, ask the user (ledger `blocked-needs-human`). In auto mode, take the stopped path.
 4. A bug found in code that existed before this story is not fixed here: note it as a defect for n-defect-loop
    (`W/SKILL.md` § Handoffs).
-5. Done when every WP is committed and WP-0's acceptance specs are **green** against the stack.
+5. **Feature doc** (config § Docs on): write it yourself in the worktree, per `W/references/feature-docs.md`, as a
+   local commit `docs(<area>): … (<KEY>)`. Each rule added or changed gets its source and its test. Builders
+   never write it. No rule changed → no doc change; the report says so.
+6. Done when every WP is committed, WP-0's acceptance specs are **green** against the stack, and the feature doc
+   (if config § Docs is on and a rule changed) is committed.
 
 ## 7 · Verify and record
 1. S2 Verify (`stages.md`). The reviewer gets the diff, the ticket, the design note and the AC table. QA runs every
@@ -126,8 +132,8 @@ Attachments may hold personal data: describe them, never copy them.
 ## 8 · Open the PR
 In auto mode, pick the ship class (step 9) first: it decides the lane.
 
-S4 Ship with `templates/jira-comment.md`. In auto mode, adjust it as `W/templates/auto-comments.md` § Proof comment
-says.
+S4 Ship with `templates/jira-comment.md`, whose §2 carries the `Docs:` line. In auto mode, adjust it as
+`W/templates/auto-comments.md` § Proof comment says.
 - Push per config § Push policy and open the PR.
 - Move the item to config § Dev flow's review lane (usually Code Review). In auto mode, an auto-merged item goes to
   the after-merge lane after step 9 instead (ledger `merged`).

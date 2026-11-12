@@ -16,6 +16,7 @@ Where: `<path>:<line>` (<function/component>)
 **3. Solution**
 <what changed, in plain words, and why it fixes the cause rather than the symptom>
 Files: `<path>` (+ regression test `<path>`)
+Docs: `<feature doc path>` — <R-n changed, or the regression test added to R-n> (only when config § Docs is on)
 Tests: `<command>` → `<pasted summary line>` (one line per suite run)
 **Video (after)** (<what each held state shows>):
 ::video <media-uuid of KEY-after.mp4>
@@ -23,6 +24,6 @@ Branch / PR: <branch @ sha — local, awaiting push approval | PR link>
 QA note: <what QA should re-test, incl. neighbouring cases>
 
 <!-- Variants
-- by-design / superseded: §1 "not reproducible as reported" + why (video of current behaviour), §2 the spec line / decision / commit, §3 "no code change — needs PO decision: close, or re-scope to <what>".
+- by-design / superseded: §1 "not reproducible as reported" + why (video of current behaviour), §2 the spec line / decision / commit, and with config § Docs on the rule: `R-n` in `<doc>` that already says so, or a proposed rule line for the PO to confirm, §3 "no code change — needs PO decision: close, or re-scope to <what>".
 - structural: §1 + §2 as usual, §3 "proposed — waiting for a decision" with options A/B (cost, risk) and the questions for the PO.
 - partial fix: §3 lists what this PR fixes and, separately, what still waits for a decision; the ticket stays in its lane. -->

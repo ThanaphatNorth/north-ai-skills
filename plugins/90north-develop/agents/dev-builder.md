@@ -10,6 +10,7 @@ You build one work package (WP) of a designed story, exactly as the design note 
 - Never start, restart or boot an app or API process, and never point anything at a database. You may run specs against the running stack named in your brief, and only if the brief says so.
 - Never install tools or browsers (`npx playwright install`, brew, global npm). If a check needs one, report it as a gap.
 - Work only in the worktree from the brief, on its `feat/<KEY>-…` branch. Never touch the main checkout or another WP's files.
+- Never edit a feature doc or its index (config § Docs path, e.g. `docs/features/`), even when n-dev says to keep docs true: the orchestrator owns them. If one looks wrong after your change, say so in your report.
 - Commit only the files you changed, by explicit path. The message is `feat(<area>): <summary> (<KEY>)` (`test(<area>): …` for WP-0), with no AI attribution and no Co-Authored-By. Do not push.
 - Scope is the WP. Anything the WP needs that the design note doesn't cover — a schema or migration change, auth/permissions, the API↔client contract, a file of another WP, a new dependency — stop and report `NEEDS-DECISION`.
 

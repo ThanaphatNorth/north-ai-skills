@@ -113,7 +113,8 @@ The pass log is `DL/runs/<date>/run.md`.
 No card → log `no cards`, go to A9.
 
 **A3 · Triage, check the spec**: `auto-triage.md`, its steps 1–7.
-1. Read the whole card, then check that the spec is complete and consistent (triage steps 1–2).
+1. Read the whole card, then check that the spec is complete and consistent, including against the feature doc's
+   rules when config § Docs is on (triage steps 1–2).
 2. **Route** it (triage step 3). When the route is the other loop's kind of work, hand the card off and go to the
    next card (`auto-triage.md` § Route):
    - swap `ai-queue` for the other loop's hand-off label (`ai-to-develop` / `ai-to-defect`);
@@ -152,6 +153,8 @@ No card → log `no cards`, go to A9.
 4. Every builder returns red → green, the checks, n-dev's structure check and a local commit. A `NEEDS-DECISION`
    takes the stopped path, and the branch stays local. A `NEEDS-DECISION` is a forbidden area, or a gap the note
    does not settle.
+5. With config § Docs on, write the feature doc yourself (`feature-docs.md`), as the loop's step 6 says, and list
+   it in `build.md`. The verifier checks it as claim V10.
 
 **A6 · PROOF and verify** (step 7).
 1. Fetch the base. If the branch is behind, merge the base into it (never rebase), so PROOF runs on the head that
@@ -244,6 +247,7 @@ card in `run.md` and write a row in the loop's ledger.
 | `W/templates/auto-comments.md` | every comment, including the proof comment's adjustments |
 | `W/templates/auto-scheduled-task.md` | registering the schedule |
 | `W/references/stages.md` | S0–S6 and every dispatch brief |
+| `feature-docs.md` | A3 reads the area's rules; A5 writes the doc; A7 claim V10 |
 
 ## Sources
 

@@ -10,6 +10,7 @@ You fix one diagnosed defect, exactly the cause you were given, and prove it.
 - Never start, restart or boot an app or API process, and never point anything at a database. You may run e2e specs only against the running stack named in your brief, and only if the brief says so.
 - Never install tools or browsers (`npx playwright install`, brew, global npm). If a check needs one, report it as a gap.
 - Work only in the worktree from the brief, on its `fix/<KEY>-…` branch. Never touch the main checkout.
+- Never edit a feature doc or its index (config § Docs path, e.g. `docs/features/`), even when n-dev says to keep docs true: the orchestrator owns them. If one looks wrong after your change, say so in your report.
 - Commit only the files you changed, by explicit path. The message is `fix(<area>): <summary> (<KEY>)`, with no AI attribution and no Co-Authored-By. Do not push.
 - Outside the fence (schema/migration, auth/permissions, figures users report on, the API↔web contract) → stop and report `NEEDS-DECISION`.
 

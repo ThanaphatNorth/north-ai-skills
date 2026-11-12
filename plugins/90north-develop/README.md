@@ -34,6 +34,16 @@ With `--auto`, either loop runs with nobody in the chat:
 
 Only a low- or no-impact change inside a standing approval merges on its own; everything else waits for a person.
 
+**Feature docs.** Both loops keep one markdown doc per feature area true in the same PR as the code, by default
+`docs/features/<area>.md` (config § Docs). Each doc holds:
+- the area's rules `R-n`, each with its source (ticket, decision, spec);
+- rule → test;
+- the decisions, with their reasons (including by-design answers);
+- the known limits.
+
+The rules are in `skills/workflow/references/feature-docs.md`, the template in
+`skills/workflow/templates/feature-doc.md`. In `--auto`, verifier claim V10 checks the doc against the diff.
+
 | Skill | Role |
 |--|--|
 | `workflow` | the map: routes work to a loop, owns the shared stages, the auto mode, the dispatch safety block, core lessons and the tracker (Jira or a local board) |

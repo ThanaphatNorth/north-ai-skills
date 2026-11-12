@@ -85,6 +85,10 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Repo agents to use as role files (dispatch general-purpose with "Read <worktree>/<path> and follow it as your role"): code review `<path>`, QA `<path>`, verifier `<path>`, house rules for devs `<paths>` (+ any rule known to be stale).
 - Development discipline: the bundled `n-dev` skill (always). Extra skills builders and fixers follow: <e.g. a TDD skill | none>.
 
+## Docs (feature docs, kept true in every PR; rules: the workflow skill's `references/feature-docs.md`)
+- Feature docs: <on (default) | off> · path `<docs/features/ | the repo's docs system: Docusaurus folder, handbook …>` · index `<path>/README.md` · max <150> lines per doc.
+- Docs system conventions: <none — use the workflow skill's `templates/feature-doc.md` | front matter, sidebar, file naming the repo already uses>. The index file is the only list of areas.
+
 ## Spec sources
 - Spec / decision log: `<path>` (check "Revised by / Reversed by" before calling something a bug or a requirement).
 - Requirements docs / QA pack (may lag the spec): `<paths>`. Designs: <Figma file / folder>.
