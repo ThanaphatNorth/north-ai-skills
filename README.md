@@ -10,6 +10,7 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which flow a piece of work belongs to, the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), core lessons and the Jira REST scripts. |
 | [`dev-loop`](skills/dev-loop/SKILL.md) | Development flow: one story, task or spec from ready to reviewed PR — ready check, n-dev design note with a gate for Large or schema/interface changes, acceptance spec red first, work packages built test-first by subagents, review + QA, inline demo video, 3-part Jira comment, review lane. Needs the plugin. |
 | [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a Jira defect board end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
+| [`n-loop`](skills/n-loop/SKILL.md) | Unattended flow for any project: one pass over a Jira AI queue — follows up its own questions and PRs, locks a card, triages any card type against the n-arch profile, proves the card's own spec red then green through the defect or dev path with n-dev, has an adversarial verifier refute every claim, ships by policy (auto-merge only inside a standing approval) and learns into project knowledge. Needs the plugin. |
 | [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects, writes `.claude/90north-develop/` for both loops. |
 
 ## Install
@@ -18,7 +19,7 @@ Pick a path. **A** for the development loops, **B** for the standalone skills (`
 
 | You want | Use |
 |---|---|
-| dev-loop, defect-loop, develop-init, workflow, n-dev and n-arch, plus the loops' agents | **A. Plugin** |
+| dev-loop, defect-loop, n-loop, develop-init, workflow, n-dev and n-arch, plus the loops' agents | **A. Plugin** |
 | design-atlas, n-dev and/or n-arch in every project | **B. Personal skills** |
 | a skill in one repo only, shared with that repo's team | **C. Project skills** |
 
@@ -43,7 +44,7 @@ claude plugin marketplace add ThanaphatNorth/north-ai-skills
 claude plugin install 90north-develop@north-ai-skills
 ```
 
-The commands are namespaced: `/90north-develop:workflow`, `/90north-develop:develop-init`, `/90north-develop:dev-loop`, `/90north-develop:defect-loop`, `/90north-develop:n-dev`. In each repo where you use the loops, run `/90north-develop:develop-init` once. See the [plugin README](plugins/90north-develop/README.md) for what each loop does and where it stops for you.
+The commands are namespaced: `/90north-develop:workflow`, `/90north-develop:develop-init`, `/90north-develop:dev-loop`, `/90north-develop:defect-loop`, `/90north-develop:n-loop`, `/90north-develop:n-dev`, `/90north-develop:n-arch`. In each repo where you use the loops, run `/90north-develop:develop-init` once. See the [plugin README](plugins/90north-develop/README.md) for what each loop does and where it stops for you.
 
 | Task | Command |
 |---|---|
@@ -51,7 +52,7 @@ The commands are namespaced: `/90north-develop:workflow`, `/90north-develop:deve
 | Check what's installed | `claude plugin list` |
 | Remove | `claude plugin uninstall 90north-develop@north-ai-skills` |
 
-Install the whole plugin. Linking `dev-loop` or `defect-loop` on its own leaves out the agents and the sibling skills the loops depend on.
+Install the whole plugin. Linking `dev-loop`, `defect-loop` or `n-loop` on its own leaves out the agents and the sibling skills the loops depend on.
 
 ### B. Personal skills: every project on this machine
 

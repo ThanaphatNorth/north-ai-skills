@@ -62,11 +62,12 @@ Pick the size first; it decides how much of the process runs.
 
 ## Inside a 90north-develop flow
 
-When this skill ships in the 90north-develop plugin, the loops split its steps between two roles. A tracked story runs in `dev-loop`, a tracked defect in `defect-loop`; an untracked change uses this skill alone.
+When this skill ships in the 90north-develop plugin, the loops split its steps between two roles. A tracked story runs in `dev-loop`, a tracked defect in `defect-loop`, a card in the unattended AI queue in `n-loop`; an untracked change uses this skill alone.
 
 | Role | Steps it owns |
 |---|---|
 | Orchestrator (dev-loop, defect-loop) | 1–3: orient, success criteria, design note and its gate; 6: review (as review + QA in parallel); 7: push, PR and the tracker |
+| Conductor (n-loop, unattended) | the same 1–3, 6–7, but with no one to answer the step-3 gate: a Large card or a gate case found mid-build parks the card with the design note posted as the solution; 6 adds an adversarial verifier that treats the structure check's findings as a claim to refute |
 | Builder or fixer subagent (`dev-builder`, `defect-fixer`) | 4–5 inside one work package or one root cause, and a local commit — never a push |
 
 ## Reference map
