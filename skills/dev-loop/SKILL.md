@@ -1,11 +1,11 @@
 ---
 name: dev-loop
-description: Development flow of the 90north-develop plugin — take one story, task, improvement or spec (a Jira key, a spec file, a plain request, or --next from the board) from ready to reviewed PR. Checks it is ready, sizes it, writes the n-dev design note and stops for the user's approval when it is Large or changes schema, state shape or a public interface, writes an acceptance spec that goes red, builds work packages test-first through dev-builder subagents on an isolated worktree and stack, verifies with code review + QA in parallel, records a demo video that plays inline in Jira, writes the 3-part comment (1. What was built 2. How it works 3. Verification), pushes per policy and moves the item to the review lane, then learns. Can run on a loop (/loop 60m /90north-develop:dev-loop --next) but never passes a design gate by itself. Use when the user says "dev loop", "build <KEY>", "implement this story/spec", "pick the next story", or a loop fires this skill. Defects go to defect-loop.
+description: Development flow of the 90north-develop plugin — take one story, task, improvement or spec (a Jira or local-board key, a spec file, a plain request, or --next from the board) from ready to reviewed PR. Checks it is ready, sizes it, writes the n-dev design note and stops for the user's approval when it is Large or changes schema, state shape or a public interface, writes an acceptance spec that goes red, builds work packages test-first through dev-builder subagents on an isolated worktree and stack, verifies with code review + QA in parallel, records a demo video that plays inline in Jira, writes the 3-part comment (1. What was built 2. How it works 3. Verification), pushes per policy and moves the item to the review lane, then learns. Can run on a loop (/loop 60m /90north-develop:dev-loop --next) but never passes a design gate by itself. Use when the user says "dev loop", "build <KEY>", "implement this story/spec", "pick the next story", or a loop fires this skill. Defects go to defect-loop.
 ---
 
 # 90north-develop · dev-loop
 
-You are the **orchestrator** (the main conversation): you decide, design, dispatch and check; `dev-builder` subagents write the code. The shared stages S0–S6, the dispatch safety block and the Jira scripts live in the workflow skill (`W = ../workflow/` from this skill's base directory): read `W/references/stages.md` once per run. The discipline every line follows is n-dev (`../n-dev/`).
+You are the **orchestrator** (the main conversation): you decide, design, dispatch and check; `dev-builder` subagents write the code. The shared stages S0–S6, the dispatch safety block and the tracker scripts (`W/scripts/tracker.sh`, Jira or the local board) live in the workflow skill (`W = ../workflow/` from this skill's base directory): read `W/references/stages.md` once per run. The discipline every line follows is n-dev (`../n-dev/`).
 
 ## Input
 
@@ -20,7 +20,7 @@ You are the **orchestrator** (the main conversation): you decide, design, dispat
 S0 in `stages.md` with flow `dev`. Config needs § Dev flow (legacy `.claude/defect-loop/` → run `/90north-develop:develop-init` first).
 
 ## D1 · Pull and ready check
-1. `W/scripts/jira-get.sh <KEY>` — description, every comment, attachments; download and **look** at designs and screenshots (`W/scripts/jira-download.sh`). Open the linked spec, decision log and design files config § Spec sources names. Attachments may hold personal data: describe, never copy.
+1. `W/scripts/tracker.sh get <KEY>` — description, every comment, attachments; download and **look** at designs and screenshots (`W/scripts/tracker.sh download`). Open the linked spec, decision log and design files config § Spec sources names. Attachments may hold personal data: describe, never copy.
 2. Classify (`W/SKILL.md` § Route the work). It is really a defect → hand to defect-loop (ledger `handed-to-defect-loop`), stop.
 3. **Ready** means: a goal, acceptance criteria that can each become a check, the screens or API it touches, the roles, and no open dependency. Write the criteria as a numbered list `AC-1 … AC-n` (from the ticket's own list when it has one; when you derive them, mark them derived). Missing a piece → comment once asking exactly for it, ledger `needs-info`, stop.
 

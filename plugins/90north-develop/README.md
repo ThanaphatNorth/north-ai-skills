@@ -28,7 +28,7 @@ Both loops start with a red test that says what "done" means (the defect's red e
 
 | Skill | Role |
 |--|--|
-| `workflow` | the map: routes work to a flow, owns the shared stages, dispatch safety block, core lessons and the Jira scripts |
+| `workflow` | the map: routes work to a flow, owns the shared stages, dispatch safety block, core lessons and the tracker scripts (Jira or a local board) |
 | `develop-init` | once per repo: discovers the stack, reads the board's ids and lanes, writes `.claude/90north-develop/` |
 | `dev-loop` | development flow: one story / task / spec from ready to reviewed PR |
 | `defect-loop` | defect flow: sweeps the defect board, each defect from repro to the QA lane |
@@ -82,26 +82,32 @@ Both loops start with a red test that says what "done" means (the defect's red e
 | File | Holds |
 |--|--|
 | `config.md` | Tracker, board ids, § Dev flow, § Defect flow and § AI loop (queries, lock, lanes, fences, gates, ship classes), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks, team agents, spec sources, project rules |
-| `tracker.env` | `JIRA_SITE`, `JIRA_ENV_FILE` — no secrets |
+| `tracker.env` | `TRACKER` (jira or local) and its settings: `JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES` — no secrets |
+| `board/` | Local tracker only: one markdown card per file, attachments in `board/<KEY>/`; committed by default, the loops edit it and a person commits |
 | `dev-ledger.md`, `defect-ledger.md`, `ai-ledger.md` | One row per state change, per loop |
 | `lessons.md` | Project lessons tagged `[dev]` / `[defect]` / `[ai]` / `[both]` (core lessons ship with the plugin) |
 | `knowledge/` | The AI loop's code map, selectors, calibration, outcomes log and proposals (written by `loop-learner`) |
 | `runs/` | The AI loop's per-card hand-off files; git-ignored |
 
-Credentials: a file outside the repo (default `~/.config/<project>-jira.env`, `JIRA_EMAIL` + `JIRA_TOKEN`, chmod 600). The scripts send the token to curl on stdin and never print it. A repo set up with 0.2 (`.claude/defect-loop/`) keeps working for defects; `develop-init` moves it on your yes.
+Credentials (Jira only): a file outside the repo (default `~/.config/<project>-jira.env`, `JIRA_EMAIL` + `JIRA_TOKEN`, chmod 600). The scripts send the token to curl on stdin and never print it. A repo set up with 0.2 (`.claude/defect-loop/`) keeps working for defects; `develop-init` moves it on your yes.
 
-## Scripts (`skills/workflow/scripts/` at the repo root)
+## Tracker (`skills/workflow/scripts/tracker.sh` at the repo root)
 
-| Script | Does |
+Every loop reaches the tracker through `tracker.sh <verb>`. `TRACKER` in `tracker.env` picks the backend: `jira`
+(the default) or `local`, a board of markdown cards in the repo for a project with no Jira. Both run the same flows,
+with the queue, lock, lanes, comments and evidence. Arguments per backend, the card format and the query form are in
+`skills/workflow/references/trackers.md`.
+
+| Verb | Does |
 |--|--|
-| `jira-search.sh '<JQL>'` | List issues (key, type, status id, sprint/BACKLOG, updated, summary), all pages |
-| `jira-get.sh KEY` | Description, every comment, attachments as plain text |
-| `jira-card.sh KEY [fieldId,…]` | Labels, priority, parent, links and the listed custom fields |
-| `jira-download.sh KEY dir [ids]` | Download attachments |
-| `jira-transition.sh KEY id [fields-json]` / `--list` | Move through the workflow / show offered transitions |
-| `jira-edit.sh KEY --add-label L --remove-label L --field ID=JSON --field-md ID=file.md` | Labels and field values (lock, verdict and class labels, the AI summary field); `--dry-run` prints the body |
-| `jira-attach.sh KEY files…` | Upload; prints each file's media uuid |
-| `jira-comment.sh KEY comment.md [commentId]` | Markdown → ADF with `::video <uuid>` inline players; reads back and warns on missing players or code spans |
+| `search '<query>'` | List items (key, type, status, …); JQL on Jira, `status=todo labels=ai-queue age>2h` on a local board |
+| `get KEY` | Description, every comment, attachments as plain text |
+| `card KEY [fields]` | Labels, links and the listed fields |
+| `download KEY dir [ids]` | Download attachments into a new folder |
+| `transition KEY <id \| status>` / `--list` | Move through the workflow / show the moves offered |
+| `edit KEY --add-label L --remove-label L --field F=V --field-md F=file.md` | Labels and field values (lock, verdict and class labels, the AI summary); `--dry-run` changes nothing |
+| `attach KEY files…` | Upload; prints what goes on the `::video` line (Jira media uuid, or `KEY/<name>`) |
+| `comment KEY comment.md [id]` | Markdown with `::video` players (→ ADF on Jira); reads it back |
 
 ## Safety built in
 

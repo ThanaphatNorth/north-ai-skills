@@ -1,7 +1,8 @@
 # n-loop — comment templates
 
-<!-- The loop's markdown dialect → ADF via W/scripts/jira-comment.sh: **bold**, `code`, "1. " and "- " lists, bare URLs,
-     and `::video <uuid>` for an inline player (uuid from W/scripts/jira-attach.sh). Nothing else renders: no headings,
+<!-- The loop's markdown dialect, posted with W/scripts/tracker.sh comment (Jira: → ADF; a local board keeps the
+     markdown): **bold**, `code`, "1. " and "- " lists, bare URLs, and `::video <uuid | KEY/name>` for an inline player
+     (what W/scripts/tracker.sh attach prints). Nothing else renders: no headings,
      no fenced code blocks, no blockquotes, no single-asterisk italics.
      Write each file with the Write tool or a QUOTED heredoc (<<'EOF'), never <<EOF.
      Language: config § Comments; translate the labels, keep the structure. `{…}` are fills.

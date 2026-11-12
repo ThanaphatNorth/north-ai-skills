@@ -1,6 +1,6 @@
 ---
 name: develop-init
-description: Set up the 90north-develop flows (dev-loop, defect-loop and, when wanted, the unattended n-loop) in a project — discover the repo's stack, test commands, e2e setup and agents, check Jira access, read the board's issue types, statuses, transition ids and custom fields, and write .claude/90north-develop/{config.md, tracker.env, dev-ledger.md, defect-ledger.md, lessons.md} (plus ai-ledger.md, knowledge/ and runs/ for the AI loop). Migrates a legacy .claude/defect-loop/ folder with the user's yes. Asks the user only for what the repo and Jira can't answer (credentials file path, push policy, comment language, design-gate rules). Use when the user says "set up the dev loop / defect loop here", "init 90north-develop", or a loop finds no config.
+description: Set up the 90north-develop flows (dev-loop, defect-loop and, when wanted, the unattended n-loop) in a project — discover the repo's stack, test commands, e2e setup and agents, check Jira access and read the board's issue types, statuses, transition ids and custom fields (or, with no Jira, set up a local board of markdown cards in the repo), and write .claude/90north-develop/{config.md, tracker.env, dev-ledger.md, defect-ledger.md, lessons.md} (plus ai-ledger.md, knowledge/ and runs/ for the AI loop). Migrates a legacy .claude/defect-loop/ folder with the user's yes. Asks the user only for what the repo and Jira can't answer (credentials file path, push policy, comment language, design-gate rules). Use when the user says "set up the dev loop / defect loop here", "init 90north-develop", or a loop finds no config.
 ---
 
 # 90north-develop · develop-init
@@ -25,12 +25,22 @@ Goal: one `config.md` where every value was checked, so neither loop guesses. Bo
 - Project memory files and CLAUDE.md for ports, DB and rules already learned.
 - Architecture profile: if `docs/architecture/profile.md` (or `.ndev.toml`'s `[profile] path`) exists, read it and link it in `config.md` instead of re-deriving extension points and state owners; if it does not, run `../n-arch/SKILL.md` (create mode) before step 5, and link what it writes.
 
-## 3. Jira
+## 3. Tracker: Jira, or a local board
+First ask whether the project uses Jira. With no Jira, take **3b** instead of the Jira steps; everything else in this skill is the same (`W/references/trackers.md` has the verbs, the card format and the query form).
+
+### 3a. Jira
 - Ask the user for: site URL, project key, board URL. Ask where the credentials file is (default `~/.config/<project>-jira.env` with `JIRA_EMAIL`, `JIRA_TOKEN`; tell them how to create an API token at id.atlassian.com → Security → API tokens if needed). Never ask them to paste the token in chat.
-- Write `DL/tracker.env` from `templates/tracker.env`. Check access with `W/scripts/jira-search.sh 'project = <KEY> ORDER BY created DESC'` (the script tightens the credentials file to 600 and never prints it). If an Atlassian MCP connector is available, test it too and record which one works.
-- Read the board facts **by id**: issue types (`/rest/api/3/issue/createmeta/<KEY>/issuetypes` or from a search) — which are defects, which are stories/tasks/improvements; statuses of open issues; the transitions offered from each open status (`W/scripts/jira-transition.sh <KEY> --list` on a real ticket in each status). Record the path to the QA lane for defects and to the review lane for stories, and any screen fields (e.g. a root-cause cascading field). Mark Done-category transitions as never-use.
+- Write `DL/tracker.env` from `templates/tracker.env`. Check access with `W/scripts/tracker.sh search 'project = <KEY> ORDER BY created DESC'` (the script tightens the credentials file to 600 and never prints it). If an Atlassian MCP connector is available, test it too and record which one works.
+- Read the board facts **by id**: issue types (`/rest/api/3/issue/createmeta/<KEY>/issuetypes` or from a search) — which are defects, which are stories/tasks/improvements; statuses of open issues; the transitions offered from each open status (`W/scripts/tracker.sh transition <KEY> --list` on a real ticket in each status). Record the path to the QA lane for defects and to the review lane for stories, and any screen fields (e.g. a root-cause cascading field). Mark Done-category transitions as never-use.
 - Build both queries with ids — the open-defect query and the ready-for-dev query — run each with its sanity query; the counts must agree.
 - AI loop (only when the user will run `n-loop`): read the custom fields by id (`/rest/api/3/field`: severity, environment, steps, expected result, acceptance criteria, any "AI status" or "AI summary" field and its type), the option ids of a select field used as the lock, and the transitions for need-info, start, review, after-merge and back-to-ready. Build the queue, stale-lock and follow-up queries with ids and run each. Fill § AI loop per `../n-loop/references/project-pack.md` § New project, step by step; the never-touch list starts from the profile's Contracts and State owners.
+
+### 3b. No Jira: a local board
+- Write `DL/tracker.env` from `templates/tracker.env` with `TRACKER=local`; keep `LOCAL_STATUSES` at the default (`todo,in-progress,need-info,review,ready-for-qa,reopened,done`) unless the team names other lanes, and set `LOCAL_BOARD` (absolute, or relative to `DL`) only to move the board out of `DL/board/`.
+- Create the board folder, copy `W/templates/card.md` into it as `_template.md` (no key, so search skips it), and pick one key prefix for the repo (`TASK-1.md`, `TASK-2.md` …). Check with `W/scripts/tracker.sh search 'status=todo'` (`# 0 issue(s)` on an empty board).
+- Board facts are the `LOCAL_STATUSES` names; there are no ids. Mark `done` (and any other closing status) never-use, as with Jira's Done category. Defects are `type: bug`, development is `type: story | task | improvement`.
+- Queries in the local form, each with its sanity query: open defects `type=bug status=todo,reopened`, ready for dev `type=story,task,improvement status=todo`, and for the AI loop the queue `labels=ai-queue -labels=ai-processing status=todo` and stale locks `labels=ai-processing age>2h`. Lanes are status names (to QA: `in-progress → review → ready-for-qa`). Fields are header names or section headings (`severity`, `acceptance-criteria`); the AI summary goes to a `## AI summary` section through `--field-md`.
+- The board is committed by default, so the team shares it. The loops edit cards in the main checkout and never commit them; each run report lists the changed cards for a person to commit. Git-ignore the folder only if the user asks.
 
 ## 4. Ask only what's left (one AskUserQuestion, ≤4 questions)
 - Push policy: ask every time (default) / standing OK to push `fix/<KEY>-*` and `feat/<KEY>-*` and open PRs (never force-push, merge, push to base, delete branches).
@@ -51,4 +61,5 @@ Tell the user in a few lines: what was found, what is `TBD`, and the commands:
 - which flow: `/90north-develop:workflow`
 - a story: `/90north-develop:dev-loop <KEY>` · the next ready one on a loop: `/loop 60m /90north-develop:dev-loop --next`
 - defects: `/90north-develop:defect-loop` · on a loop: `/loop 30m /90north-develop:defect-loop`
+- local board: add cards by copying `board/_template.md` to `board/<PREFIX>-<n>.md`; commit card changes after a run
 - the AI queue: `/90north-develop:n-loop --dry-run` by hand first, then the schedule in `../n-loop/templates/scheduled-task.md`

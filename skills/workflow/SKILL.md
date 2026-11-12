@@ -63,7 +63,8 @@ A handoff writes one ledger row in each loop's ledger (`handed-to-dev-loop` / `f
 | File | Owner of | Written by |
 |---|---|---|
 | `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § AI loop | develop-init; the loops add facts they verify (the unattended loop only proposes) |
-| `tracker.env` | `JIRA_SITE`, `JIRA_ENV_FILE` — no secrets | develop-init |
+| `tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
+| `board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
 | `dev-ledger.md` / `defect-ledger.md` / `ai-ledger.md` | one row per state change of a work item, per loop | the loop that owns the item |
 | `lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
 | `knowledge/` | what the AI loop learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
@@ -71,20 +72,27 @@ A handoff writes one ledger row in each loop's ledger (`handed-to-dev-loop` / `f
 
 Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them; the scripts find either folder. Set `DEVELOP_DIR` to point at the folder explicitly.
 
-## Scripts (`scripts/`, Jira REST v3 — used by every loop)
+## Tracker (`scripts/tracker.sh <verb>` — used by every loop)
 
-Run them from inside the project (they find `DL` by walking up). The credentials file is read by the scripts only; never cat it.
+Every loop reaches the tracker through one door, `scripts/tracker.sh <verb> …`. Run it from inside the project; it
+finds `DL` by walking up. `TRACKER` in `tracker.env` picks the backend:
+- `jira` (the default): Jira REST v3 through the `jira-<verb>.sh` scripts. The credentials file is read by the
+  scripts only; never cat it.
+- `local`: a board of markdown cards in the repo, for a project with no Jira.
 
-| Script | Does |
+Both backends run the same flows, with the queue, lock, lanes, comments and evidence. The verb arguments for each
+backend, the card format and the query form are in `references/trackers.md`. Tests are in `scripts/tests/`.
+
+| Verb | Does |
 |---|---|
-| `scripts/jira-search.sh '<JQL>'` | issues: key, type, status id, sprint or BACKLOG, updated, summary — all pages |
-| `scripts/jira-get.sh KEY` | description, every comment, attachments as plain text |
-| `scripts/jira-card.sh KEY [fieldId,…]` | labels, priority, parent, issue links and the listed custom fields (text as one line, selects as values); tests in `scripts/tests/` |
-| `scripts/jira-download.sh KEY dir [ids]` | download attachments |
-| `scripts/jira-transition.sh KEY id [fields-json]` / `--list` | move through the workflow / list offered transitions |
-| `scripts/jira-edit.sh KEY --add-label L --remove-label L --field ID=JSON --field-md ID=file.md` | labels and field values (the AI loop's lock, verdict and class labels, summary field); `--dry-run` prints the body only; tests in `scripts/tests/` |
-| `scripts/jira-attach.sh KEY files…` | upload; prints each file's media uuid |
-| `scripts/jira-comment.sh KEY comment.md [commentId]` | the loop's markdown dialect → ADF, `::video <uuid>` inline players; reads back and warns on missing players or code spans |
+| `search '<query>'` | items: key, type, status, …; the count on stderr (Jira: JQL, all pages; local: `status=todo labels=ai-queue age>2h …`) |
+| `get KEY` | description, every comment, attachments as plain text |
+| `card KEY [fields]` | labels, links and the listed fields (Jira: also priority and parent; text as one line, selects as values) |
+| `download KEY dir [ids]` | download attachments into a new folder |
+| `transition KEY <id \| status>` / `--list` | move through the workflow / list the moves offered (Jira: transition ids; local: status names) |
+| `edit KEY --add-label L --remove-label L --field F=V --field-md F=file.md` | labels and field values (the AI loop's lock, verdict and class labels, summary field); `--dry-run` changes nothing |
+| `attach KEY files…` | upload; prints what goes on the `::video` line (Jira: media uuid; local: `KEY/<name>`) |
+| `comment KEY comment.md [id]` | the loop's markdown dialect, `::video <uuid \| path>` players (Jira: → ADF); reads it back (Jira warns on a missing player; local exits 1 on a missing file) |
 
 ## Reference map
 
@@ -92,6 +100,7 @@ Run them from inside the project (they find `DL` by walking up). The credentials
 |---|---|
 | `references/stages.md` | a loop reaches a shared stage (S0–S6), or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of any loop, in full |
+| `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |
 | `../n-dev/SKILL.md` | the discipline every builder and fixer follows; pass its absolute path in each brief |
 | `../n-arch/SKILL.md` | the repo has no `docs/architecture/profile.md` yet, or it is stale; pass the profile's path in each brief once it exists |
 | `../dev-loop/SKILL.md`, `../defect-loop/SKILL.md`, `../n-loop/SKILL.md` | the flow itself |

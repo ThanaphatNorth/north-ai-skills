@@ -1,6 +1,6 @@
 ---
 name: n-loop
-description: Unattended AI flow of the 90north-develop plugin, for any project — one pass over a Jira board. It follows up its own questions, PRs and reopened cards, then picks and locks the next card of the AI queue and triages it, whatever its type (do-now / need-dev / need-info), against the repo's n-arch profile and n-dev's scope dial. It proves the card's own spec red before and green after through the defect-loop or dev-loop stages, built test-first with n-dev, and has an adversarial verifier attack every claim. It ships by policy (auto-merge only inside a standing approval, else the review lane, or posts the solution only) and ends every pass by turning outcomes into project knowledge. Project facts live in .claude/90north-develop/config.md § AI loop. Never waits on a person mid-card; a gate parks the card with a question on it. Use for a scheduled or /loop run, "AI loop", "jira ai loop", "autopilot the board", "run the loop on <KEY>".
+description: Unattended AI flow of the 90north-develop plugin, for any project — one pass over a Jira board, or over the repo's local board of markdown cards when there is no Jira. It follows up its own questions, PRs and reopened cards, then picks and locks the next card of the AI queue and triages it, whatever its type (do-now / need-dev / need-info), against the repo's n-arch profile and n-dev's scope dial. It proves the card's own spec red before and green after through the defect-loop or dev-loop stages, built test-first with n-dev, and has an adversarial verifier attack every claim. It ships by policy (auto-merge only inside a standing approval, else the review lane, or posts the solution only) and ends every pass by turning outcomes into project knowledge. Project facts live in .claude/90north-develop/config.md § AI loop. Never waits on a person mid-card; a gate parks the card with a question on it. Use for a scheduled or /loop run, "AI loop", "jira ai loop", "autopilot the board", "run the loop on <KEY>".
 argument-hint: "[--dry-run] [<KEY>]"
 ---
 
@@ -38,7 +38,7 @@ Hand-off files live in `DL/runs/<date>/<KEY>/` (git-ignored, because scheduled r
 
 | File | Written by you, from | Must hold |
 |---|---|---|
-| `card.md` | `W/scripts/jira-get.sh` + `W/scripts/jira-card.sh <KEY> <config field ids>` | every field and label, links, comments newest first, attachments described (never copied) |
+| `card.md` | `W/scripts/tracker.sh get` + `W/scripts/tracker.sh card <KEY> <config field ids>` | every field and label, links, comments newest first, attachments described (never copied) |
 | `triage.md` | A3 | `references/triage.md` § What triage writes, including the AC → test table |
 | `before.md` | the BEFORE agent's report | spec path and `shasum -a 256`, base sha (`git rev-parse`), the failing line, evidence paths |
 | `design-note.md` | A5, dev route | n-dev's design note |
@@ -79,7 +79,7 @@ The pass log is `DL/runs/<date>/run.md`.
 
 Then S4: the proof comment (`templates/comments.md` § Proof comment), push per policy, PR, lane. Log the card in `run.md` and write a row in `DL/ai-ledger.md`.
 
-**A9 · Learn.** S5 clean-up. Collect the outcomes since the last pass (`references/knowledge.md` § Signals) into `DL/runs/<date>/outcomes.md`, then dispatch `loop-learner`. It applies the safe knowledge updates and writes proposals for anything else. S6 runs with one change: its step 2 never edits `DL/config.md` or a skill here, it only writes proposals. The pass report, in the user's language, lists every card touched, its state and what is unverified. Then remove the pass lock.
+**A9 · Learn.** S5 clean-up. Collect the outcomes since the last pass (`references/knowledge.md` § Signals) into `DL/runs/<date>/outcomes.md`, then dispatch `loop-learner`. It applies the safe knowledge updates and writes proposals for anything else. S6 runs with one change: its step 2 never edits `DL/config.md` or a skill here, it only writes proposals. The pass report, in the user's language, lists every card touched, its state and what is unverified, and on a committed local board the changed card files for a person to commit. Then remove the pass lock.
 
 ## Gates → parked states (`DL/ai-ledger.md`)
 

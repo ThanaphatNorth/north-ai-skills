@@ -9,8 +9,8 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | [`n-arch`](skills/n-arch/SKILL.md) | Architecture profile: maps how a repo is built (shape, layers and import directions, extension recipes, state owners, contracts, commands, budgets) into `docs/architecture/profile.md` and the `.ndev.toml` the n-dev check enforces; refreshes it as the code moves; audits structural debt and hot spots. |
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which flow a piece of work belongs to, the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), core lessons and the Jira REST scripts. |
 | [`dev-loop`](skills/dev-loop/SKILL.md) | Development flow: one story, task or spec from ready to reviewed PR — ready check, n-dev design note with a gate for Large or schema/interface changes, acceptance spec red first, work packages built test-first by subagents, review + QA, inline demo video, 3-part Jira comment, review lane. Needs the plugin. |
-| [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a Jira defect board end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
-| [`n-loop`](skills/n-loop/SKILL.md) | Unattended flow for any project: one pass over a Jira AI queue — follows up its own questions and PRs, locks a card, triages any card type against the n-arch profile, proves the card's own spec red then green through the defect or dev path with n-dev, has an adversarial verifier refute every claim, ships by policy (auto-merge only inside a standing approval) and learns into project knowledge. Needs the plugin. |
+| [`defect-loop`](skills/defect-loop/SKILL.md) | Defect flow: sweeps a defect board (Jira, or a local board in the repo) end-to-end — triage, red e2e repro, root cause at `path:line`, test-first fix with n-dev, review + QA, before/after videos inline in the Jira comment, PR, QA lane, learn. Needs the plugin. |
+| [`n-loop`](skills/n-loop/SKILL.md) | Unattended flow for any project: one pass over an AI queue on Jira or on a local board in the repo — follows up its own questions and PRs, locks a card, triages any card type against the n-arch profile, proves the card's own spec red then green through the defect or dev path with n-dev, has an adversarial verifier refute every claim, ships by policy (auto-merge only inside a standing approval) and learns into project knowledge. Needs the plugin. |
 | [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects, writes `.claude/90north-develop/` for both loops. |
 
 ## Install
@@ -97,7 +97,7 @@ The skills are Markdown and load with no extra setup. Only their helper scripts 
 | n-arch | (uses n-dev's script) | n-dev linked beside it |
 | design-atlas | `scripts/palette.py` | Python 3.8+, plus Pillow for PNG/JPG logos (`pip install pillow`) |
 | design-atlas | `scripts/shoot.mjs`, `scripts/scrollfilm.mjs` | Node 22+ and Google Chrome (ffmpeg for `--mp4`) |
-| plugin loops | `skills/workflow/scripts/jira-*.sh` | bash, curl, jq, python3, a Jira API token in `~/.config/<project>-jira.env` (`develop-init` walks you through it), `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
+| plugin loops | `skills/workflow/scripts/tracker.sh` (+ `jira-*.sh`, `local_board.py`) | bash, python3; for Jira also curl, jq and an API token in `~/.config/<project>-jira.env` (`develop-init` walks you through it); a local board needs nothing else; `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
 
 ## Layout
 
@@ -125,7 +125,11 @@ skills/workflow/
   SKILL.md            flow map, router, handoffs, per-repo state
   references/stages.md        shared stages S0-S6 + dispatch safety block
   references/core-lessons.md  rules from real runs, both loops
-  scripts/jira-*.sh, md2adf.py  Jira REST v3: search, get, download, transition, attach, comment
+  references/trackers.md      the tracker verbs, Jira vs local board, card format, query form
+  templates/card.md           a local-board card
+  scripts/tracker.sh, _state.sh  one door to the tracker: TRACKER=jira | local
+  scripts/jira-*.sh, md2adf.py  Jira backend (REST v3)
+  scripts/local_board*.py     local board backend (markdown cards)
 skills/dev-loop/
   SKILL.md            development flow D0-D5 and its gates
   templates/jira-comment.md   3-section comment: what was built, how it works, verification

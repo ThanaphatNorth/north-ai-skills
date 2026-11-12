@@ -2,16 +2,16 @@
 
 > Read when: n-loop writes anything to the tracker, runs A1 follow-ups, or releases stale locks. Field ids, label names, queries and transition ids live in `DL/config.md` § AI loop; this file says *what* gets written and *when*.
 
-Jira is the system of record. People read the card, never `DL/runs/`. When the run files and the card disagree, the card wins, and the learner writes a lesson. Every step leaves a field, a label, a comment or a transition. A step that cannot write its row stops and reports why.
+The tracker (Jira, or the local board — `W/references/trackers.md`) is the system of record. People read the card, never `DL/runs/`. When the run files and the card disagree, the card wins, and the learner writes a lesson. Every step leaves a field, a label, a comment or a transition. A step that cannot write its row stops and reports why.
 
 ## How to write
 
 | Write | Tool |
 |---|---|
-| labels add / remove, a field value | `W/scripts/jira-edit.sh <KEY> --add-label x --remove-label y --field <id>=<json>` (or the Atlassian MCP `editJiraIssue` when config's access line names a working connector) |
-| transition | `W/scripts/jira-transition.sh <KEY> <id>`; ids from config, re-read with `--list` when a move fails |
-| comment, with inline video | `W/scripts/jira-attach.sh` then `W/scripts/jira-comment.sh <KEY> comment.md [commentId]`; it reads the comment back |
-| search, read | `W/scripts/jira-search.sh '<JQL>'` (keys and status), `W/scripts/jira-get.sh <KEY>` (text, comments, attachments), `W/scripts/jira-card.sh <KEY> <field ids>` (labels, priority, parent, links, config's fields) — or the Atlassian MCP `getJiraIssue` when config's access line names a working connector |
+| labels add / remove, a field value | `W/scripts/tracker.sh edit <KEY> --add-label x --remove-label y --field <id>=<json>` (local board: `--field <name>=<value>` for one line, `--field-md <heading>=file.md` for longer text such as the AI summary) (or the Atlassian MCP `editJiraIssue` when config's access line names a working connector) |
+| transition | `W/scripts/tracker.sh transition <KEY> <id | status>`; ids or statuses from config, re-read with `--list` when a move fails |
+| comment, with inline video | `W/scripts/tracker.sh attach` then `W/scripts/tracker.sh comment <KEY> comment.md [commentId]`; it reads the comment back |
+| search, read | `W/scripts/tracker.sh search '<query>'` (keys and status; JQL or the local query form), `W/scripts/tracker.sh get <KEY>` (text, comments, attachments), `W/scripts/tracker.sh card <KEY> <field ids>` (labels, priority, parent, links, config's fields) — or the Atlassian MCP `getJiraIssue` when config's access line names a working connector |
 
 Never change Priority, Rank, Sprint, Assignee or any field config does not list for the loop.
 
@@ -75,7 +75,7 @@ Run these before taking a new card. They are the loop's active work.
 | Query (config) | Finds | Action |
 |---|---|---|
 | need-info answered | cards labelled `ai-need-info` with a comment newer than the loop's question that does not start with the disclaimer (the loop posts as the operator's account, so the author cannot tell them apart) | remove `ai-need-info`, re-queue, move back to the ready status, `card.md` gets `followup: answered` so triage reads the answer first. If the answer was already on the card, the learner writes a triage lesson |
-| reopened after AI | cards labelled `ai-do-now` back in Reopened (or the project's equivalent) | re-queue with score +5 and `previousRun: DL/runs/<date>/<KEY>/`; the class is needs-review at best |
+| reopened after AI | cards labelled `ai-do-now` back in Reopened (or the project's equivalent; on a local board `labels=ai-do-now status=reopened`) | re-queue with score +5 and `previousRun: DL/runs/<date>/<KEY>/`; the class is needs-review at best |
 | PR feedback | `gh pr list --author <loop login> --state open --json number,reviewDecision,headRefName` in config's repos | `CHANGES_REQUESTED` → `DL/runs/<date>/feedback/<KEY>.md` (PR, branch, each review point quoted, `previousRun` from `DL/ai-ledger.md`); then `evidence-and-ship.md` § Feedback rounds |
 | PR merged by a person | the same list, `state: MERGED` since the last pass | ledger `merged`; outcome for the learner |
 

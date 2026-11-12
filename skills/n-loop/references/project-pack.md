@@ -42,7 +42,7 @@ Map each piece of the old loop to its owner. Move facts, not procedure: the old 
 | calibration, outcomes | `DL/knowledge/calibration.md`, `outcomes.jsonl` |
 | lessons | `DL/lessons.md` with `[ai]` and the step; dedupe against the plugin's core lessons |
 | environments and the local shell recipe | config § Stack recipe and § Accounts and login (test accounts by role, never their secrets) |
-| recording helper (overlay, upload script) | config § Evidence names the repo's helper; uploads go through `W/scripts/jira-attach.sh` + `jira-comment.sh` |
+| recording helper (overlay, upload script) | config § Evidence names the repo's helper; uploads go through `W/scripts/tracker.sh attach` + `tracker.sh comment` |
 | comment templates in the team's language | config § Comments language; the framework's templates are filled in that language |
 | decisions the owner answered (push, merge, schedule, scope) | config lines with the date and the owner's words |
 | run folders | `DL/runs/` (git-ignored) |

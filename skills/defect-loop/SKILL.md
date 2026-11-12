@@ -1,11 +1,11 @@
 ---
 name: defect-loop
-description: Defect flow of the 90north-develop plugin — run one sweep of the project's Jira defect board (or one defect by key) and close each defect end-to-end — pull every open defect (board and backlog), triage, reproduce with a red e2e on an isolated stack, find the root cause, fix test-first through subagents, verify with code review + QA in parallel, record before/after videos that play inline in the Jira comment, write the 3-part comment (1. Can it be reproduced? 2. Root cause 3. Solution) and move the ticket to the QA lane. Reads all project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Built to run on a loop (/loop 30m /90north-develop:defect-loop) and to improve itself from lessons after every sweep. Use when the user says "defect loop", "sweep the board", "review jira defects", "fix bug <KEY>", "clear the bugs to Ready for QA", or a loop fires this skill. Stories and changes go to dev-loop.
+description: Defect flow of the 90north-develop plugin — run one sweep of the project's defect board — Jira, or the repo's local board when there is no Jira — (or one defect by key) and close each defect end-to-end — pull every open defect (board and backlog), triage, reproduce with a red e2e on an isolated stack, find the root cause, fix test-first through subagents, verify with code review + QA in parallel, record before/after videos that play inline in the Jira comment, write the 3-part comment (1. Can it be reproduced? 2. Root cause 3. Solution) and move the ticket to the QA lane. Reads all project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Built to run on a loop (/loop 30m /90north-develop:defect-loop) and to improve itself from lessons after every sweep. Use when the user says "defect loop", "sweep the board", "review jira defects", "fix bug <KEY>", "clear the bugs to Ready for QA", or a loop fires this skill. Stories and changes go to dev-loop.
 ---
 
 # 90north-develop · defect-loop
 
-You are the **orchestrator** (the main conversation): you read Jira, decide, dispatch subagents, check what they return and write to Jira. The shared stages S0–S6, the dispatch safety block and the Jira scripts live in the workflow skill (`W = ../workflow/` from this skill's base directory): read `W/references/stages.md` once per sweep. Every fix follows n-dev (`../n-dev/`).
+You are the **orchestrator** (the main conversation): you read the tracker, decide, dispatch subagents, check what they return and write to the tracker (Jira or the local board, through `W/scripts/tracker.sh`). The shared stages S0–S6, the dispatch safety block and the tracker scripts live in the workflow skill (`W = ../workflow/` from this skill's base directory): read `W/references/stages.md` once per sweep. Every fix follows n-dev (`../n-dev/`).
 
 ## Input
 
@@ -19,7 +19,7 @@ You are the **orchestrator** (the main conversation): you read Jira, decide, dis
 S0 in `stages.md` with flow `defect`, plus this skill's `references/core-lessons.md` in full. A legacy `.claude/defect-loop/` folder works as `DL` (its `ledger.md` is the defect ledger) until develop-init migrates it.
 
 ## F1 · Pull and triage
-1. **Pull** config § Defect flow's open-defect query (board + backlog, ids not names) with `W/scripts/jira-search.sh '<query>'`, run its sanity query, and diff the keys against the ledger. Never shortcut to a time window. For each ticket not skipped: `W/scripts/jira-get.sh <KEY>`; download attachments with `W/scripts/jira-download.sh <KEY> <scratchpad>/<KEY>/attachments` and **look** at screenshots and videos. Attachments may hold personal data: describe, never copy into the repo or a comment.
+1. **Pull** config § Defect flow's open-defect query (board + backlog, ids not names) with `W/scripts/tracker.sh search '<query>'`, run its sanity query, and diff the keys against the ledger. Never shortcut to a time window. For each ticket not skipped: `W/scripts/tracker.sh get <KEY>`; download attachments with `W/scripts/tracker.sh download <KEY> <scratchpad>/<KEY>/attachments` and **look** at screenshots and videos. Attachments may hold personal data: describe, never copy into the repo or a comment.
 2. **Triage** each ticket:
    - `actionable` — symptom, screen, role and expected result are clear enough to script.
    - `needs-info` — comment once asking for the missing piece (steps, role, data, screenshot); ledger `needs-info`.

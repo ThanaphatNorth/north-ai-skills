@@ -37,7 +37,7 @@ The learner has no tracker access. Before dispatching it, you write `DL/runs/<da
 | verifier refutations | `verify.md` | what the builder or recorder got wrong, and the fix |
 | structure findings | `build.md`, QA's structure-check output | a repeated finding = a builder lesson; a target layer rule with 0 violations = a proposal to enforce it in `.ndev.toml` (through n-arch) |
 | PR outcome | `gh pr view <n> --json state,reviews,comments` | merged = good; changes requested = read the review, that is a lesson; closed unmerged = wrong fix |
-| card after the review lane | `W/scripts/jira-get.sh <KEY>`: status, comments newer than the loop's | reopened = the fix did not hold → lesson + re-queue flag |
+| card after the review lane | `W/scripts/tracker.sh get <KEY>`: status, comments newer than the loop's | reopened = the fix did not hold → lesson + re-queue flag |
 | reply on a need-info card | the same | answered → A1 re-queues; the answer was already on the card → triage lesson |
 | need-dev card closed by a person | the same, plus that PR's diff size | the rule that sent it to need-dev, checked against what it took |
 | auto-merge reverted or reopened | the same | two on the same change kind → proposal to drop that kind from the auto-merge paths |

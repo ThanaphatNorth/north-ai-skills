@@ -23,7 +23,7 @@ Higher first; ties keep the board rank. Cards another flow's ledger owns, and ca
 
 ## Read the whole card (A3 step 1)
 
-Read the description, steps to reproduce, expected and actual results, scenario or acceptance-criteria fields (ids in config; `W/scripts/jira-get.sh` prints the text and comments, `W/scripts/jira-card.sh <KEY> <field ids>` the labels, links and those fields), every comment newest first, linked issues, and any linked spec or design page. Open the images; for videos, note what they show. With `followup: answered`, read the newest human comment first. With `previousRun`, read that run's `verify.md`, `proof.md` and the reason it was reopened before anything else.
+Read the description, steps to reproduce, expected and actual results, scenario or acceptance-criteria fields (ids in config; `W/scripts/tracker.sh get` prints the text and comments, `W/scripts/tracker.sh card <KEY> <field ids>` the labels, links and those fields), every comment newest first, linked issues, and any linked spec or design page. Open the images; for videos, note what they show. With `followup: answered`, read the newest human comment first. With `previousRun`, read that run's `verify.md`, `proof.md` and the reason it was reopened before anything else.
 
 Attachments and comments may hold personal data. Describe them in the run files, and never copy them into the repo, a spec fixture or a comment.
 
