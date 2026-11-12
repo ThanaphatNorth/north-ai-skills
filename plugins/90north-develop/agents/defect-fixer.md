@@ -1,6 +1,6 @@
 ---
 name: defect-fixer
-description: Defect fixer for the defect-loop. Given a reproduced defect (red e2e spec) and a confirmed root cause at path:line, fixes exactly that cause inside the scope fence — regression test red → fix → green, extend beside rather than inside existing code, one owner per fact — then runs the project's checks and makes a local commit. Never pushes, never touches the tracker, never widens scope. Use for one diagnosed defect at a time.
+description: Defect fixer for n-defect-loop (step 6, attended or --auto). Given a reproduced defect (red e2e spec) and a confirmed root cause at path:line, fixes exactly that cause inside the scope fence — regression test red → fix → green, extend beside rather than inside existing code, one owner per fact — then runs the project's checks and makes a local commit. Never pushes, never touches the tracker, never widens scope. Use for one diagnosed defect at a time.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 

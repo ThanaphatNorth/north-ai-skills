@@ -1,8 +1,8 @@
 # Shared stages — every loop
 
-> Read when: dev-loop, defect-loop or n-loop reaches a stage marked S0–S6, or you write a dispatch brief for any subagent of any loop.
+> Read when: n-defect-loop or n-develop-loop reaches a stage marked S0–S6 (in either mode), or you write a dispatch brief for any subagent of either loop.
 
-The orchestrator is the main conversation. It reads the tracker, decides, dispatches subagents, checks what they return and writes to the tracker. Subagents never talk to the tracker and never decide; they cannot see this conversation, so every dispatch is self-contained. `<flow>` below is `dev`, `defect` or `ai` (n-loop); `W` is this skill's base directory; `DL` is the per-repo state folder (`SKILL.md` § Per-repo state).
+The orchestrator is the main conversation. It reads the tracker, decides, dispatches subagents, checks what they return and writes to the tracker. Subagents never talk to the tracker and never decide; they cannot see this conversation, so every dispatch is self-contained. `<flow>` below is `dev` (n-develop-loop) or `defect` (n-defect-loop); `W` is this skill's base directory; `DL` is the per-repo state folder (`SKILL.md` § Per-repo state).
 
 ## Dispatch safety block (paste into every brief, verbatim)
 
@@ -12,9 +12,9 @@ Then the brief adds: the work item's text (minus personal data), the worktree an
 
 ## S0 · Before every run (cheap, mandatory)
 
-1. No `DL/config.md` → stop and run `/90north-develop:develop-init`. Legacy `.claude/defect-loop/` only → the defect loop may run on it; the dev loop asks for develop-init first (its config has no § Dev flow), and so does n-loop when config has no § AI loop.
+1. No `DL/config.md` → stop and run `/90north-develop:develop-init`. Legacy `.claude/defect-loop/` only → the defect loop may run on it; n-develop-loop asks for develop-init first (its config has no § Dev flow), and so does `--auto` when config has no § Auto mode (a legacy § AI loop is migrated by develop-init).
 2. Read `W/references/core-lessons.md`, the flow's own core lessons if it has them, and `DL/lessons.md` **in full**. Apply every rule.
-3. Read `DL/config.md` and `DL/<flow>-ledger.md`. A work item whose last row is a parked state (`ready-for-qa`, `in-review`, `blocked-needs-human`, `cannot-reproduce`, `needs-info`, `awaiting-design-approval`, and the AI loop's `solution-posted`, `stopped`, `awaiting-push`, `merged`) is skipped unless the tracker shows a newer comment or status change since that row. An item whose last row in **another** loop's ledger is not parked belongs to that loop: skip it. An item parked behind a PR ("waits PR #N") is re-checked every run: `gh pr view N --json state` MERGED → resume it.
+3. Read `DL/config.md` and `DL/<flow>-ledger.md`. A work item whose last row is a parked state (`ready-for-qa`, `in-review`, `blocked-needs-human`, `cannot-reproduce`, `needs-info`, `awaiting-design-approval`, `handed-to-<loop>`, and auto mode's `solution-posted`, `stopped`, `awaiting-push`, `merged`, `dry-run`) is skipped unless the tracker shows a newer comment or status change since that row. An item whose last row in **another** loop's ledger (or a legacy `ai-ledger.md`) is not parked belongs to that loop: skip it. An item parked behind a PR ("waits PR #N") is re-checked every run: `gh pr view N --json state` MERGED → resume it.
 4. After a session restart, or when the ledger has items mid-flight: check each open worktree's `git status` and output folder, start its stack again, resume stopped agents with SendMessage (tell them the stack restarted), confirm any loop with CronList.
 5. One cheap tracker read: Jira through the MCP connector config names, else `W/scripts/tracker.sh search`; a local board through `tracker.sh search`. A 403 or "not granted" → switch to the REST scripts; don't retry blindly.
 
@@ -68,7 +68,7 @@ Stop the item's preview servers, then confirm its ports are free (`lsof`; kill o
 
 ## Sources
 
-- Distilled from the author's own sweeps of a production Jira defect board (2026); the dev-loop stages reuse the same orchestration and evidence rules.
+- Distilled from the author's own sweeps of a production Jira defect board (2026); the n-develop-loop stages reuse the same orchestration and evidence rules.
 - Jira Cloud REST v3, issue transitions: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/
 - Atlassian Document Format, structure and the `mediaSingle` node: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/
 - Playwright video recording: https://playwright.dev/docs/videos

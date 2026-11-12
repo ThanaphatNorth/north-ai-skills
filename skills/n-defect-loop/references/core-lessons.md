@@ -1,4 +1,4 @@
-# defect-loop — core lessons (every project)
+# n-defect-loop — core lessons (every project)
 
 > Read when: before every sweep (S0 in the workflow skill's `references/stages.md`), after the shared core lessons, and when a defect lesson might belong to every repo.
 

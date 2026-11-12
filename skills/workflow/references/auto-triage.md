@@ -1,6 +1,6 @@
 # Triage — score, readiness, verdict and class for every card type
 
-> Read when: n-loop A2 scores the queue, or A3 triages a card. Every number here is a default; the project's value lives in `DL/config.md` § AI loop and wins.
+> Read when: auto mode A2 scores the queue, or A3 triages a card. Every number here is a default; the project's value lives in `DL/config.md` § Auto mode and wins.
 
 Triage answers one question from written rules: *can the AI do this card now, unattended, and prove it?* It does not judge priority or scope; the people who own the board do. Anything that needs a product judgement becomes a question on the card (`need-info`) or a hand-off to a person (`need-dev`) with the analysis attached.
 
@@ -39,7 +39,17 @@ Never invent a criterion the card does not state. When a criterion cannot be tur
 
 ## Route (A3 step 3)
 
-Use `W/SKILL.md` § Route the work. Behaviour that **exists and is wrong** against the current spec goes on the **defect path** (repro → root cause → fix). Behaviour that **does not exist yet**, or that the spec now asks to change, goes on the **dev path** (acceptance spec → design note → work packages). A "Bug" asking for a new screen is a change request; a "Task" saying a total is wrong is a defect.
+Use `W/SKILL.md` § Route the work. Behaviour that **exists and is wrong** against the current spec belongs to **n-defect-loop** (repro → root cause → fix). Behaviour that **does not exist yet**, or that the spec now asks to change, belongs to **n-develop-loop** (acceptance spec → design note → work packages). A "Bug" asking for a new screen is a change request; a "Task" saying a total is wrong is a defect.
+
+A card that belongs to the other loop is handed off, not built:
+- swap `ai-queue` for the other loop's hand-off label (config § Auto mode: `ai-to-develop` / `ai-to-defect`);
+- post `W/templates/auto-comments.md` § hand-off;
+- write `handed-to-<loop>` in this loop's ledger;
+- release the lock.
+
+The other loop's queue includes its hand-off label (ready statuses only), so its next pass takes the card.
+
+A card is handed off at most once. A card whose queue label is already a hand-off label came from the other loop: if it still looks like the other kind of work, it is `need-info`. The question asks a person whether the card is a defect or new work. In `--dry-run` the route is only written in the triage comment; no label changes.
 
 ## Locate the code through the profile (A3 step 4)
 
@@ -76,7 +86,7 @@ A change touching any of these is `need-dev` at triage. A builder that would cro
 |---|---|
 | Profile **Contracts** | public APIs and their envelopes, events and topics, shared tables, exported types, anything another process depends on |
 | Profile **State owners** | the database (schema, migrations), identity and session, configuration loaded at start-up |
-| Config § AI loop › never-touch | domain risk the profile does not name: money and tax, personal or health data, permissions and roles, ids minted by another system, infra and CI, secrets, with the globs or markers that recognise each |
+| Config § Auto mode › never-touch | domain risk the profile does not name: money and tax, personal or health data, permissions and roles, ids minted by another system, infra and CI, secrets, with the globs or markers that recognise each |
 
 Each entry needs a glob or a grep marker, because the verifier greps the diff for them. A profile row with no path gets one from its "Defined in" column. When none can be named, write the row as `TBD` in `triage.md`; that caps the card at needs-review. Client-side stores and caches in State owners are not forbidden by default.
 
@@ -105,7 +115,7 @@ Worked examples, in neutral terms:
 
 ## Solution-only — what the card gets
 
-The solution goes in the AI summary field (if config names one) and in the `solution-only` comment from `templates/comments.md`:
+The solution goes in the AI summary field (if config names one) and in the `solution-only` comment from `W/templates/auto-comments.md`:
 
 1. the root cause, or the exact place the change goes (`repo/path:line`);
 2. the change, as a numbered step list: each step names the file and the old and new value as `code` spans (the comment script renders no code blocks); a change too long for 10 steps gets a draft branch instead;
@@ -115,7 +125,7 @@ The solution goes in the AI summary field (if config names one) and in the `solu
 
 ## What triage writes
 
-The record per `tracker-record.md`: the AI summary field (type, files, approach, risk, verdict), exactly one verdict label, the predicted class label for `do-now`, and the triage comment. Then `DL/runs/<date>/<KEY>/triage.md`: verdict and the row that fired, route, `AC-1 … AC-n`, the **AC → test table** (each criterion → test level, e2e / API / unit, and the spec file path; WP-0 or `defect-repro` writes exactly these), the forbidden-area list with its globs and markers, repo, `path:line` list, extension recipe, state owner, size estimate (raw and calibrated), predicted class and the row that set it, branch name (`fix/<KEY>-<slug>` or `feat/<KEY>-<slug>`), environment and stack.
+The record per `auto-tracker-record.md`: the AI summary field (type, files, approach, risk, verdict), exactly one verdict label, the predicted class label for `do-now`, and the triage comment. Then `DL/runs/<date>/<KEY>/triage.md`: verdict and the row that fired, route, `AC-1 … AC-n`, the **AC → test table** (each criterion → test level, e2e / API / unit, and the spec file path; WP-0 or `defect-repro` writes exactly these), the forbidden-area list with its globs and markers, repo, `path:line` list, extension recipe, state owner, size estimate (raw and calibrated), predicted class and the row that set it, branch name (`fix/<KEY>-<slug>` or `feat/<KEY>-<slug>`), environment and stack.
 
 ## Sources
 

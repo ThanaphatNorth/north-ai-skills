@@ -1,74 +1,86 @@
 ---
 name: workflow
-description: Map and router of the 90north-develop plugin — decides which flow a piece of work belongs to (dev-loop for stories, tasks and changes; defect-loop for defects; n-loop for unattended passes over an AI queue of any card type; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what the flows share - the per-repo state folder, the shared stages (isolate, verify, evidence, ship, clean up, learn), the dispatch safety block, core lessons and the Jira REST scripts. Use when the user asks "which flow", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
+description: Map and router of the 90north-develop plugin — decides which loop a piece of work belongs to (n-defect-loop for defects; n-develop-loop for new development, new features and changed requirements; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what both loops share - the 9 steps, the per-repo state folder, the shared stages (isolate, verify, evidence, ship, clean up, learn), the auto mode both loops run with --auto (queue and lock, triage matrix, verifier, ship classes, learner), the dispatch safety block, core lessons and the tracker (Jira or a local board). Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
 ---
 
 # 90north-develop · workflow
 
-Two attended loops and one unattended loop, one discipline, one set of per-repo facts. Report in the user's language; keep code, identifiers and commit messages in the repo's language.
+Two loops, split by type of work, on one discipline and one set of per-repo facts. Report in the user's language;
+keep code, identifiers and commit messages in the repo's language.
 
 ```
-                      develop-init  (once per repo)  →  .claude/90north-develop/
-                                       │
-        ┌──────────────────────────────┴──────────────────────────────┐
-   dev-loop  (Story · Task · Improvement)                  defect-loop  (Bug)
-   D1 Pull + ready check                                    F1 Pull + triage
-   D2 Size + design note ── gate: user approves Large       F2 Reproduce: red e2e  (defect-repro)
-   D3 Acceptance spec red  (dev-builder)                    F3 Root cause at path:line
-   D4 Build work packages test-first  (dev-builder)         F4 Fix test-first  (defect-fixer)
-        └──────────── shared stages (references/stages.md) ────────────┘
-          S1 Isolate · S2 Verify (review + QA) · S3 Evidence video
-          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
-                                       │
-                 n-dev — how every line of code is written, in every loop
-                 n-arch — the repo's architecture profile every loop reads
-
-   n-loop  (unattended: any card type in the AI queue, on a schedule)
-   A1 Follow-ups · A2 Scout + lock · A3 Triage (do-now / need-dev / need-info, class)
-   A4 BEFORE red ─ A5 Build ─ A6 PROOF green   ← the defect or dev path above, with no gate:
-   A7 Verifier gate (loop-verifier) · A8 Ship by policy · A9 Learn (loop-learner)   a gate parks the card
+                     develop-init  (once per repo)  →  .claude/90north-develop/
+                                      │
+     n-defect-loop  (defects)                       n-develop-loop  (features, changes)
+  1 Read the board ── 2 Triage ── 3 Check the spec           (the same three steps)
+  4 Reproduce: red e2e + video  (defect-repro)    4 Pin the goal: acceptance spec red  (dev-builder WP-0)
+  5 Root cause at path:line                       5 Design note + work packages ── gate for Large
+  6 Test-first fix  (defect-fixer)                6 Test-first build per WP  (dev-builder)
+  7 Verify + record ── 8 Open the PR ── 9 Merge (low impact, standing approval) or a person approves
+       └──────────── shared stages (references/stages.md) ────────────┘
+         S1 Isolate · S2 Verify (review + QA) · S3 Evidence video
+         S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
+                                      │
+   attended (default): a gate asks you in chat
+   --auto (references/auto-mode.md): queue + lock, triage matrix, verifier gate, ship classes, learner;
+                                     a gate parks the card with a question
+                                      │
+                n-dev — how every line of code is written, in both loops
+                n-arch — the repo's architecture profile both loops read
 ```
 
-Both loops start with a red test that states what "done" means: the defect's red e2e, or the story's acceptance spec. Both end with a green run of that same test in this session, review and QA, evidence, and a tracker update. What differs is the middle: a defect needs a cause, a feature needs a design. `n-loop` runs the same two paths without a person in the chat: it builds only what needs no gate, puts an adversarial verifier before anything is published, and ships by a written policy.
+Both loops start with a red test that states what "done" means: the defect's red e2e, or the story's acceptance
+spec. Both end with a green run of that same test in this session, review and QA, evidence, and a tracker update.
+What differs is the middle: a defect needs a cause, a feature needs a design.
+
+Each loop runs **attended** by default, so a person answers its gates in chat. With `--auto` it runs **unattended**
+(`references/auto-mode.md`): it builds only what needs no gate, puts an adversarial verifier before anything is
+published, and ships by a written policy.
+
+Only a low- or no-impact change inside a standing approval merges on its own (`references/auto-evidence-and-ship.md`
+§ Ship classes). Everything else waits for a person.
 
 ## Route the work
 
-| Signal | Flow | Command |
+| Signal | Loop | Command |
 |---|---|---|
 | No `.claude/90north-develop/config.md` (or only the legacy `.claude/defect-loop/`) | set up first | `/90north-develop:develop-init` |
-| Jira **Bug** / defect type, or "it used to work / it doesn't do what the spec says" | defect flow | `/90north-develop:defect-loop [KEY]` |
-| Story, Task, Improvement, a spec file, or "add / change / build …" | development flow | `/90north-develop:dev-loop <KEY \| spec path \| request>` |
-| An unattended pass over the board's AI queue (any card type), on a schedule or `/loop`, or "AI loop / autopilot" | unattended flow | `/90north-develop:n-loop [--dry-run] [KEY]` |
+| Bug / defect type, or "it used to work / it doesn't do what the spec says" | defects | `/90north-develop:n-defect-loop [KEY] [--auto]` |
+| Story, Task, Improvement, change request, a spec file, or "add / change / build …" | development | `/90north-develop:n-develop-loop <KEY \| spec path \| request \| --next> [--auto]` |
+| An unattended pass over the board, on a schedule or `/loop`, or "AI loop / autopilot" | either loop with `--auto` (one schedule per loop) | `references/auto-mode.md` |
 | Small change with no ticket (one file, one rule, no new module) | discipline only | `/90north-develop:n-dev` |
 | "Map / document / audit the architecture", layer rules, or n-dev says the profile is missing or stale | architecture profile | `/90north-develop:n-arch [refresh \| audit]` |
-| Unclear | read the ticket; behaviour that **exists and is wrong** against the current spec is a defect, behaviour that **does not exist yet** or that the spec now asks to change is development | — |
+| Unclear | read the ticket: behaviour that **exists and is wrong** against the current spec is a defect; behaviour that **does not exist yet**, or that the spec now asks to change, is development | — |
 
-A ticket's type in Jira is a hint, not the answer: a "Bug" asking for a new screen is a change request (defect-loop triages it `by-design / change`), and a "Task" saying "the total is wrong" is a defect.
+A ticket's type is a hint, not the answer. A "Bug" asking for a new screen is a change request: n-defect-loop
+triages it `by-design / change request` and hands it off. A "Task" saying "the total is wrong" is a defect.
 
 ## Handoffs between the loops
 
 | From | When | To |
 |---|---|---|
-| defect-loop triage | `structural` (schema, auth, contract, > fence) and the user says yes to build it | dev-loop from D2, with the defect's red spec as the acceptance spec; the defect ticket keeps its key |
-| defect-loop triage | `by-design / change request` and the PO re-scopes it into a story | dev-loop on the new story |
-| dev-loop D4 / S2 | a bug found in code that existed **before** this story | never fixed on the feature branch: report it as a separate defect proposal (key or draft) for defect-loop |
-| dev-loop after PR | QA bounces the story before Done | stays in dev-loop: a fix round on the same branch, not a defect |
-| n-loop triage or build | `need-dev`: Large, a gate case, a forbidden area, or stopped; the solution is on the card | a person may take it in dev-loop or defect-loop; the ai-ledger row says `solution-posted`, the new loop's row says `from-n-loop KEY` and starts from the posted solution and spec |
-| dev-loop or defect-loop | an item with an open row in another loop's ledger | skipped; one owner at a time, including the AI loop |
+| n-defect-loop triage | `structural` (schema, auth, contract, > fence) and a person says yes to build it | n-develop-loop, row `from-n-defect-loop KEY`: a new `feat/` worktree with the defect's red spec as WP-0, then its steps 5–6; the defect ticket keeps its key |
+| n-defect-loop triage | `by-design / change request` | n-develop-loop: attended, once the PO re-scopes it; auto, through the hand-off label `ai-to-develop` |
+| n-develop-loop triage | the item is really a defect | n-defect-loop: a hand-off row, or the hand-off label `ai-to-defect` in auto mode |
+| n-develop-loop step 6 / S2 | a bug found in code that existed **before** this story | never fixed on the feature branch: report it as a separate defect proposal (key or draft) for n-defect-loop |
+| n-develop-loop after PR | QA bounces the story before Done | stays in n-develop-loop: a fix round on the same branch, not a defect |
+| either loop, auto mode | `need-dev`: Large, a gate case, a forbidden area, or stopped; the solution is on the card | a person may take it in the attended mode; that run's row says `from-auto KEY` and starts from the posted solution and spec |
+| either loop | an item with an open row in another loop's ledger (or in a legacy `ai-ledger.md`) | skipped: one owner at a time |
 
-A handoff writes one ledger row in each loop's ledger (`handed-to-dev-loop` / `from-defect-loop KEY`), so no ticket is owned by two loops at once.
+A handoff writes one ledger row in each loop's ledger (`handed-to-n-develop-loop` / `from-n-defect-loop KEY`), so
+no ticket is owned by two loops at once.
 
 ## Per-repo state (`DL` = `<repo-root>/.claude/90north-develop/`)
 
 | File | Owner of | Written by |
 |---|---|---|
-| `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § AI loop | develop-init; the loops add facts they verify (the unattended loop only proposes) |
+| `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
 | `tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
 | `board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
-| `dev-ledger.md` / `defect-ledger.md` / `ai-ledger.md` | one row per state change of a work item, per loop | the loop that owns the item |
+| `dev-ledger.md` / `defect-ledger.md` | one row per state change of a work item, per loop, both modes (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
 | `lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
-| `knowledge/` | what the AI loop learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
-| `runs/<date>/<KEY>/` | the AI loop's hand-off files between passes; git-ignored | n-loop |
+| `knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
+| `runs/<date>/<KEY>/`, `runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
 
 Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them; the scripts find either folder. Set `DEVELOP_DIR` to point at the folder explicitly.
 
@@ -90,7 +102,7 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 | `card KEY [fields]` | labels, links and the listed fields (Jira: also priority and parent; text as one line, selects as values) |
 | `download KEY dir [ids]` | download attachments into a new folder |
 | `transition KEY <id \| status>` / `--list` | move through the workflow / list the moves offered (Jira: transition ids; local: status names) |
-| `edit KEY --add-label L --remove-label L --field F=V --field-md F=file.md` | labels and field values (the AI loop's lock, verdict and class labels, summary field); `--dry-run` changes nothing |
+| `edit KEY --add-label L --remove-label L --field F=V --field-md F=file.md` | labels and field values (auto mode's lock, verdict, class and hand-off labels, summary field); `--dry-run` changes nothing |
 | `attach KEY files…` | upload; prints what goes on the `::video` line (Jira: media uuid; local: `KEY/<name>`) |
 | `comment KEY comment.md [id]` | the loop's markdown dialect, `::video <uuid \| path>` players (Jira: → ADF); reads it back (Jira warns on a missing player; local exits 1 on a missing file) |
 
@@ -103,4 +115,11 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 | `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |
 | `../n-dev/SKILL.md` | the discipline every builder and fixer follows; pass its absolute path in each brief |
 | `../n-arch/SKILL.md` | the repo has no `docs/architecture/profile.md` yet, or it is stale; pass the profile's path in each brief once it exists |
-| `../dev-loop/SKILL.md`, `../defect-loop/SKILL.md`, `../n-loop/SKILL.md` | the flow itself |
+| `references/auto-mode.md` | a loop runs with `--auto`: the pass, its stages A0–A9 mapped to the 9 steps, parked states, hard limits |
+| `references/auto-triage.md` | auto mode A2–A3: queue score, check the spec, route and hand-off, locate, size, decision table, class |
+| `references/auto-evidence-and-ship.md` | step 9 in either mode (§ Ship classes: what may merge on its own); auto mode A4, A6–A8 |
+| `references/auto-tracker-record.md` | auto mode: every tracker write, the lock and labels, follow-ups |
+| `references/auto-knowledge.md` | auto mode A0 and A9: what the learner reads and writes |
+| `references/auto-project-pack.md` | putting a repo on auto mode for the first time |
+| `templates/auto-comments.md`, `templates/auto-scheduled-task.md` | auto mode's comments; registering a schedule per loop |
+| `../n-defect-loop/SKILL.md`, `../n-develop-loop/SKILL.md` | the loop itself |

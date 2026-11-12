@@ -2,7 +2,7 @@
 
 > Read when: S0 of either loop (`stages.md`), in full, together with the flow's own core lessons and the project's `.claude/90north-develop/lessons.md`; and when a project lesson might belong to every repo.
 
-Distilled from real runs. A project lesson that would help any repo in both flows is promoted here; one that only concerns defects goes to `defect-loop/references/core-lessons.md` (edit the plugin source, bump the plugin version, `/plugin update`).
+Distilled from real runs. A project lesson that would help any repo in both flows is promoted here; one that only concerns defects goes to `n-defect-loop/references/core-lessons.md` (edit the plugin source, bump the plugin version, `/plugin update`).
 
 ## Finding the work
 - Query statuses and issue types **by id**, never by name — the name form once returned 1 of 17 open bugs with no error. Sanity-check the count against `statusCategory != Done`.

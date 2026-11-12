@@ -1,12 +1,12 @@
 # Project pack — putting a project on the loop, or moving a project-specific loop onto it
 
-> Read when: a repo will run n-loop for the first time, or a team already runs its own Jira AI loop (its own plugin, agents and rules with the project baked in) and wants to move onto this framework.
+> Read when: a repo will run a loop with `--auto` for the first time, or a team already runs its own Jira AI loop (its own plugin, agents and rules with the project baked in) and wants to move onto this framework.
 
 The framework holds the procedure; the **project pack** holds the facts. A pack is not a separate folder or plugin. It is the set of places the plugin already reads, each owning one kind of fact:
 
 | Kind of fact | Owner | Written by |
 |---|---|---|
-| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DL/config.md` § AI loop (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
+| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DL/config.md` § Auto mode (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
 | architecture: map, layers, extension recipes, state owners, contracts, commands | `docs/architecture/profile.md` | `/90north-develop:n-arch` |
 | budgets, layer globs, allowed import directions | `.ndev.toml` | `/90north-develop:n-arch` |
 | house rules, reusable component lists, coding conventions | the repo's practice pack (a `*-practices` skill or docs folder), linked from the profile's Conventions and from config § Team | the team |
@@ -18,10 +18,10 @@ Nothing project-specific goes in the plugin. When you are about to write a repo 
 ## New project, step by step
 
 1. **Profile.** Run `/90north-develop:n-arch` (create mode) in each repo the board touches. Without a profile the loop still runs, but nothing can reach the auto-merge class, and every locate starts from search.
-2. **Config.** Run `/90north-develop:develop-init`; answer yes to the AI loop step. It reads the board's ids (issue types, statuses, transitions, custom fields) and writes § AI loop with every line checked or `TBD`.
+2. **Config.** Run `/90north-develop:develop-init`; answer yes to the auto mode step. It reads the board's ids (issue types, statuses, transitions, custom fields) and writes § Auto mode with every line checked or `TBD`.
 3. **Never-touch list.** Start from the profile's Contracts and State owners, then add the domain risks the profile cannot know: money and tax, personal or health data, permissions, ids minted by another system, infra. Give each a glob or a marker the verifier can grep.
 4. **Stack and evidence.** Prove once by hand that the stack recipe comes up and that one spec records with the cursor, the focus box and the caption band. Write what worked into config § Evidence.
-5. **Dry runs.** Register the schedule with `--dry-run` (`templates/scheduled-task.md`) and read 2–3 passes' `run.md` and the triage comments on the board.
+5. **Dry runs.** Register the schedule with `--dry-run` (`W/templates/auto-scheduled-task.md`) and read 2–3 passes' `run.md` and the triage comments on the board.
 6. **Real runs.** Remove `--dry-run`. Keep config › cards per pass at 1, and leave auto-merge off, until about 10 cards have shipped through needs-review with no reopen. Then the owner decides on the standing approval for merges, in their own words, dated, in config § Push policy.
 7. **Tune.** After 10 cards, review the decision table and the fences against `DL/knowledge/outcomes.jsonl`; the weekly review proposes the numbers.
 
@@ -31,10 +31,10 @@ Map each piece of the old loop to its owner. Move facts, not procedure: the old 
 
 | Old loop piece | Goes to |
 |---|---|
-| board, project key, field ids, option names, label names, JQL, transition ids (a lane reached in several hops is written as its whole path) | config § Tracker and § AI loop |
-| "AI status" style custom field used as the queue and the lock | config § AI loop › Queue and Lock (field mode) |
-| limits (cards per run, minutes, attempts, lock hours) | config § AI loop › Limits |
-| shipping block (auto-merge on/off, repos, paths, sizes, grace, CI rule) | config § AI loop › Auto-merge and › Fences; the owner's decision as a dated quote in § Push policy |
+| board, project key, field ids, option names, label names, JQL, transition ids (a lane reached in several hops is written as its whole path) | config § Tracker and § Auto mode |
+| "AI status" style custom field used as the queue and the lock | config § Auto mode › Queue and Lock (field mode) |
+| limits (cards per run, minutes, attempts, lock hours) | config § Auto mode › Limits |
+| shipping block (auto-merge on/off, repos, paths, sizes, grace, CI rule) | config § Auto mode › Auto-merge and › Fences; the owner's decision as a dated quote in § Push policy |
 | forbidden-areas table | profile Contracts and State owners (structure), plus config › never-touch (domain risk) |
 | practice card (components to reuse, house rules, commit and branch rules) | the repo's practice pack, linked from the profile's Conventions; branch rules in config § Dev flow and § Defect flow, commit conventions in the profile's Conventions |
 | code map | `DL/knowledge/code-map.md` (card words → places); anything structural goes to the profile through an n-arch refresh |
@@ -46,7 +46,7 @@ Map each piece of the old loop to its owner. Move facts, not procedure: the old 
 | comment templates in the team's language | config § Comments language; the framework's templates are filled in that language |
 | decisions the owner answered (push, merge, schedule, scope) | config lines with the date and the owner's words |
 | run folders | `DL/runs/` (git-ignored) |
-| scheduled-task prompt | `templates/scheduled-task.md`, with the repo root as working directory |
+| scheduled-task prompt | `W/templates/auto-scheduled-task.md`, with the repo root as working directory |
 
 Checklist before switching the schedule:
 
@@ -65,5 +65,5 @@ Checklist before switching the schedule:
 ## Sources
 
 - Derived from moving one production Jira AI loop's project facts out of its agents into config, profile and knowledge files (2026).
-- Config template: `../develop-init/templates/config.md` § AI loop.
+- Config template: `../develop-init/templates/config.md` § Auto mode.
 - Profile template: `../n-arch/templates/profile.md`.

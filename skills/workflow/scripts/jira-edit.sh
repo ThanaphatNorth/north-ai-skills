@@ -1,6 +1,6 @@
 #!/bin/bash
-# Change labels and fields of one issue: the AI loop's lock, verdict and class labels, and its summary field.
-# Ids and label names live in config.md § AI loop.
+# Change labels and fields of one issue: auto mode's lock, verdict, class and hand-off labels, and its summary field.
+# Ids and label names live in config.md § Auto mode.
 #   jira-edit.sh ABC-12 --add-label ai-processing
 #   jira-edit.sh ABC-12 --remove-label ai-processing --remove-label ai-queue --add-label ai-do-now
 #   jira-edit.sh ABC-12 --field customfield_10050='{"value":"Level 4"}'     value is JSON

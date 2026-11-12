@@ -1,4 +1,4 @@
-# n-loop — comment templates
+# Auto mode — comment templates (both loops)
 
 <!-- The loop's markdown dialect, posted with W/scripts/tracker.sh comment (Jira: → ADF; a local board keeps the
      markdown): **bold**, `code`, "1. " and "- " lists, bare URLs, and `::video <uuid | KEY/name>` for an inline player
@@ -6,20 +6,20 @@
      no fenced code blocks, no blockquotes, no single-asterisk italics.
      Write each file with the Write tool or a QUOTED heredoc (<<'EOF'), never <<EOF.
      Language: config § Comments; translate the labels, keep the structure. `{…}` are fills.
-     Card content only (references/tracker-record.md § Wording rule): no rule numbers, verdict or class names,
+     Card content only (W/references/auto-tracker-record.md § Wording rule): no rule numbers, verdict or class names,
      labels, verifier, gates, pass or attempt counts, agent names, run folders.
      Paths and code: one `code` span each, in a "- " list. Function names never appear in prose.
      The proof comment is the flow's own 3-part template, adjusted as § Proof comment says. -->
 
 ## Proof comment
 
-Use `../defect-loop/templates/jira-comment.md` (defect path) or `../dev-loop/templates/jira-comment.md` (dev path) with these changes, so it passes the wording rule:
+Use `../n-defect-loop/templates/jira-comment.md` (n-defect-loop) or `../n-develop-loop/templates/jira-comment.md` (n-develop-loop) with these changes, so it passes the wording rule:
 
 - First line: `**{disclaimer}** · ship`.
 - Defect §2 `Where:` keeps the `path:line` and puts any function or component name inside the same `code` span, never in the sentence.
 - Dev §2 `Decisions:` lists the decisions in plain words and drops "who approved it (design gate date)": an unattended pass has no design gate.
 - Dev §3 `Review + QA:` says what the review and QA changed, with no count of rounds.
-- The evidence is the BEFORE and AFTER pair (`references/evidence-and-ship.md` § Picture or video) on both paths; on the dev path the AFTER clip walks the criteria in order, as dev-loop's demo does.
+- The evidence is the BEFORE and AFTER pair (`W/references/auto-evidence-and-ship.md` § Picture or video) in both loops; in n-develop-loop the AFTER clip walks the criteria in order, as the attended mode's demo does.
 - Needs-review adds one line in card language on why a person reviews it. An auto-merge PR gets § auto-merged after the merge.
 
 ## triage
@@ -44,6 +44,14 @@ To work on this card, please add:
 1. {the missing piece: steps, expected result, role, data, design, which of two sources wins}
 2. {…}
 {When two sources disagree, quote both, one line each, with where each is written.}
+```
+
+## hand-off
+
+```
+**{disclaimer}** · triage
+This card is {a defect: the behaviour exists and is wrong | new or changed behaviour: it does not exist yet or the spec now asks to change it}, so it moves to the {defect | development} queue.
+**Why:** {one sentence in the card's own words, citing the spec or decision when one settles it}
 ```
 
 ## solution-only

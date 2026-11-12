@@ -71,7 +71,7 @@ written under someone else's entry belongs to that entry, so the loop could not 
 Examples:
 - open defects: `type=bug status=todo,reopened`
 - ready for dev: `type=story,task,improvement status=todo`
-- the n-loop queue: `labels=ai-queue -labels=ai-processing status=todo`
+- the auto-mode queues: `labels=ai-queue -labels=ai-processing type=bug status=todo,reopened` (n-defect-loop) and `labels=ai-queue -labels=ai-processing -type=bug status=todo,reopened` (n-develop-loop), each plus its hand-off query, e.g. `labels=ai-to-develop -labels=ai-processing status=todo,reopened`
 - its stale locks: `labels=ai-processing age>2h`
 - reopened after an AI fix: `labels=ai-do-now status=reopened`
 
@@ -81,7 +81,7 @@ Examples:
 - Cards are never edited on a feature branch: `_state.sh` points the scripts at the main checkout.
 - Writes are atomic and keep the file mode. One writer at a time, which the loops' pass lock keeps.
 
-**Fields.** On a local board, config § AI loop names fields by header name (`severity`) or by section heading
+**Fields.** On a local board, config § Auto mode names fields by header name (`severity`) or by section heading
 (`acceptance-criteria`), never by `customfield_` id.
 
 ## Sources

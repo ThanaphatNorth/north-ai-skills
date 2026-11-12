@@ -1,6 +1,6 @@
 ---
 name: defect-repro
-description: Defect reproducer for the defect-loop. Given one tracker defect and an isolated running stack, writes an e2e spec that drives the app the way the reporter did and FAILS on the reported symptom (red), and keeps the video of the bug. Writes only the spec and evidence; never edits application code, never fixes. Use before any defect is diagnosed or fixed.
+description: Defect reproducer for n-defect-loop (step 4, attended or --auto). Given one tracker defect and an isolated running stack, writes an e2e spec that drives the app the way the reporter did and FAILS on the reported symptom (red), and keeps the video of the bug. Writes only the spec and evidence; never edits application code, never fixes. Use before any defect is diagnosed or fixed.
 model: sonnet
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---

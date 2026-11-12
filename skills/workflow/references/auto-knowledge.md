@@ -1,6 +1,6 @@
 # Knowledge — how the loop gets better between passes
 
-> Read when: n-loop A0 reads what earlier passes learned, A9 collects outcomes and dispatches `loop-learner`, or the weekly review runs. The learner's own rules are in the plugin's `loop-learner` agent; this file is the map of the files and of who may change what.
+> Read when: auto mode A0 reads what earlier passes learned, A9 collects outcomes and dispatches `loop-learner`, or the weekly review runs. The learner's own rules are in the plugin's `loop-learner` agent; this file is the map of the files and of who may change what.
 
 The loop improves only through files. Rules (this skill's references and `DL/config.md`) say what to do. Knowledge (`DL/knowledge/`) says what was true last time. Agents read knowledge **before** the rules apply, and the learner is the only writer.
 

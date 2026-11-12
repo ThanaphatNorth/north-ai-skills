@@ -1,6 +1,6 @@
 # 90north-develop — project config
 
-Written by `/90north-develop:develop-init`, kept up to date by the loops (dev-loop, defect-loop; n-loop only proposes changes). Facts only; every value here was checked, not guessed; each fact lives on one line here and nowhere else.
+Written by `/90north-develop:develop-init`, kept up to date by the loops (n-defect-loop, n-develop-loop; in `--auto` mode they only propose changes). Facts only; every value here was checked, not guessed; each fact lives on one line here and nowhere else.
 Lines marked `TBD` are asked of the user before the first run that needs them.
 
 ## Tracker
@@ -14,14 +14,14 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Statuses: <To Do (id)>, <In Progress (id)>, <Blocked (id)>, <Code Review (id)>, <Ready for QA (id)>, Done-category: <FIXED/UAT/Done (ids)> — the loops never use Done-category transitions. Local board: the `LOCAL_STATUSES` names, with `done` (and any other closing status) marked never-use.
 - Required fields on transitions: <e.g. Root Cause customfield_x = {id: parent, child: {id: child}}>.
 
-## Defect flow (defect-loop)
+## Defect flow (n-defect-loop)
 - Open-defect query (JQL, or the local form `type=bug status=todo,reopened`): `project = <KEY> AND issuetype = <id> AND status in (<ids>) ORDER BY priority DESC, created ASC` (board + backlog; no sprint filter).
 - Sanity query: `project = <KEY> AND issuetype = <id> AND statusCategory != Done`.
 - Transitions to the QA lane: <To Do →(id) In Progress →(id, screen: field …) Code Review →(id) Ready for QA>.
 - Branch: `fix/<KEY>-<slug>`. Batch: up to 3 tickets in parallel.
-- Structural fence: <schema/migration, auth, figures users report on, API↔web contract, deploy/, > 5 files or > 200 lines> — repro + root cause + options, no build without a yes; on a yes, dev-loop builds it.
+- Structural fence: <schema/migration, auth, figures users report on, API↔web contract, deploy/, > 5 files or > 200 lines> — repro + root cause + options, no build without a yes; on a yes, n-develop-loop builds it.
 
-## Dev flow (dev-loop)
+## Dev flow (n-develop-loop)
 - Ready-for-dev query (JQL, or the local form `type=story,task,improvement status=todo`): `project = <KEY> AND issuetype in (<ids>) AND status in (<ids>) <AND sprint in openSprints() | AND assignee = currentUser()> ORDER BY rank ASC`.
 - Sanity query: `project = <KEY> AND issuetype in (<ids>) AND statusCategory != Done`.
 - Acceptance criteria live in: <description section "Acceptance criteria" | customfield_x | linked spec>.
@@ -31,12 +31,13 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Design gate: <stop for Large and schema/state/interface changes (default) | stop before every build>. Always-ask: <list | none>. Post design notes to Jira: <no | yes>.
 - Design notes for Large work go to: `<docs/design/<KEY>.md | ADR folder>`.
 
-## AI loop (n-loop — unattended; omit the section if the repo does not run it)
-- Queue: `<JQL, e.g. project = <KEY> AND labels = ai-queue AND labels not in (ai-processing) AND status in (<ready ids>) ORDER BY rank ASC | local: labels=ai-queue -labels=ai-processing status=todo>` · sanity: `<…>` (counts agree).
+## Auto mode (both loops with `--auto`, unattended; omit the section if the repo does not run it)
+- Queue, n-defect-loop: `<JQL, e.g. project = <KEY> AND labels = ai-queue AND labels not in (ai-processing) AND issuetype in (<defect ids>) AND status in (<ready ids>) ORDER BY rank ASC | local: labels=ai-queue -labels=ai-processing type=bug status=todo,reopened>` plus hand-offs `<project = <KEY> AND labels = ai-to-defect AND labels not in (ai-processing) AND status in (<ready ids>) | local: labels=ai-to-defect -labels=ai-processing status=todo,reopened>` · sanity: `<…>` (counts agree).
+- Queue, n-develop-loop: `<the same with issuetype not in (<defect ids>), so Story, Task, Improvement, Feedback and any other type | local: labels=ai-queue -labels=ai-processing -type=bug status=todo,reopened>` plus hand-offs `<… labels = ai-to-develop … AND status in (<ready ids>) | local: labels=ai-to-develop -labels=ai-processing status=todo,reopened>` · sanity: `<…>`.
 - Lock: <label `ai-processing` | field <id> = <option id> (queued <id>, processing <id>, done <id>)> · stale after <2> h · stale-lock query: `<… | local: labels=ai-processing age>2h>`.
-- Labels: verdict `ai-do-now` / `ai-need-dev` / `ai-need-info` · class `ai-auto-merge` / `ai-needs-review` (a person's `ai-needs-review` is never removed) · queue `ai-queue`.
+- Labels: verdict `ai-do-now` / `ai-need-dev` / `ai-need-info` · class `ai-auto-merge` / `ai-needs-review` (a person's `ai-needs-review` is never removed) · queue `ai-queue` · hand-off `ai-to-defect` / `ai-to-develop`.
 - Fields the loop reads (`tracker.sh card <KEY> <these ids>`; a local board names a header field or a section heading instead of an id): severity <id | none>, environment <id | none>, steps to reproduce <id | description>, expected result <id | description>, acceptance criteria <id | description section>. Field it writes: AI summary <id (multi-line → ADF) | none — the triage comment carries it>.
-- Lanes (transition ids, or status names on a local board; a lane reached in several hops is the whole path): need-info <To Do →(id) Need Info>; start <To Do →(id) In Progress>; review, both routes <In Progress →(id) Code Review>; after auto-merge <In Progress →(id) Code Review →(id) Ready for QA>; ready again (follow-up) <Need Info →(id) To Do>.
+- Lanes (transition ids, or status names on a local board; a lane reached in several hops is the whole path): need-info <To Do →(id) Need Info>; start <To Do →(id) In Progress>; review, both loops <In Progress →(id) Code Review>; after auto-merge <In Progress →(id) Code Review →(id) Ready for QA>; ready again (follow-up) <Need Info →(id) To Do>.
 - Follow-up queries (local form in brackets): need-info answered `<… | status=need-info, then a person's comment newer than the loop's>` · reopened after AI `<… | labels=ai-do-now status=reopened>` · PR feedback: `gh pr list --author <loop login> --state open` in <repos>.
 - Bands: never do-now <Level 1–2 / Sev-0–1, Production, Pre-Prod> · review at most <Level 3, UAT> · auto-merge band <Level 4–5 or none, Dev / QA>.
 - Never-touch (on top of the profile's Contracts and State owners): <money/tax, personal or health data, permissions, ids minted elsewhere, infra/CI, secrets — each with globs or grep markers>.
