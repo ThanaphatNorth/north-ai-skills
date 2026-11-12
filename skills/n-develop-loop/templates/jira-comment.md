@@ -14,6 +14,7 @@ New: `<path>` — <one-line responsibility> (one line per new module)
 Changed existing files: `<path>` — <wiring: registers / imports … | reason from the design note>
 Data / API: <schema change, new endpoint or contract change — or "none">
 Decisions: <each decision taken, and who approved it (design gate date) — or "none">
+Docs: `<feature doc path>` — <R-n added / changed / retired, or "no rule changed"> (only when config § Docs is on)
 
 **3. Verification**
 Acceptance: `<spec path>` — red before (`<pasted failing line>`), green now: `<pasted summary line>` (run twice)

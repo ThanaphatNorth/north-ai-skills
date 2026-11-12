@@ -35,6 +35,8 @@ Write the **acceptance criteria you would test**, one line each, numbered `AC-1 
 - **Story / Task / Improvement / Feedback:** the acceptance criteria, the scenario, or the "what to change" list. UI work also needs the design (mockup, Figma frame or screenshot) that settles the layout.
 - **Conflicts:** when the latest comments, a linked spec or a linked issue say something different from the description and nobody settled it, the card is `need-info`, and the question asks which one wins. Check whether the spec source records the decision as revised or reversed before calling it a conflict.
 
+- **Feature docs** (config § Docs on): read the rules `R-n` of the areas the card touches (`feature-docs.md` § Reading it). A card that contradicts a listed rule with no decision that settles it is `need-info`; a rule missing from a partial doc is unknown, not a conflict.
+
 Never invent a criterion the card does not state. When a criterion cannot be turned into a check, ask about it instead.
 
 ## Route (A3 step 3)

@@ -38,6 +38,7 @@ Recording style, so a QA or PO reader can follow without reading the spec: a vis
 | V3 proof on the branch, V4 forbidden area, V5 scope, V6 structure, V9 checks ran | A5: the builder, with `verify.md` attached |
 | V7 AFTER frames | A6: re-record AFTER |
 | V8 comment ↔ diff, wording | you: rewrite the comment draft |
+| V10 feature doc ↔ diff | you: fix the feature doc (`feature-docs.md`), then re-run the verifier |
 
 One retry per pass (config › verifier retries). A second `REFUTED` takes the stopped path: the card gets `W/templates/auto-comments.md` § stopped, with the refuted points written as card facts ("the after recording did not show the saved value"), never as claim numbers.
 
@@ -52,8 +53,8 @@ All must hold:
 | Gate | Check |
 |---|---|
 | Standing approval | config § Push policy quotes the user's words, dated, and they name **merge** for this class; config › auto-merge is on; the repo matches config's auto-merge repos. `--delete-branch` only when the words also name deleting merged branches |
-| Safe kind | every changed file matches config's auto-merge paths, and the diff holds only the kinds in the auto-merge column of `auto-triage.md` § Decision matrix |
-| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config's size excludes), ≤ config max files, no new dependency, env var, route, state owner or API call |
+| Safe kind | every changed file matches config's auto-merge paths (the feature doc path in config § Docs counts as allowed), and the diff holds only the kinds in the auto-merge column of `auto-triage.md` § Decision matrix |
+| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config's size excludes; feature docs and their index are excluded like tests), ≤ config max files (feature docs not counted), no new dependency, env var, route, state owner or API call |
 | Low blast radius | severity and environment in the auto-merge band, no person's force-review label, not reopened, not a feedback round |
 | Structure | the n-dev structure check has no finding on the branch (existing debt listed apart is fine) and the profile is current for the touched paths |
 | Proven | `verify.md` all CONFIRMED, BEFORE red and PROOF green on evidence, repo checks green |

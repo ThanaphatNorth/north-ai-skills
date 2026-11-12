@@ -24,6 +24,7 @@ Goal: one `config.md` where every value was checked, so neither loop guesses. Bo
 - Agents and skills in the repo (`.claude/agents/*.md`, `.claude/skills/*`) usable as code reviewer, QA, verifier, house rules, demo recorder; spec / decision log, requirements docs, design files and where design notes for Large work belong (docs folder, ADRs).
 - Project memory files and CLAUDE.md for ports, DB and rules already learned.
 - Architecture profile: if `docs/architecture/profile.md` (or `.ndev.toml`'s `[profile] path`) exists, read it and link it in `config.md` instead of re-deriving extension points and state owners; if it does not, run `../n-arch/SKILL.md` (create mode) before step 5, and link what it writes.
+- Feature docs: find the repo's docs system (a `docs/` folder, Docusaurus or another site, a handbook, ADRs) and any existing per-feature docs. Fill config § Docs: on by default, in `docs/features/` unless the repo already has a home for them; follow that system's conventions (`W/references/feature-docs.md`). Docs are created by the first change in each area, never in bulk here. Ask only if two homes fit.
 
 ## 3. Tracker: Jira, or a local board
 First ask whether the project uses Jira. With no Jira, take **3b** instead of the Jira steps; everything else in this skill is the same (`W/references/trackers.md` has the verbs, the card format and the query form).

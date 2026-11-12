@@ -126,7 +126,9 @@ skills/workflow/
   references/auto-*.md        the auto mode both loops run with --auto (pass, triage, ship classes, record, knowledge)
   references/core-lessons.md  rules from real runs, both loops
   references/trackers.md      the tracker verbs, Jira vs local board, card format, query form
+  references/feature-docs.md  feature docs: one per area, rules + sources, rule → test, decisions; kept true in every PR
   templates/card.md           a local-board card
+  templates/feature-doc.md    a feature doc
   scripts/tracker.sh, _state.sh  one door to the tracker: TRACKER=jira | local
   scripts/jira-*.sh, md2adf.py  Jira backend (REST v3)
   scripts/local_board*.py     local board backend (markdown cards)

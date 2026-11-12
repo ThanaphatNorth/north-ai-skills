@@ -50,6 +50,14 @@ Dependency direction: <UI → application → core; confirm no cycle>
 | `<shell module>` | its interface | `<cmd>` → `<assertion that failed>` | <in-memory adapter> |
 | <existing behaviour being extended> | characterization test in `<file>` | n/a (must pass before and after) | <...> |
 
+## Feature docs (only when the area has one)
+
+| Doc | Rules added / changed / retired | Test for each |
+|---|---|---|
+| `<docs/features/<area>.md>` | <R-n: the rule in plain words — source> | <test name> |
+
+Or the one line "no feature doc, or no rule changed".
+
 ## Change safety (Large, or any contract / schema / migration / outbound call / deploy change)
 
 From `references/change-safety.md`, or the one line "no contract, data or rollout impact".
