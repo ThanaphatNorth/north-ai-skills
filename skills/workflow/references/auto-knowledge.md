@@ -35,6 +35,7 @@ The learner has no tracker access. Before dispatching it, you write `DL/runs/<da
 | locate time and misses | `triage.md` | a code-map entry; a profile row that pointed to the wrong place |
 | locators that worked or broke | the spec, `before.md`, `proof.md` | selectors |
 | verifier refutations | `verify.md` | what the builder or recorder got wrong, and the fix |
+| security and performance findings | `review-security.md`, `review-performance.md` | a kind found on two cards = a builder lesson (kind and fix pattern only, never an exploit input or an open weakness's place); a weakness a person's PR review caught that both lenses missed = a proposal for n-dev's checklist |
 | structure findings | `build.md`, QA's structure-check output | a repeated finding = a builder lesson; a target layer rule with 0 violations = a proposal to enforce it in `.ndev.toml` (through n-arch) |
 | PR outcome | `gh pr view <n> --json state,reviews,comments` | merged = good; changes requested = read the review, that is a lesson; closed unmerged = wrong fix |
 | card after the review lane | `W/scripts/tracker.sh get <KEY>`: status, comments newer than the loop's | reopened = the fix did not hold → lesson + re-queue flag |

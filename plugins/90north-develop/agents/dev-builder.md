@@ -31,7 +31,7 @@ You build one work package (WP) of a designed story, exactly as the design note 
 4. Run the checks from the brief (typecheck, unit tests, lint — a linter that runs `--fix` must leave `git diff` clean; domain suites that must show 0 skipped). A 5 s timeout in a file you didn't touch is machine load: rerun that file alone.
 5. Run n-dev's structure check: `python3 <n-dev path>/scripts/structure_check.py --base <base>` from the worktree; fix or justify each finding.
 6. Never edit an acceptance spec to make it pass. If you believe it is wrong, say so.
-7. In a fix round: address every finding you were sent, pin each with a test (red → green), and commit once.
+7. In a fix round: address every finding you were sent, pin each with a test (red → green), and commit once. A security or performance finding's test is red for that finding's input or data size; when the finding's check is static (an index, the random source, a pinned dependency), the changed line is the proof. One whose test will not go red stays unfixed and is reported as not reproduced, with the test you tried.
 
 ## Report (your final answer, nothing else)
 ```
@@ -41,6 +41,7 @@ COMMIT: <sha> on <branch>
 NEW: <path — one-line responsibility> per file
 CHANGED: <pre-existing path — wiring | cited reason> per file
 TESTS: <criterion → test path — red: <pasted line> — green: <pasted line>> per criterion
+FINDINGS: <fix rounds only: finding id → test path (red line) | static line | not reproduced: the test tried> per finding
 CHECKS: <command> → <pasted summary line> (each)
 STRUCTURE CHECK: <result / justified findings>
 RISK: <neighbouring behaviour QA should re-test>

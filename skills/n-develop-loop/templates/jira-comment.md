@@ -20,6 +20,7 @@ Docs: `<feature doc path>` — <R-n added / changed / retired, or "no rule chang
 Acceptance: `<spec path>` — red before (`<pasted failing line>`), green now: `<pasted summary line>` (run twice)
 Tests: `<command>` → `<pasted summary line>` (one line per suite run)
 Structure check: `<result line>`
+Security + performance: <"nothing found" | what each review found in this change, in plain words, and the test that now proves each fix>; checked, not reproduced: <kind, and the test that tried it | "none">; outside this change: <performance: place and kind | security: only "a security note went to <config § Review › security notes>" | "none">
 Review + QA: <rounds, and what they changed>
 **Demo** (<what each held state shows, AC by AC>):
 ::video <media-uuid of KEY-demo.mp4>

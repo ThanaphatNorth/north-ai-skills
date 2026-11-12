@@ -73,7 +73,7 @@ Every comment, and the AI summary, describes **the card only**: the problem, wha
 
 - Every comment starts with config's disclaimer, bold, then its step: `**<disclaimer>** · triage`. The comment script renders only bold, `code`, lists, links and `::video` lines (`W/templates/auto-comments.md`), so there are no blockquotes or code blocks.
 - Language: config § Comments. Prose names no functions; each path is one `code` span in a list.
-- Before posting, grep the draft, except pasted command output, for whole internal terms: the label names, `do-now`, `need-dev`, `need-info`, `auto-merge class`, `verdict`, `verifier`, `\bV[0-9]+\b`, `rule [0-9]`, `row [0-9]`, the agent names, `runs/`. Ordinary words ("checks pass", "attempted") are fine. Grep also for secrets and personal data. A hit → rewrite.
+- Before posting, grep the draft, except pasted command output, for whole internal terms: the label names, `do-now`, `need-dev`, `need-info`, `auto-merge class`, `verdict`, `verifier`, `\bV[0-9]+\b`, finding ids `\b[SP][0-9]+\b`, `rule [0-9]`, `row [0-9]`, the agent names, `runs/`. Ordinary words ("checks pass", "attempted") are fine. Grep also for secrets and personal data. A hit → rewrite.
 - Function and component names appear only inside a `code` span next to their path, never in a sentence.
 
 ## Follow-ups (A1)

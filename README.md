@@ -111,7 +111,7 @@ skills/design-atlas/
   examples/<slug>/    tested cinematic effects (light trail, spotlight, particles, shader...) to adapt
 skills/n-dev/
   SKILL.md            four rules, scope dial, seven steps with completion criteria
-  references/*.md     structure, extension, state (single source of truth)
+  references/*.md     structure, extension, state (single source of truth), security, performance
   templates/design-note.md  module map, state ownership, extension plan, test seams
   references/change-safety.md  contracts, migrations, rollout, failure modes, signals (Large work)
   scripts/structure_check.py  git-based structure gate (stdlib only), reads .ndev.toml, --all audits

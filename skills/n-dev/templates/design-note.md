@@ -58,6 +58,16 @@ Dependency direction: <UI → application → core; confirm no cycle>
 
 Or the one line "no feature doc, or no rule changed".
 
+## Security and performance (the rows the change touches)
+
+From `references/security.md` and `references/performance.md`, or the one line "no security- or
+performance-relevant path".
+
+| Lens | Row | Answer: the line or test that settles it |
+|---|---|---|
+| security | <e.g. Access to each record> | <owner check in `path`; test `name`: another user's id → 404> |
+| performance | <e.g. Queries per request> | <one query with a join; test `name` counts queries for 1 and 20 rows> |
+
 ## Change safety (Large, or any contract / schema / migration / outbound call / deploy change)
 
 From `references/change-safety.md`, or the one line "no contract, data or rollout impact".

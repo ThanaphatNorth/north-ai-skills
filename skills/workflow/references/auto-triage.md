@@ -104,7 +104,7 @@ Place a `do-now` card in a column for each row; the card takes the **most cautio
 | Size | 1 repo, ≤ config max lines (default 80 non-test source lines), ≤ 5 files, no new dependency, env var, route or API call | ≤ review fence | above the fence, or must land together with another team's work |
 | Repo | in config's auto-merge repos | in config's review repos | in config's solution-only repos |
 | Severity · environment | lowest bands, Dev / QA | middle band, any non-production environment | never-do-now band |
-| Evidence | spec red → green, verifier all CONFIRMED, checks green, CI green, grace window quiet | spec red → green, verifier all CONFIRMED, checks green | the card could not be proven on the stack |
+| Evidence | spec red → green, verifier all CONFIRMED, security and performance reviews found nothing at blocker or should-fix, checks green, CI green, grace window quiet | spec red → green, verifier all CONFIRMED, checks green | the card could not be proven on the stack |
 | History | first attempt | reopened after an AI fix, a feedback round, a second build attempt, a person's force-review label | the AI already stopped twice on this card |
 | Profile | present and current for the touched paths | missing or stale is fine here | — |
 
