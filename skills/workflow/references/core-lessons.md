@@ -2,7 +2,7 @@
 
 > Read when: S0 of either loop (`stages.md`), in full, together with the flow's own core lessons and the project's `.claude/90north-develop/lessons.md`; and when a project lesson might belong to every repo.
 
-Distilled from real runs. A project lesson that would help any repo in both flows is promoted here; one that only concerns defects goes to `defect-loop/references/core-lessons.md` (edit the plugin source, bump the plugin version, `/plugin update`).
+Distilled from real runs. A project lesson that would help any repo in both flows is promoted here; one that only concerns defects goes to `n-defect-loop/references/core-lessons.md` (edit the plugin source, bump the plugin version, `/plugin update`).
 
 ## Finding the work
 - Query statuses and issue types **by id**, never by name — the name form once returned 1 of 17 open bugs with no error. Sanity-check the count against `statusCategory != Done`.
@@ -25,7 +25,7 @@ Distilled from real runs. A project lesson that would help any repo in both flow
 ## Evidence and Jira
 - Videos must play **inline** in the comment (user correction): H.264 MP4 (`-pix_fmt yuv420p -movflags +faststart -an`), upload, take the media uuid from the attachment content redirect, embed as ADF mediaSingle, verify via renderedBody. Attachments alone are not enough.
 - The "after" clip must hold each proving state ~1.5 s; a fast spec run ends before the screencast catches it. Re-record when a later fix round changes the behaviour shown.
-- Write comment files with a quoted heredoc or the Write tool; an unquoted heredoc ran every `backtick path` as a command and posted the comment with blanks. `jira-comment.sh` warns when a code span is missing.
+- Write comment files with a quoted heredoc or the Write tool; an unquoted heredoc ran every `backtick path` as a command and posted the comment with blanks. On Jira, `tracker.sh comment` warns when a code span is missing; a local board keeps the markdown as written.
 - Credentials file: chmod 600, never cat or print it; the token goes to curl on stdin.
 
 ## Environment

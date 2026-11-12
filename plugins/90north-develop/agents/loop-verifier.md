@@ -1,6 +1,6 @@
 ---
 name: loop-verifier
-description: Adversarial gate of the n-loop, run before anything is published. Given one card's run folder (card, triage, before, build, proof), the branch diff, the spec and the evidence, it tries to REFUTE each claim — the spec asserts the card's criteria, BEFORE failed for the card's reason, PROOF passed on the fix branch, the diff stays out of forbidden areas and inside the card's scope, the n-dev structure check is clean, the evidence shows the behaviour, the comment matches the diff and is readable, and the checks really ran. Returns CONFIRMED or REFUTED per claim with path:line or frame evidence. Reads and runs read-only commands only; never fixes, never softens, never decides what happens next.
+description: Adversarial gate of the loops' auto mode (n-defect-loop and n-develop-loop with --auto), run before anything is published. Given one card's run folder (card, triage, before, build, proof), the branch diff, the spec and the evidence, it tries to REFUTE each claim — the spec asserts the card's criteria, BEFORE failed for the card's reason, PROOF passed on the fix branch, the diff stays out of forbidden areas and inside the card's scope, the n-dev structure check is clean, the evidence shows the behaviour, the comment matches the diff and is readable, and the checks really ran. Returns CONFIRMED or REFUTED per claim with path:line or frame evidence. Reads and runs read-only commands only; never fixes, never softens, never decides what happens next.
 tools: Read, Write, Grep, Glob, Bash
 ---
 

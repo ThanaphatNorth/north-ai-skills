@@ -1,8 +1,8 @@
 # Shared stages — every loop
 
-> Read when: dev-loop, defect-loop or n-loop reaches a stage marked S0–S6, or you write a dispatch brief for any subagent of any loop.
+> Read when: n-defect-loop or n-develop-loop reaches a stage marked S0–S6 (in either mode), or you write a dispatch brief for any subagent of either loop.
 
-The orchestrator is the main conversation. It reads the tracker, decides, dispatches subagents, checks what they return and writes to the tracker. Subagents never talk to the tracker and never decide; they cannot see this conversation, so every dispatch is self-contained. `<flow>` below is `dev`, `defect` or `ai` (n-loop); `W` is this skill's base directory; `DL` is the per-repo state folder (`SKILL.md` § Per-repo state).
+The orchestrator is the main conversation. It reads the tracker, decides, dispatches subagents, checks what they return and writes to the tracker. Subagents never talk to the tracker and never decide; they cannot see this conversation, so every dispatch is self-contained. `<flow>` below is `dev` (n-develop-loop) or `defect` (n-defect-loop); `W` is this skill's base directory; `DL` is the per-repo state folder (`SKILL.md` § Per-repo state).
 
 ## Dispatch safety block (paste into every brief, verbatim)
 
@@ -12,15 +12,15 @@ Then the brief adds: the work item's text (minus personal data), the worktree an
 
 ## S0 · Before every run (cheap, mandatory)
 
-1. No `DL/config.md` → stop and run `/90north-develop:develop-init`. Legacy `.claude/defect-loop/` only → the defect loop may run on it; the dev loop asks for develop-init first (its config has no § Dev flow), and so does n-loop when config has no § AI loop.
+1. No `DL/config.md` → stop and run `/90north-develop:develop-init`. Legacy `.claude/defect-loop/` only → the defect loop may run on it; n-develop-loop asks for develop-init first (its config has no § Dev flow), and so does `--auto` when config has no § Auto mode (a legacy § AI loop is migrated by develop-init).
 2. Read `W/references/core-lessons.md`, the flow's own core lessons if it has them, and `DL/lessons.md` **in full**. Apply every rule.
-3. Read `DL/config.md` and `DL/<flow>-ledger.md`. A work item whose last row is a parked state (`ready-for-qa`, `in-review`, `blocked-needs-human`, `cannot-reproduce`, `needs-info`, `awaiting-design-approval`, and the AI loop's `solution-posted`, `stopped`, `awaiting-push`, `merged`) is skipped unless the tracker shows a newer comment or status change since that row. An item whose last row in **another** loop's ledger is not parked belongs to that loop: skip it. An item parked behind a PR ("waits PR #N") is re-checked every run: `gh pr view N --json state` MERGED → resume it.
+3. Read `DL/config.md` and `DL/<flow>-ledger.md`. A work item whose last row is a parked state (`ready-for-qa`, `in-review`, `blocked-needs-human`, `cannot-reproduce`, `needs-info`, `awaiting-design-approval`, `handed-to-<loop>`, and auto mode's `solution-posted`, `stopped`, `awaiting-push`, `merged`, `dry-run`) is skipped unless the tracker shows a newer comment or status change since that row. An item whose last row in **another** loop's ledger (or a legacy `ai-ledger.md`) is not parked belongs to that loop: skip it. An item parked behind a PR ("waits PR #N") is re-checked every run: `gh pr view N --json state` MERGED → resume it.
 4. After a session restart, or when the ledger has items mid-flight: check each open worktree's `git status` and output folder, start its stack again, resume stopped agents with SendMessage (tell them the stack restarted), confirm any loop with CronList.
-5. One cheap tracker read (the MCP connector config names, else `W/scripts/jira-search.sh`). A 403 or "not granted" → switch to the REST scripts; don't retry blindly.
+5. One cheap tracker read: Jira through the MCP connector config names, else `W/scripts/tracker.sh search`; a local board through `tracker.sh search`. A 403 or "not granted" → switch to the REST scripts; don't retry blindly.
 
 ## S1 · Isolate
 
-1. Move the item to In Progress (`W/scripts/jira-transition.sh <KEY> <id>`; `--list` shows what is offered).
+1. Move the item to In Progress (`W/scripts/tracker.sh transition <KEY> <id | status>`; `--list` shows what is offered).
 2. Create the worktree exactly as config § Repo says — `feat/<KEY>-<slug>` for dev, `fix/<KEY>-<slug>` for defects — run the dependency bootstrap, and commit an empty anchor right away (other sessions may clean up worktrees whose branch has no commits).
 3. Bring up the stack per config § Stack recipe: its own DB (fresh, or a **copy** of the shared test DB), migrations, API, web. Add preview configs whose commands use `exec`, and start them with the preview tool, never with Bash. Read the app's boot hooks before pointing it at any DB you did not create.
 4. Respect the preview-server cap: one stack shared by agents working on unchanged code, one per item under QA, stopped as soon as its QA ends.
@@ -41,7 +41,7 @@ Never edit the worktree while either is running; queue findings into **one** fix
 ## S4 · Ship — comment, push, PR, lane
 
 1. Re-read the ticket's current summary and description; reporters rewrite tickets. Map every point of the work to the ticket's **current** points.
-2. Write `<scratchpad>/<KEY>/comment.md` from the flow's `templates/jira-comment.md` (config § Comments language; the sections exactly; evidence = commands plus their real summary lines) with the Write tool or a quoted heredoc. `W/scripts/jira-attach.sh <KEY> <clips…>` → put each media uuid on a `::video <uuid>` line. Post with `W/scripts/jira-comment.sh <KEY> comment.md [commentId]`; it reads the comment back — players rendered and no missing code spans, or fix and re-post with the commentId.
+2. Write `<scratchpad>/<KEY>/comment.md` from the flow's `templates/jira-comment.md` (config § Comments language; the sections exactly; evidence = commands plus their real summary lines) with the Write tool or a quoted heredoc. `W/scripts/tracker.sh attach <KEY> <clips…>` → put what it prints (a Jira media uuid, or `KEY/<name>` on a local board) on a `::video` line. Post with `W/scripts/tracker.sh comment <KEY> comment.md [commentId]`; it reads the comment back — players rendered and no missing code spans, or fix and re-post with the commentId.
 3. Ship per config § Push policy. Before pushing, squash the anchor and any local fix-round commits into one commit (`git reset --soft <merge-base>` + one commit — local, unpushed commits only) whose message cites only the items it delivers. Not pushed → the comment says the branch is local and awaiting approval, and the item stays in its lane.
 4. After push + PR: transition to the flow's target lane (config § Dev flow / § Defect flow, with any required field), and put the branch / PR link in the comment.
 5. Append a ledger row to `DL/<flow>-ledger.md`: `| date time | KEY | state | branch @ sha | worktree · ports · DB | evidence | next |`.
@@ -55,7 +55,7 @@ Stop the item's preview servers, then confirm its ports are free (`lsof`; kill o
 1. Anything that cost a retry, surprised you, or the user corrected → one entry in `DL/lessons.md`: `- [date] [dev|defect|ai|both] <tag> seen:N — symptom → cause → rule. (open | promoted → <where>)`, ≤5 lines. Dedupe: bump `seen:` instead of repeating.
 2. `seen ≥ 2`, a user correction, or a wrong tracker write → **promote** it into the procedure: `DL/config.md` for a project fact, or propose the plugin edit to the user (a loop's `SKILL.md`, an agent, this file, or a core-lessons file) when it would help every repo.
 3. Reusable outside these loops → `~/.claude/knowledge/lessons/` through the `learn` skill when installed.
-4. Report to the user: seen / started / delivered / moved / blocked, branches awaiting push approval, decisions waiting on the user or PO, lessons added or promoted. Nothing processed → one line.
+4. Report to the user: seen / started / delivered / moved / blocked, branches awaiting push approval, decisions waiting on the user or PO, lessons added or promoted. On a committed local board, also the card files this run changed (`git status --short <board>`) for a person to commit: the loops never commit them. Nothing processed → one line.
 
 ## Never (every loop)
 
@@ -68,7 +68,7 @@ Stop the item's preview servers, then confirm its ports are free (`lsof`; kill o
 
 ## Sources
 
-- Distilled from the author's own sweeps of a production Jira defect board (2026); the dev-loop stages reuse the same orchestration and evidence rules.
+- Distilled from the author's own sweeps of a production Jira defect board (2026); the n-develop-loop stages reuse the same orchestration and evidence rules.
 - Jira Cloud REST v3, issue transitions: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/
 - Atlassian Document Format, structure and the `mediaSingle` node: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/
 - Playwright video recording: https://playwright.dev/docs/videos

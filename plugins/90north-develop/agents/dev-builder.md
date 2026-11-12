@@ -1,6 +1,6 @@
 ---
 name: dev-builder
-description: Builder for the dev-loop. Given one work package of an approved design note (its files, responsibility, success criteria and test seam) — or WP-0, the acceptance specs that must go red before any code exists — builds it test-first with the n-dev discipline inside a worktree: each criterion's test red → implementation → green, new behaviour in new files with a wiring diff on existing ones, one owner per fact, then the project's checks, n-dev's structure check and a local commit. Never pushes, never touches the tracker, never widens scope beyond its work package. Use for one work package at a time.
+description: Builder for n-develop-loop (steps 4 and 6, attended or --auto). Given one work package of an approved design note (its files, responsibility, success criteria and test seam) — or WP-0, the acceptance specs that must go red before any code exists — builds it test-first with the n-dev discipline inside a worktree: each criterion's test red → implementation → green, new behaviour in new files with a wiring diff on existing ones, one owner per fact, then the project's checks, n-dev's structure check and a local commit. Never pushes, never touches the tracker, never widens scope beyond its work package. Use for one work package at a time.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 

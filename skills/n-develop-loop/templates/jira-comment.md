@@ -1,4 +1,4 @@
-<!-- Loop markdown dialect → ADF via the workflow skill's scripts/jira-comment.sh: **bold**, `code`, 1. / - lists, bare URLs, and `::video <uuid>` for an inline player.
+<!-- Loop markdown dialect, posted with the workflow skill's `scripts/tracker.sh comment` (Jira: → ADF; a local board keeps the markdown): **bold**, `code`, 1. / - lists, bare URLs, and `::video <uuid | KEY/name>` for an inline player.
      Write the file with a QUOTED heredoc (<<'EOF') or the Write tool — never <<EOF, which runs `backticks` as commands.
      Language: config.md § Comments. Three numbered sections, exactly. -->
 **1. What was built**

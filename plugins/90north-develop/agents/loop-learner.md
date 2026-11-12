@@ -1,6 +1,6 @@
 ---
 name: loop-learner
-description: Learning step of the n-loop, run at the end of every pass and in a weekly review. Reads the pass's run files and the outcomes the conductor collected (PRs merged, changes requested or closed, cards reopened or answered, need-dev cards a person closed, verifier refutations, structure findings) and turns them into the project knowledge the next pass reads — code map, selectors, calibration, outcomes log, [ai] lessons. Anything that would change config, a rule, a skill, an agent, the architecture profile or .ndev.toml becomes a dated proposal a person approves. File-only: no tracker access, never edits procedure, never deletes a lesson.
+description: Learning step of the loops' auto mode (n-defect-loop and n-develop-loop with --auto), run at the end of every pass and in a weekly review. Reads the pass's run files and the outcomes the conductor collected (PRs merged, changes requested or closed, cards reopened or answered, need-dev cards a person closed, verifier refutations, structure findings) and turns them into the project knowledge the next pass reads — code map, selectors, calibration, outcomes log, [ai] lessons. Anything that would change config, a rule, a skill, an agent, the architecture profile or .ndev.toml becomes a dated proposal a person approves. File-only: no tracker access, never edits procedure, never deletes a lesson.
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -19,7 +19,7 @@ The loop gets better only through files. You write the knowledge files; you neve
 ## Mode `pass`
 
 1. **Read** `DL/knowledge/*`, the `[ai]` lessons in `DL/lessons.md`, and every file of this pass.
-2. **Signals → knowledge** (the signal table is in the n-loop skill's `references/knowledge.md` § Signals):
+2. **Signals → knowledge** (the signal table is in the workflow skill's `references/auto-knowledge.md` § Signals):
    - `code-map.md`: card vocabulary → `repo/path`, extension recipe, date. Add one when a locate took more than 2 minutes or found an area the map lacked; newest wins, older ones are marked retired.
    - `selectors.md`: a locator or label that worked after a miss, or broke, with the date and the spec that proved it.
    - `calibration.md`: one row per built card (estimate raw, calibrated, actual non-test lines from `git diff --numstat` minus the size excludes, files, repos). Recompute the factor as the median of actual ÷ raw over the last 10 rows, and write the new factor with its date.

@@ -1,6 +1,6 @@
 # Knowledge — how the loop gets better between passes
 
-> Read when: n-loop A0 reads what earlier passes learned, A9 collects outcomes and dispatches `loop-learner`, or the weekly review runs. The learner's own rules are in the plugin's `loop-learner` agent; this file is the map of the files and of who may change what.
+> Read when: auto mode A0 reads what earlier passes learned, A9 collects outcomes and dispatches `loop-learner`, or the weekly review runs. The learner's own rules are in the plugin's `loop-learner` agent; this file is the map of the files and of who may change what.
 
 The loop improves only through files. Rules (this skill's references and `DL/config.md`) say what to do. Knowledge (`DL/knowledge/`) says what was true last time. Agents read knowledge **before** the rules apply, and the learner is the only writer.
 
@@ -37,7 +37,7 @@ The learner has no tracker access. Before dispatching it, you write `DL/runs/<da
 | verifier refutations | `verify.md` | what the builder or recorder got wrong, and the fix |
 | structure findings | `build.md`, QA's structure-check output | a repeated finding = a builder lesson; a target layer rule with 0 violations = a proposal to enforce it in `.ndev.toml` (through n-arch) |
 | PR outcome | `gh pr view <n> --json state,reviews,comments` | merged = good; changes requested = read the review, that is a lesson; closed unmerged = wrong fix |
-| card after the review lane | `W/scripts/jira-get.sh <KEY>`: status, comments newer than the loop's | reopened = the fix did not hold → lesson + re-queue flag |
+| card after the review lane | `W/scripts/tracker.sh get <KEY>`: status, comments newer than the loop's | reopened = the fix did not hold → lesson + re-queue flag |
 | reply on a need-info card | the same | answered → A1 re-queues; the answer was already on the card → triage lesson |
 | need-dev card closed by a person | the same, plus that PR's diff size | the rule that sent it to need-dev, checked against what it took |
 | auto-merge reverted or reopened | the same | two on the same change kind → proposal to drop that kind from the auto-merge paths |
