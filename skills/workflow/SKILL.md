@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: Map and router of the 90north-develop plugin — decides which loop a piece of work belongs to (n-defect-loop for defects; n-develop-loop for new development, new features and changed requirements; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what both loops share - the 9 steps, the per-repo state folder, the shared stages (isolate, verify, evidence, ship, clean up, learn), the auto mode both loops run with --auto (queue and lock, triage matrix, verifier, ship classes, learner), the dispatch safety block, core lessons and the tracker (Jira or a local board). Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
+description: Map and router of the 90north-develop plugin — decides which loop a piece of work belongs to (n-defect-loop for defects; n-develop-loop for new development, new features and changed requirements; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what both loops share - the 9 steps, the per-repo state folder, the one decision round an attended run asks, the shared stages (isolate, verify, evidence, ship, clean up, learn), the auto mode both loops run with --auto, the dispatch safety block, core lessons and the tracker (Jira or a local board). Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
 ---
 
 # 90north-develop · workflow
@@ -21,7 +21,7 @@ keep code, identifiers and commit messages in the repo's language.
          S1 Isolate · S2 Verify (review, security + performance review, QA) · S3 Evidence video
          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
                                       │
-   attended (default): a gate asks you in chat
+   attended (default): one decision round before anything is built, then it runs to the end
    --auto (references/auto-mode.md): queue + lock, triage matrix, verifier gate, ship classes, learner;
                                      a gate parks the card with a question
                                       │
@@ -36,7 +36,8 @@ What differs is the middle: a defect needs a cause, a feature needs a design. Bo
 true in the same PR: its rules with their sources, rule → test, and decisions with reasons
 (`references/feature-docs.md`).
 
-Each loop runs **attended** by default, so a person answers its gates in chat. With `--auto` it runs **unattended**
+Each loop runs **attended** by default: it asks every question in one decision round, before anything is isolated
+or built, and then runs to the end (`references/stages.md` § Decision round). With `--auto` it runs **unattended**
 (`references/auto-mode.md`): it builds only what needs no gate, puts an adversarial verifier before anything is
 published, and ships by a written policy.
 
@@ -113,7 +114,7 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 
 | Open | When |
 |---|---|
-| `references/stages.md` | a loop reaches a shared stage (S0–S6), or writes a dispatch brief |
+| `references/stages.md` | a loop reaches a shared stage (S0–S6) or its decision round, or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of any loop, in full |
 | `references/feature-docs.md` | step 2 by-design (cite or propose the rule), step 3 (read the area's rules), steps 5–6 (plan and write the doc in the same PR), step 8 (the `Docs:` line), verifier V10 |
 | `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |

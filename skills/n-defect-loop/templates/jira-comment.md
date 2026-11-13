@@ -16,6 +16,7 @@ Where: `<path>:<line>` (<function/component>)
 **3. Solution**
 <what changed, in plain words, and why it fixes the cause rather than the symptom>
 Files: `<path>` (+ regression test `<path>`)
+Decisions: <each `DECIDED` line the loop took on its own, with how to undo it> (only when there is one)
 Docs: `<feature doc path>` — <R-n changed, or the regression test added to R-n> (only when config § Docs is on)
 Tests: `<command>` → `<pasted summary line>` (one line per suite run)
 Security + performance: <"nothing found" | what each review found in this change, in plain words, and the test that now proves each fix>; checked, not reproduced: <kind, and the test that tried it | "none">; outside this change: <performance: place and kind | security: only "a security note went to <config § Review › security notes>" | "none">

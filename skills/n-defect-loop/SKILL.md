@@ -1,6 +1,6 @@
 ---
 name: n-defect-loop
-description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira, or a local board when there is no Jira; one by key, or a sweep of the open-defect query) through 9 steps. Read the board, triage, check the spec, reproduce with a red e2e and a before video, find the root cause at path:line, fix test-first with n-dev, verify and record (code, security and performance review + QA, spec green twice, after video), open the PR with the 3-part comment and move the ticket to the QA lane. It merges on its own only a low- or no-impact change inside a standing approval; everything else waits for a person. Attended by default; --auto runs it unattended on a schedule or /loop, where a gate parks the card with a question. Reads project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule runs it. New features and changed requirements go to n-develop-loop.
+description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira, or a local board when there is no Jira; one by key, or a sweep of the open-defect query) through 9 steps, from the board to a PR in the QA lane: reproduce with a red e2e and a before video, root cause at path:line, a test-first fix with n-dev, code, security and performance review plus QA, an after video and the 3-part comment. Attended, it asks every question in one round before anything is built, then runs to the end; --auto runs it unattended on a schedule or /loop and parks a card that needs a person. Only a low- or no-impact change inside a standing approval merges on its own. Reads project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule runs it. New features and changed requirements go to n-develop-loop.
 argument-hint: "[<KEY>] [--auto] [--dry-run]"
 ---
 
@@ -21,9 +21,11 @@ return and write to the tracker (Jira or the local board, through `W/scripts/tra
 | `/90north-develop:n-defect-loop --auto [--dry-run] [<KEY>]` | unattended: one pass per `W/references/auto-mode.md` |
 | `/loop 30m /90north-develop:n-defect-loop [--auto]`, or a scheduled task (`W/templates/auto-scheduled-task.md`) | keep sweeping; attended mode keeps going between ticks while cards remain |
 
-The two modes differ first in who answers a gate:
-- **Attended:** a gate stops and asks you in chat.
-- **`--auto`:** a gate parks the card with a question on it, and the pass goes on. Auto mode adds the queue lock,
+The two modes differ in who answers:
+- **Attended:** every question comes in one decision round, before anything is isolated or built
+  (`W/references/stages.md` § Decision round). After it the sweep goes to the end: a card that still needs a person
+  parks, and the rest goes on.
+- **`--auto`:** nobody answers. A gate parks the card with a question on it, and the pass goes on. Auto mode adds the queue lock,
   the triage matrix (`W/references/auto-triage.md`), the verifier and the learner.
 
 ## Step 0 · Before every run
@@ -47,7 +49,8 @@ Attachments may hold personal data: describe them, never copy them into the repo
 Attended mode puts each ticket in one of these. Auto mode uses the decision table in `W/references/auto-triage.md`
 instead.
 - `actionable`: symptom, screen, role and expected result are clear enough to script.
-- `needs-info`: comment once asking for the missing piece (steps, role, data, screenshot); ledger `needs-info`.
+- `needs-info`: a missing piece (steps, role, data, screenshot). One the user in chat can supply goes to the
+  decision round; else comment once asking for it, ledger `needs-info`, and go on with the next card.
 - `change request / by-design`: the ticket is not a defect against the current spec. Any of these counts:
   - the code already does what the current spec says. Cite the line or decision id, after checking "Revised by /
     Reversed by".
@@ -61,7 +64,8 @@ instead.
   (`W/references/feature-docs.md` § By-design answers).
 - `structural`: a defect inside config § Defect flow's fence: schema or migration, auth, reported figures, the
   API↔web contract, deploy, or more than 5 files or 200 lines.
-  - Run steps 4–5, then comment with the structural variant and the options.
+  - Run steps 4–5, then comment with the structural variant and the options. The card parks
+    (`blocked-needs-human`), the sweep goes on, and the run report asks the options with your recommendation.
   - No build without a person's yes. On a yes, n-develop-loop takes it, with the ledger row
     `from-n-defect-loop KEY`. It works on a new `feat/<KEY>-<slug>` worktree (S1) with this red spec copied in as WP-0,
     then runs its steps 5–6.
@@ -81,8 +85,17 @@ Turn the ticket into the criteria you will test, numbered `AC-1 … AC-n` in the
 
 Read every comment newest first, any linked spec or decision log (config § Spec sources), and the area's feature
 doc when config § Docs is on (`W/references/feature-docs.md`): its rules `R-n` say what the area should do. When
-the latest comment, a linked spec or an existing rule disagrees with the ticket and nobody settled it, ask which
-one wins. That question is `needs-info`; never pick yourself.
+the latest comment, a linked spec or an existing rule disagrees with the ticket and nobody settled it, which one
+wins is a decision: never pick yourself. It goes to the decision round, or onto the ticket (`needs-info`) when only
+the reporter or PO can say.
+
+## Decision round (attended) · ask once, then fix
+Run `W/references/stages.md` § Decision round after steps 1–3 for every card of the sweep:
+- this loop's decisions: missing pieces and source conflicts the user can settle, and the push of this run's
+  `fix/<KEY>-*` branches when no standing approval covers them;
+- one message, then steps 4–9 run for every actionable card with no further question. A card that needs a person
+  later (structural options, not reproduced, 2 fix rounds used, a fixer's `NEEDS-DECISION`) parks, and the sweep
+  goes on.
 
 ## 4 · Reproduce: a failing test, on video
 1. S1 Isolate (`stages.md`), branch `fix/<KEY>-<slug>`. Ticket data from the reporter's files goes into a **copy**
@@ -137,7 +150,7 @@ In auto mode, pick the ship class (step 9) first: it decides the lane.
 S4 Ship with `templates/jira-comment.md`: the before video goes under §1, the after video and the `Docs:` line
 under §3. In auto mode,
 adjust it as `W/templates/auto-comments.md` § Proof comment says.
-- Push per config § Push policy and open the PR.
+- Push per config § Push policy, or the decision round's yes for this branch, and open the PR.
 - Lane, by mode and class:
   - attended: config § Defect flow's QA lane; ledger `ready-for-qa`.
   - auto, needs-review: config § Auto mode's review lane; ledger `in-review`.
@@ -145,12 +158,9 @@ adjust it as `W/templates/auto-comments.md` § Proof comment says.
 - A partial fix (the rest needs a decision) takes the partial variant, and the ticket stays in its lane.
 
 ## 9 · Merge, or a person approves
-The ship class decides (`W/references/auto-evidence-and-ship.md` § Ship classes):
-- **Auto-merge** happens only in `--auto`, because it needs the verifier, and only for a low- or no-impact change.
-  Every gate in § Ship classes must hold: size, safe kind and paths, blast radius, no forbidden area, a current
-  profile, a clean structure check, security and performance reviews that found nothing at blocker or
-  should-fix, a confirmed verifier, green CI, the grace window, and a base that has not moved.
-  It also needs a standing approval in config § Push policy that names merge.
+The ship class decides. `W/references/auto-evidence-and-ship.md` § Ship classes owns the gates:
+- **Auto-merge** happens only in `--auto`, because it needs the verifier, only for a low- or no-impact change that
+  passes every gate there, and only with a standing approval in config § Push policy that names merge.
 - **Everything else** waits for a person. They review the PR and merge it, or tell you in chat to merge that one
   PR. Attended mode never auto-merges.
 
@@ -158,16 +168,16 @@ The ship class decides (`W/references/auto-evidence-and-ship.md` § Ship classes
 S5 Clean up, then S6 Learn: tag lessons `[defect]`, promote defect-only rules into `references/core-lessons.md` and
 shared ones into the workflow skill's. Auto mode runs A9: outcomes, then the learner.
 
-## Gates — where the loop stops for a person
+## Gates — where a card waits for a person
 
 | Gate | Ledger state | Attended | Auto |
 |---|---|---|---|
-| missing information or conflicting sources | `needs-info` | comment, ask in chat | question on the card |
+| missing information or conflicting sources | `needs-info` | the decision round when you can settle it; else a comment on the ticket | question on the card |
 | not reproduced | `cannot-reproduce` (auto: `needs-info`) | comment what was tried | what was tried, on the card |
 | change request / by-design | `handed-to-n-develop-loop` | hand-off row, tell the PO | hand-off label |
-| structural | `blocked-needs-human` / `solution-posted` | options in chat | solution on the card |
-| 2 fix rounds used, or a decision | `blocked-needs-human` / `stopped` | ask in chat | what was tried, on the card |
-| push | `awaiting-push` | your yes for that branch, or a standing approval | the same |
+| structural | `blocked-needs-human` / `solution-posted` | options on the ticket; parked | solution on the card |
+| 2 fix rounds used, or a decision | `blocked-needs-human` / `stopped` | fix rounds used: parked. A decision: settled by the root cause or a reversible option, else parked | what was tried, on the card |
+| push | `awaiting-push` | the decision round's yes, or a standing approval | a standing approval, else it waits for your yes |
 | PR open | `ready-for-qa` (auto: `in-review`) | a person reviews the PR | the same |
 
 ## Never (on top of `stages.md` § Never)

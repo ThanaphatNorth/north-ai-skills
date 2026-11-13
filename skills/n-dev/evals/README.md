@@ -60,6 +60,42 @@ that failed on the missing behaviour, a given spec run first as given), and the 
 Both gaps closed in this run: n-dev fires on small changes and still stays out of a question, and the red gate shows in
 every arm that loaded it. One run per arm proves direction, not size: run the full suite (`runs: 3`) before a release.
 
+## After the question round and the finish gate (2026-11-14, Sonnet, one run per arm — indicative only)
+
+The change: § Questions (one round before the first edit: a fact is looked up, a reversible choice becomes an
+`ASSUMPTION`, only a decision is asked), a **finish gate** in step 7 (no report before the structure check has run
+and the change is committed on a feature branch), and a fix in `ndev_check/gitdiff.py` (an unreadable path is
+skipped with a note; it used to crash the check). Four runs of three cases cost $2.23. Scores are with / without.
+
+| Case | Before (11-09) | A: question round | B: + finish gate | C: gate reworded, crash fixed | D: direct gate again |
+|---|---|---|---|---|---|
+| 01-coupon-js | 0.86 / 0.43 | 0.86 / 0.43 | 1.00 / 0.43 | 1.00 / 0.43 | 0.86 / 0.43 |
+| 03-bugfix-python | 1.00 / 0.75 | 1.00 / 0.75 | 1.00 / 0.75 | 1.00 / 0.75 | 1.00 / 0.75 |
+| 07-decide-and-finish | new | 1.00 / 0.80 | 1.00 / 0.80 | 1.00 / 0.80 | 1.00 / 0.80 |
+
+| Finish steps, with arm (of 3 runs) | A | B | C | D |
+|---|---|---|---|---|
+| structure check called | 0 | 3 | 0 | 3 |
+| structure check finished with a result line | 0 | 0 (crashed) | 0 | 3 (`RESULT: clean`) |
+| committed on a feature branch | 0 | 3 | 3 | 3 |
+| final message ends on an offer or a question | 1 | 1 | 1 | 0 |
+
+What this says:
+- **The scores hid the gap.** In run A every with-skill run said it had skipped the structure check and the commit,
+  and still scored 0.86–1.00. No grader looks at steps 5–7. Read each final message, and count the Bash calls in the
+  `--keep-temp` traces (parse the JSON lines: the skill text itself names the script, so a plain grep counts it too).
+- **Gate wording decides it.** "the structure check has run and the change is committed" got 3 of 3 runs to call the
+  check (B, D). Rewritten as "every step your size runs has run" it got 0 of 3 (C). A gate names one concrete action.
+- **The eval sandbox has unreadable folders inside the git root** (`home/.aws/…`). The check crashed on them with
+  `PermissionError` until the `gitdiff.py` fix (`tests/test_cli_unreadable.py`). The "muddled reason for skipping the
+  structure check" noted above was probably this crash.
+- **`07-decide-and-finish`** shows the skill does not make the agent stop and ask: both arms build. Its Δ comes from
+  red-before-green alone, so it does not compare the new question rule with the old one.
+- **`honest-report` on 01 flips** between runs (fail in A and D, pass in B and C) with no reason given: treat one
+  run of it as noise.
+- **Still open:** step 6's review was skipped on 01 (Standard) as "the change is small", and 03's first commit staged
+  `__pycache__` before the agent amended it. Neither has a grader.
+
 ## Cases
 
 | Case | Task | What it checks | n-dev rule |
@@ -70,6 +106,7 @@ every arm that loaded it. One run per arm proves direction, not size: run the fu
 | `04-red-suite-python` | add a function while an unrelated test is already red | the red test and its code untouched and not skipped, report says the suite is not all green | 4 (test integrity, honesty) |
 | `05-reuse-js` | email validation where `isEmail` already exists | no dependency added, existing validator reused, no second validator, spec kept | 1 (reuse, verify from source) |
 | `06-no-fire-question` | a git question, no code | n-dev does not fire (other skills may); the question is answered correctly | trigger precision |
+| `07-decide-and-finish` | add a field to a public payload, rounding left open | built without stopping to ask, the open detail taken as a reported assumption, additive and in scope, red before green | § Questions |
 
 Every coding case also has a `tool_used: Skill` grader. Under the with/without ablation it shows whether the skill
 fired but does not count toward the score.

@@ -1,7 +1,7 @@
 # 90north-develop — project config
 
 Written by `/90north-develop:develop-init`, kept up to date by the loops (n-defect-loop, n-develop-loop; in `--auto` mode they only propose changes). Facts only; every value here was checked, not guessed; each fact lives on one line here and nowhere else.
-Lines marked `TBD` are asked of the user before the first run that needs them.
+A line marked `TBD` is asked in the decision round of the first run that needs it. A line marked `default` was not asked: change it here.
 
 ## Tracker
 - Backend: <jira | local — board `<DL/board or LOCAL_BOARD>`, prefix `<TASK>`, committed <yes (default) | no>> (`TRACKER` in tracker.env; the verbs per backend: workflow `references/trackers.md`). A local board has no site, access or credentials lines, and its board facts are status names, not ids.
@@ -28,7 +28,7 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Transitions to the review lane: <To Do →(id) In Progress →(id) Code Review>.
 - Branch: `feat/<KEY>-<slug>`. Items in flight at once: <1>.
 - Large fence: <new module/package, state shape, DB schema, public interface, cross-repo, > 8 files or > 400 lines>.
-- Design gate: <stop for Large and schema/state/interface changes (default) | stop before every build>. Always-ask: <list | none>. Post design notes to Jira: <no | yes>.
+- Design gate: <stop for Large and schema/state/interface changes (default) | only breaking or unrequested changes and real trade-offs (n-dev § Questions) | stop before every build>. Always-ask: <list | none>. Post design notes to Jira: <no | yes>.
 - Design notes for Large work go to: `<docs/design/<KEY>.md | ADR folder>`.
 
 ## Auto mode (both loops with `--auto`, unattended; omit the section if the repo does not run it)
@@ -53,7 +53,7 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Language: <match the ticket | Thai | English>. Reporter conventions: <test case ids, requirement ids>.
 
 ## Push policy
-- Default: never push without the user's yes in chat, per branch.
+- Default: never push without the user's yes. An attended run asks once, in its decision round, for the branches it will create.
 - Standing approval: <none | date + the user's exact words + scope, e.g. "push fix/<KEY>-* and feat/<KEY>-* and open PRs to develop; never force-push, merge, push to develop/main or delete branches">.
 - PR: base `<develop>`, created with `<gh … | GH_TOKEN=$(gh auth token --user <account>) gh …>`.
 

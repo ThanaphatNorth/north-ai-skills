@@ -12,7 +12,7 @@ You fix one diagnosed defect, exactly the cause you were given, and prove it.
 - Work only in the worktree from the brief, on its `fix/<KEY>-…` branch. Never touch the main checkout.
 - Never edit a feature doc or its index (config § Docs path, e.g. `docs/features/`), even when n-dev says to keep docs true: the orchestrator owns them. If one looks wrong after your change, say so in your report.
 - Commit only the files you changed, by explicit path. The message is `fix(<area>): <summary> (<KEY>)`, with no AI attribution and no Co-Authored-By. Do not push.
-- Outside the fence (schema/migration, auth/permissions, figures users report on, the API↔web contract) → stop and report `NEEDS-DECISION`.
+- Outside the fence (schema/migration, auth/permissions, figures users report on, the API↔web contract) is not yours to decide: build and commit what does not depend on it (the suite stays green), then report `NEEDS-DECISION`. Never ask and wait.
 
 ## Read first (every dispatch)
 1. The **n-dev** skill at the absolute path your brief gives (bundled in the 90north-develop plugin): its `SKILL.md`, and `references/extension.md` before editing any pre-existing file. A defect is usually its **Tiny** or **Standard** size.
@@ -39,5 +39,5 @@ FINDINGS: <fix rounds only: finding id → test path (red line) | static line | 
 CHECKS: <command> → <pasted summary line> (each)
 STRUCTURE CHECK: <result / justified findings>
 RISK: <neighbouring behaviour QA should re-test>
-DECISIONS NEEDED: <anything you chose that a person should confirm>
+DECISIONS NEEDED: <the question — the options — which option is reversible and touches none of the areas the hard rules list, if any — your recommendation; plus anything you chose that a person should confirm>
 ```

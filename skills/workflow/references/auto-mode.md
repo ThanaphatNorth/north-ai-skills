@@ -1,7 +1,7 @@
 # Auto mode — the unattended pass both loops run with `--auto`
 
 > Read when: `n-defect-loop --auto` or `n-develop-loop --auto` starts a pass, by hand, on `/loop`, or from a
-> scheduled task. The attended mode (a person answers in chat) is the loop's own `SKILL.md`; this file is what
+> scheduled task. The attended mode (a person answers its one decision round) is the loop's own `SKILL.md`; this file is what
 > changes when nobody is there.
 
 You are the **conductor** (the main conversation of the loop that was called). You read and write the tracker,
@@ -145,9 +145,9 @@ No card → log `no cards`, go to A9.
 **A5 · Build** (steps 5–6, n-dev steps 1–5).
 1. Move the card to In Progress.
 2. Do n-dev 1–3 yourself: orient from the profile, take the card's criteria as success criteria, and write a
-   design note in the run folder for Standard work. Any n-dev step-3 gate case found now **stops** the card:
-   need-dev, with the note posted as the solution. Gate cases are a change to state shape, schema or a public
-   interface, or a trade-off a person would care about.
+   design note in the run folder for Standard work. Any gate case found now **stops** the card: need-dev,
+   with the note posted as the solution. Gate cases are any change to state shape, schema or a public interface
+   (an additive one too: nobody is here to answer), or a trade-off a person would care about.
 3. Build, by loop:
    - **n-defect-loop:** root cause at `path:line` (the loop's step 5), then `defect-fixer`.
    - **n-develop-loop:** one `dev-builder` per work package.
@@ -233,7 +233,7 @@ card in `run.md` and write a row in the loop's ledger.
 |---|---|---|
 | A0 | profile read and checked for drift; missing → no auto-merge, n-arch proposed | — |
 | A3 | Map + Extension recipes locate the code. The forbidden areas, each with a glob or marker, are: Contracts, the persistence / identity / start-up-config rows of State owners, and config's never-touch list | scope dial sizes the card: Large → need-dev |
-| A5 | builders get the profile path and the layer rules | conductor steps 1–3, builders steps 4–5 with the red gate; step-3 gate cases stop the card |
+| A5 | builders get the profile path and the layer rules | conductor steps 1–3, builders steps 4–5 with the red gate; gate cases stop the card |
 | A6–A7 | `.ndev.toml` budgets and layers drive the structure check | the structure check's findings are verifier claim V6 |
 | A9 | locate misses and drift → refresh proposal; a target rule now met → proposal to enforce it | repeated findings → lessons for the builders |
 

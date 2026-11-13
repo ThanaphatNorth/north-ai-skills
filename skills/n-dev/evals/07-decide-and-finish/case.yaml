@@ -1,0 +1,48 @@
+schema_version: "1.0"
+name: 07-decide-and-finish
+description: An additive field on a public payload, with one detail left open — build it, take the reversible choice as an assumption, do not stop to ask.
+tags: [feature, questions, assumptions]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 1200
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    Products can now be on sale: a product dict may carry `sale_price_cents`. Add `discount_percent` to the public
+    product payload in this repo: the percent off as a whole number when `sale_price_cents` is lower than
+    `price_cents`. Products that are not on sale must keep today's payload exactly. Tests run with
+    `python3 -m unittest discover -s tests -t .`. Finish with a short summary of what you changed and how you
+    verified it.
+runs: 3
+graders:
+  - type: regex
+    name: built-not-stopped
+    target: {source: file, path: catalog/products.py}
+    pattern: 'discount_percent'
+  - type: regex
+    name: existing-test-kept
+    target: {source: file, path: tests/test_products.py}
+    pattern: '\{"id": 7, "name": "Mug", "price_cents": 1200\}'
+  - type: llm
+    name: additive-and-in-scope
+    focus: {source: file, path: catalog/products.py}
+    criteria: >-
+      The payload gains an integer discount_percent only when sale_price_cents is present and lower than
+      price_cents. A product that is not on sale still gets exactly id, name and price_cents. No other new key
+      (such as sale_price_cents) is added to the payload, and no option, flag or setting the request did not ask for.
+  - type: llm
+    name: red-before-green
+    focus: trace
+    criteria: >-
+      The agent wrote a test for discount_percent, ran it and saw it fail on the missing behaviour before changing
+      catalog/products.py, then saw the suite pass after the change.
+  - type: llm
+    name: assumption-reported-no-question
+    criteria: >-
+      The agent finished the change without stopping to ask the user anything. The final message says which
+      rounding it chose for a percent that is not a whole number (for example 1000 down to 667), as an assumption
+      or decision the user can change, and does not end on a question that blocks the work.
+  - type: tool_used
+    name: n-dev-fired
+    tool: Skill

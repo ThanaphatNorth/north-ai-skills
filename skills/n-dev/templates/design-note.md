@@ -87,11 +87,15 @@ From `references/change-safety.md`, or the one line "no contract, data or rollou
 | A | <...> | <...> | <...> | <...> | chosen / rejected because <...> |
 | B | <...> | <...> | <...> | <...> | <...> |
 
-## Stop check
+## Decisions (one round, before the first edit — `SKILL.md` § Questions)
 
-- [ ] Two designs trade off in a way the user would care about → stop and ask.
-- [ ] The change alters state shape, a DB schema, or a public interface → stop and ask.
-- [ ] Neither applies → continue to step 4.
+| # | Decision | Options, recommended first | Answer |
+|---|---|---|---|
+| 1 | <two readings · a trade-off the user would care about · a breaking or unrequested change to state shape, schema or a public interface> | <A — leads to …> · <B — leads to …> | <the user's answer \| ASSUMPTION: A, nobody to answer> |
+
+Or the one line "no decision: every unknown was a fact or a reversible choice".
+
+Decided mid-build: <DECIDED: what — undo by how> | none
 
 ## Progress (Large: keep current so another session can resume)
 

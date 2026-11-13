@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import sys
 from typing import List, Optional, Sequence, Tuple
 
 from .model import ChangedFile, count_lines
@@ -82,6 +83,9 @@ def _read(root: str, path: str) -> Optional[str]:
         with open(full, "rb") as fh:
             data = fh.read()
     except (FileNotFoundError, IsADirectoryError):
+        return None
+    except OSError as err:  # no permission, a sandbox block: skip it and say so, never crash the check
+        print("note: skipped unreadable path %s (%s)" % (path, err.strerror or err), file=sys.stderr)
         return None
     if b"\0" in data[:8192]:
         return None  # binary
