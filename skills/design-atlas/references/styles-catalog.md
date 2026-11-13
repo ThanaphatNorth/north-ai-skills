@@ -30,7 +30,7 @@ Run these four inputs, produce 2–3 candidate styles, score them, commit to one
 - Age 45+ or low digital confidence → loudness ≤3, body ≥16–18px, contrast ≥4.5:1 everywhere, no translucency behind text. Google's M3 Expressive research found larger, higher-contrast key actions let 45+ users find them about as fast as younger users.
 - Age 18–24 → expressive styles test well (M3 Expressive preference up to 87% in that group), but a "strong minority" preferred calmer versions → keep a calm mode.
 - Experts and daily power users → density and keyboard flow beat decoration (Dark dev 25, Swiss 1, Flat 2.0 7).
-- Thai / CJK / Arabic content → styles whose signature is UPPERCASE + wide tracking (Quiet luxury labels, Art Deco, Swiss meta) need a substitute device (weight, size, color) because those scripts have no case; ultra-thin weights break Thai tone marks. See `typography-layout.md`.
+- Content in scripts without case (CJK, Arabic, Indic and Southeast Asian scripts) → styles whose signature is UPPERCASE + wide tracking (Quiet luxury labels, Art Deco, Swiss meta) need a substitute device (weight, size, color); ultra-thin weights lose stacked marks and fine strokes. See `typography-layout.md` (Multi-script typography).
 
 **Step 3 — Product type and context of use.**
 - Daily-use tool (≥1 session/day) → app shell loud ≤2; spend expression on onboarding, empty states, success moments, marketing.
@@ -483,14 +483,14 @@ Pattern behind the list: 2025 gave AI "bold 3D forms and unapologetically digita
 
 ## 5. Escaping generic AI-looking UI
 
-Cause: without direction, models fall back to the statistical center of web training data ("distributional convergence", Anthropic 2025-11-12). Fix it by deciding the style in §1 *before* writing markup, then checking the output against these tells.
+Cause: without direction, models fall back to the statistical center of web training data ("distributional convergence", Anthropic 2025-11-12). Deciding the style in §1 *before* writing markup helps, but a style picked from this catalog is still a stock look until its decisions come from the subject: the full method, the tells of the newer "tasteful" and "serious" swaps, and the audit are in `ai-tells.md`. The table below covers the oldest wave.
 
 | Tell | Concrete move instead |
 |---|---|
-| Inter / Roboto / system font on everything | Take type from the chosen catalog entry. One distinctive family used decisively (e.g. Bricolage Grotesque, Newsreader, IBM Plex, JetBrains Mono, Fraunces), weight contrast 200 vs 800, hero size ≥3× body. Rotate choices across projects — models also converge on Space Grotesk |
+| Inter / Roboto / system font on everything | Take type from the chosen catalog entry. One family used decisively, chosen because the subject already uses it or something like it (the trade's signage, its printed matter, its tools), weight contrast 200 vs 800, hero size ≥3× body. Never the same "distinctive" set twice: models converge on Space Grotesk, Instrument Serif, Fraunces and Geist as fast as they did on Inter |
 | Purple→blue gradient on white (Tailwind `indigo-500` legacy) | Derive the palette from the subject (a material, place, era, IDE theme); dominant color 60–70%, sharp accent ≤10%. If you need a gradient: two adjacent hues interpolated `in oklch`, plus grain — or none |
 | Centered hero + three icon feature cards | Pick a hero archetype: split (claim left, real product right), product-as-hero (live UI), editorial lede (headline, byline, image), statement + proof (number, quote, logo), bento with mixed spans. Give each section a different layout |
-| Emoji as icons | One icon set at one stroke width sized to cap height (Lucide, Phosphor, Material Symbols), typographic markers (01, §, →), or custom glyphs for the 3–5 hero concepts |
+| Emoji as icons | One icon set at one stroke width sized to cap height (Lucide, Phosphor, Material Symbols), or custom glyphs for the 3–5 hero concepts. No decorative numbering or arrows: 01 / 02 / 03 only on a real sequence |
 | Uniform 8px radius | Radius scale from the style: 0 (Swiss, brutal), 2–4 (editorial), 12–28 (soft), pills for actions only; nested radius = outer − padding |
 | Gray drop shadow `0 4px 6px rgba(0,0,0,.1)` on every card | Choose one depth model: none (borders, tonal surfaces) · hue-tinted layered shadows · hard offset · translucency. One elevation means one thing |
 | Stock 3D blobs, glossy orbs, abstract mesh | Real product UI, real photography, data visualization, commissioned illustration or a brand character tied to the product |
@@ -499,8 +499,12 @@ Cause: without direction, models fall back to the statistical center of web trai
 | Pure #000 dark mode with neon accents | Tinted near-black (L .13–.18) with 3–4 surface steps; lower accent chroma in dark |
 | Generic copy ("Supercharge", "Seamless", "Unlock") and fake logo rows | Specific nouns, numbers and the user's job; real proof or no proof section |
 | Only the happy path designed | Hover, focus, empty, loading, error and success states — missing states are the strongest "unreviewed AI" signal |
+| Cream background + serif display + one italic or coloured word + pill buttons + an uppercase label over every heading | The second wave of the same problem. Go back to the subject's artefacts (`ai-tells.md` §4) |
+| Near-black with one acid accent, or hairline rules + zero radius + monospace labels as a default | The third wave. Those devices are right only where the subject uses them (a terminal, a printed form) |
 
 Prompt-side fixes when generating UI: name the catalog style and number, list 3 explicit bans (e.g. "no purple, no glass, no emoji"), give 2 reference URLs, and ask for 2–3 distinct directions before building one.
+
+A chosen style still looks generic when its finish is default. After the style is set, write it into the expression tokens (`design-systems.md` §2) and run the seven passes and the beauty bar in `visual-craft.md`: most "AI-looking" output fails on light, type detail and optical alignment, not on the style choice.
 
 ## 6. Mixing rules
 
@@ -536,7 +540,7 @@ Prompt-side fixes when generating UI: name the catalog style and number, list 3 
 - Neumorphic or glass buttons not recognized as buttons → depth is the only affordance → add fill, label or a ≥3:1 border.
 - Kinetic type reads as "S T R E T C H" to screen readers or makes users ill → split spans exposed, no reduced-motion → `aria-hidden` spans plus a visually-hidden full string, and a `prefers-reduced-motion` path.
 - Glitch effects trigger seizure risk → flashing >3 per second (WCAG 2.3.1) → slow or remove.
-- Decorative foreign scripts (katakana in vaporwave, faux-Thai) read as nonsense to native readers → proofread with a speaker or drop.
+- Decorative foreign scripts (katakana in vaporwave, faux-script display faces) read as nonsense to native readers → proofread with a speaker or drop.
 - Style copied from the category leader → product indistinguishable → run the differentiation criterion in §1 before committing.
 
 ## Sources

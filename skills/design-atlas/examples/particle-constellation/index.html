@@ -2,7 +2,7 @@
 <!--
   RECIPE · particle-constellation
   What: a night sky of drifting particles (canvas 2D, additive "lighter" blending) that gathers, as the
-        user scrolls, into a Thai word, then an English word, then a logo mark, holds each one, and bursts
+        user scrolls, into an evocative English word, then the brand wordmark, then a logo mark, holds each one, and bursts
         into the next. Scroll position drives the formation; time only drives the twinkle and drift.
         Targets come from glyph pixels: each word is drawn on an offscreen canvas and sampled.
   Feeling / story: scattered stars find their form. Use it for a brand name assembling out of the
@@ -20,14 +20,14 @@
         5.7 ms/frame at 1440×900 (3000 particles), 2.4–3.0 ms/frame at 390×844@2x. The loop pauses
         offscreen, on a hidden tab and after 8 s with no scroll or pointer movement.
 -->
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Naksat · นักษัตร — particle constellation</title>
+<title>Asterra — particle constellation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Noto+Serif+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
 <style>
 :root {
@@ -38,12 +38,10 @@
   --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
   --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
   --serif-en: "Cormorant Garamond", "Times New Roman", serif;
-  --serif-th: "Noto Serif Thai", "Cormorant Garamond", serif;
 }
 * { box-sizing: border-box; }
 html { background: var(--sky); color: var(--ink); }
-body { margin: 0; font-family: var(--serif-th); font-weight: 300; line-height: 1.6; background: var(--sky); overflow-x: clip; }
-[lang="en"] { font-family: var(--serif-en); }
+body { margin: 0; font-family: var(--serif-en); font-weight: 300; line-height: 1.6; background: var(--sky); overflow-x: clip; }
 a { color: inherit; }
 .top { position: fixed; inset: 0 0 auto; z-index: 5; display: flex; justify-content: space-between; align-items: center;
   padding: 20px clamp(16px, 4vw, 48px); font-size: 13px; letter-spacing: .22em; text-transform: uppercase; }
@@ -69,10 +67,10 @@ canvas.field { position: absolute; inset: 0; width: 100%; height: 100%; display:
 .js .cap.intro { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
 .js .cap::before { content: ""; position: absolute; inset: -30% -12%; z-index: -1; background: radial-gradient(closest-side, #05060dd9, #05060d00); }
 .cap .eyebrow { font-family: var(--serif-en); font-style: italic; color: var(--muted); font-size: 15px; letter-spacing: .06em; margin: 0 0 14px; }
-.cap h1 { font-weight: 400; font-size: clamp(32px, 5.4vw, 64px); line-height: 1.45; margin: 0; letter-spacing: 0; text-wrap: balance; }
+.cap h1 { font-weight: 400; font-size: clamp(32px, 5.4vw, 64px); line-height: 1.2; margin: 0; letter-spacing: 0; text-wrap: balance; }
 .cap h2 { font-weight: 600; font-size: 13px; letter-spacing: .3em; color: var(--star); margin: 0 0 8px; font-family: var(--serif-en); text-transform: uppercase; }
 .cap p { margin: 0; font-size: clamp(17px, 2vw, 21px); line-height: 1.7; text-wrap: balance; }
-.cap p[lang="en"] { font-style: italic; color: var(--muted); font-size: clamp(17px, 1.9vw, 21px); margin-top: 4px; }
+.cap p.sub { font-style: italic; color: var(--muted); font-size: clamp(17px, 1.9vw, 21px); margin-top: 4px; }
 .cap .cta { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 12px 24px; min-height: 48px; border: 1px solid color-mix(in srgb, var(--star) 55%, transparent);
   border-radius: 999px; text-decoration: none; font-size: 16px; color: var(--ink); transition: background .3s var(--ease-standard), border-color .3s var(--ease-standard); }
 .cap .cta:hover, .cap .cta:focus-visible { background: color-mix(in srgb, var(--star) 14%, transparent); border-color: var(--star); }
@@ -87,7 +85,7 @@ canvas.field { position: absolute; inset: 0; width: 100%; height: 100%; display:
 
 /* ---------- after ---------- */
 .after { position: relative; padding: clamp(96px, 16vh, 180px) clamp(16px, 6vw, 96px) 72px; background: linear-gradient(var(--sky), #080a18 60%, var(--sky)); }
-.after h2 { font-weight: 400; font-size: clamp(30px, 4.6vw, 54px); line-height: 1.45; margin: 0 0 12px; max-width: 18ch; }
+.after h2 { font-weight: 400; font-size: clamp(30px, 4.6vw, 54px); line-height: 1.2; margin: 0 0 12px; max-width: 18ch; }
 .after > p { color: var(--muted); max-width: 52ch; margin: 0 0 48px; font-size: 18px; }
 .notes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 1px; background: #ffffff1a; border: 1px solid #ffffff1a; }
 .notes li { background: var(--sky); padding: 28px 24px 32px; }
@@ -115,59 +113,56 @@ html:not(.js) .caps { padding: 40vh 16px 48px; display: grid; gap: 56px; text-al
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="#story" lang="en">NAKSAT</a>
-  <nav><a href="#collection" lang="en">Collection</a></nav>
+  <a class="brand" href="#story">ASTERRA</a>
+  <nav><a href="#collection">Collection</a></nav>
 </header>
 <main>
-  <section class="story" id="story" data-story aria-label="นักษัตร — เรื่องของแบรนด์">
+  <section class="story" id="story" data-story aria-label="Asterra — the story of the brand">
     <div class="stage">
       <div class="sky-bg" aria-hidden="true"></div>
       <canvas class="field" aria-hidden="true"></canvas>
       <div class="caps">
         <article class="cap intro" data-key="0">
-          <p class="eyebrow" lang="en">Naksat Night Atelier — Bangkok</p>
-          <h1>ทุกกลิ่น เริ่มจากดาวหนึ่งดวง</h1>
-          <p lang="en">Every scent begins with a single star.</p>
+          <p class="eyebrow">Asterra Night Atelier — Paris</p>
+          <h1>Every scent begins with a single star.</h1>
+          <p class="sub">Scroll, and watch the stars gather.</p>
         </article>
         <article class="cap" data-key="1">
-          <h2 lang="en">I · The word</h2>
-          <p>“นักษัตร” ในภาษาไทย แปลว่ากลุ่มดาว</p>
-          <p lang="en">In Thai, naksat means a gathering of stars.</p>
+          <h2>I · The word</h2>
+          <p>Starlight: old light that left its star long ago, bottled while it still glows.</p>
         </article>
         <article class="cap" data-key="2">
-          <h2 lang="en">II · The house</h2>
-          <p>น้ำหอมสิบสองกลิ่น กลั่นจากท้องฟ้าสิบสองคืน</p>
-          <p lang="en">Twelve fragrances, distilled from twelve night skies.</p>
+          <h2>II · The house</h2>
+          <p>Twelve fragrances, distilled from twelve night skies.</p>
         </article>
         <article class="cap" data-key="3">
-          <h2 lang="en">III · The mark</h2>
-          <p>ดาวหนึ่งดวง ในอ้อมกอดของจันทร์เสี้ยว</p>
-          <p lang="en">One star, held by a crescent moon.</p>
-          <a class="cta" href="#collection">ดูคอลเลกชัน <span lang="en">· Explore</span></a>
+          <h2>III · The mark</h2>
+          <p>One star, held by a crescent moon.</p>
+          <a class="cta" href="#collection">Explore the collection</a>
         </article>
       </div>
-      <div class="hint" aria-hidden="true"><span lang="en">scroll</span><i></i></div>
+      <div class="hint" aria-hidden="true"><span>scroll</span><i></i></div>
       <div class="ticks" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
   </section>
   <section class="after" id="collection">
-    <h2>สิบสองคืน สิบสองกลิ่น</h2>
-    <p>แต่ละขวดบันทึกท้องฟ้าของคืนหนึ่งในกรุงเทพฯ — ความชื้นหลังฝน ควันธูปจากศาลเจ้า และมะลิที่บานตอนตีสอง</p>
+    <h2>Twelve nights, twelve scents</h2>
+    <p>Each bottle records the sky of a single night: wet stone after rain, woodsmoke drifting from a chimney, and jasmine that opens at two in the morning.</p>
     <ul class="notes">
-      <li><b lang="en">Rahu 01</b><span>แฝกรมควัน ไม้กฤษณา</span><em lang="en">Smoked vetiver, agarwood</em></li>
-      <li><b lang="en">Chandra 04</b><span>มะลิขาว ฝนแรก</span><em lang="en">White jasmine, first rain</em></li>
-      <li><b lang="en">Dao Nuea 09</b><span>อำพันเย็น ดาวเหนือ</span><em lang="en">Cold amber, the north star</em></li>
+      <li><b>Rahu 01</b><span>Smoked vetiver, agarwood</span><em>The night the moon went dark</em></li>
+      <li><b>Chandra 04</b><span>White jasmine, first rain</span><em>A full moon over wet streets</em></li>
+      <li><b>Polaris 09</b><span>Cold amber, clear air</span><em>The star that never moves</em></li>
     </ul>
   </section>
 </main>
-<footer><span lang="en">Naksat Night Atelier</span> · แบรนด์สมมติสำหรับสาธิต <span lang="en">— a fictional brand for this demo.</span></footer>
+<footer>Asterra Night Atelier · A fictional brand for this demo.</footer>
 
 <script>
 (() => {
   const CONFIG = {
     shapes: [ // drawn on an offscreen canvas and sampled into particle targets
-      { type: 'text', text: 'นักษัตร', font: '700 100px "Noto Serif Thai"', fit: 0.64, fitMobile: 0.88 },
-      { type: 'text', text: 'NAKSAT', font: '600 100px "Cormorant Garamond"', fit: 0.56, fitMobile: 0.86, tracking: 0.14 },
+      { type: 'text', text: 'STARLIGHT', font: '600 100px "Cormorant Garamond"', fit: 0.64, fitMobile: 0.88, tracking: 0.1 },
+      { type: 'text', text: 'ASTERRA', font: '600 100px "Cormorant Garamond"', fit: 0.56, fitMobile: 0.86, tracking: 0.14 },
       { type: 'mark', fit: 0.4, fitMobile: 0.66 },
     ],
     areaPerParticle: 210,                       // css px² of screen per particle
@@ -207,6 +202,7 @@ html:not(.js) .caps { padding: 40vh 16px 48px; display: grid; gap: 56px; text-al
     const c = document.createElement('canvas'); c.width = bw; c.height = bh;
     const g = c.getContext('2d', { willReadFrequently: true });
     g.fillStyle = '#fff'; g.strokeStyle = '#fff';
+    const step = Math.max(1, Math.round(Math.sqrt(bw * bh / (n * 3.2))));   // sampling grid, px
     if (shape.type === 'text') {
       g.font = shape.font; g.letterSpacing = (shape.tracking || 0) * 100 + 'px';
       const m = g.measureText(shape.text);
@@ -214,10 +210,13 @@ html:not(.js) .caps { padding: 40vh 16px 48px; display: grid; gap: 56px; text-al
       const k = Math.min(bw / tw, bh / th) * 0.96;
       g.font = shape.font.replace('100px', (100 * k).toFixed(1) + 'px'); g.letterSpacing = (shape.tracking || 0) * 100 * k + 'px';
       g.textAlign = 'center'; g.textBaseline = 'alphabetic';
-      g.fillText(shape.text, bw / 2, bh / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) * k / 2);
+      const ty = bh / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) * k / 2;
+      g.fillText(shape.text, bw / 2, ty);
+      // Hairlines thinner than the sampling grid would get no particles (the crossbar of an H in a
+      // high-contrast serif): thicken every stroke by about one grid step before sampling.
+      g.lineWidth = step; g.lineJoin = 'round'; g.strokeText(shape.text, bw / 2, ty);
     } else drawMark(g, bw, bh);
     const data = g.getImageData(0, 0, bw, bh).data, pts = [];
-    const step = Math.max(1, Math.round(Math.sqrt(bw * bh / (n * 3.2))));
     for (let y = 0; y < bh; y += step) for (let x = 0; x < bw; x += step) if (data[(y * bw + x) * 4 + 3] > 140) pts.push(x, y);
     const ox = (W - bw) / 2, oy = H * (mobile ? 0.4 : 0.42) - bh / 2;
     const out = new Float32Array(n * 2), cnt = pts.length / 2;
@@ -337,7 +336,7 @@ html:not(.js) .caps { padding: 40vh 16px 48px; display: grid; gap: 56px; text-al
   function wake() { lastActive = performance.now(); if (!running && visible && !document.hidden && !reduce) { running = true; last = performance.now(); requestAnimationFrame(frame); } }
 
   async function init() {
-    try { await Promise.all([document.fonts.load('700 100px "Noto Serif Thai"', 'นักษัตร'), document.fonts.load('600 100px "Cormorant Garamond"', 'NAKSAT')]); } catch (e) { /* fall back to system fonts */ }
+    try { await Promise.all([document.fonts.load('600 100px "Cormorant Garamond"', 'STARLIGHT'), document.fonts.load('600 100px "Cormorant Garamond"', 'ASTERRA')]); } catch (e) { /* fall back to system fonts */ }
     sprites = [sprite('255,226,174'), sprite('168,212,255')];
     measure(); resize();
     if (reduce) { // composed still: the finished mark, no particles moving, no scrubbing

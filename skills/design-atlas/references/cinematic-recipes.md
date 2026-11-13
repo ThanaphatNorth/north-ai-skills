@@ -31,7 +31,7 @@ Light-themed brands (beauty, health, retail) adapt best from `word-swap-hero`, `
 
 ## Conventions
 
-Shared by every demo: one self-contained `index.html`, vanilla JS or pinned CDN libraries (GSAP 3.13, Lenis 1.3.4, three.js r170 via jsdelivr), Thai + English copy and a fictional brand; a designed `prefers-reduced-motion` composition; copy as real DOM text with art `aria-hidden` and one `h1`; one rAF loop that sleeps when idle, offscreen or in a hidden tab; canvas DPR ≤ 2.
+Shared by every demo: one self-contained `index.html`, vanilla JS or pinned CDN libraries (GSAP 3.13, Lenis 1.3.4, three.js r170 via jsdelivr), English copy and a fictional brand; a designed `prefers-reduced-motion` composition; copy as real DOM text with art `aria-hidden` and one `h1`; one rAF loop that sleeps when idle, offscreen or in a hidden tab; canvas DPR ≤ 2.
 
 Test hooks differ per demo (each section below lists its own): `light-trail` has the full capture convention (`?capture` + `window.__frame(dt)`, `<html class="rm">` static-first, `data-story`); `intro-iris` has `?intro` and `lumenIntro.replay()/skip()`; `light-text` has `?time`; `aurora-shader` has `?nogl`; `glow-cursor-cta` has `?touch`; `word-swap-hero` has `?nolenis`. When you adapt a scroll story for a client, add the capture convention from the skeleton below so `scripts/shoot.mjs --story` and `scripts/scrollfilm.mjs` give deterministic frames.
 
@@ -42,7 +42,7 @@ Progress smoothing in the scroll stories lerps toward the scroll target with a f
 For a mechanic no demo covers, start here and write only `render(p)` and `renderFinal()`:
 
 ```html
-<html lang="th" class="rm">                       <!-- static composition until JS allows motion -->
+<html lang="en" class="rm">                       <!-- static composition until JS allows motion -->
 <section class="story" id="story" data-story style="height: 600vh">
   <div class="stage" style="position: sticky; top: 0; height: 100svh; overflow: hidden">
     <!-- art layers (aria-hidden) + copy beats as real text -->
@@ -84,7 +84,7 @@ Then: storyboard the beats (`creative-direction.md` §4), keep copy readable at 
 
 ## Light trail — `examples/light-trail/`
 
-**Concept it serves:** dark → light, lost → home, off → on. Demo brand: Baan Saeng (home solar + battery): a power cut on a storm night → a home that keeps its light.
+**Concept it serves:** dark → light, lost → home, off → on. Demo brand: Sunkeep (home solar + battery): a power cut on a storm night → a home that keeps its light.
 **Story (760vh sticky stage):** hook — darkness and one breathing point of light with a quiet "scroll slowly" cue · rise — scroll draws a glowing line past each copy beat and lights the headline letters as it passes; neighbouring homes appear as stars with threads to the light · turn — the line traces a house, then its window, and the light flies into the window · payoff — the window blooms and a feathered dawn floods the screen; the CTA sits inside the dawn · aftermath — a calm light section.
 **Ambition:** cinematic. **Avoid** on surfaces where people arrive worried or in a hurry (`creative-direction.md` §1 gate).
 **Tech:** vanilla JS; SVG paths drawn with `stroke-dashoffset` in two layers (a CSS-blurred glow SVG and a core SVG with soft + hot strokes); canvas 2D with additive blending for sparks and stars; CSS `mask-image` radial gradient for the dawn; `background-clip: text` lighting on headlines.
@@ -121,11 +121,11 @@ P = capture ? p : P + (p - P) * (1 - Math.exp(-dt / 140));
 
 **Knobs (`CONFIG`):** act boundaries (`lineStart`, `curveEnd`, `houseEnd`, `winEnd`, `windowOn`, `dawn`), beat ranges, `tail` (bright trail length in short-side multiples), star count and timing, `sparkCap`, `smoothingMs`, `dawnFeather`; path waypoints per orientation in `build()` (portrait has its own path and puts copy below the drawing).
 **Reduced motion:** the finished drawing (ember path at 55%, house and window lit, stars static) above the copy as a normal page; no orb, sparks or dawn.
-**Mobile:** portrait waypoints and a larger house, copy anchored at the bottom, Thai compounds protected with `.nw` spans.
+**Mobile:** portrait waypoints and a larger house, copy anchored at the bottom, short phrases that must not split protected with `.nw` spans.
 
 ## Spotlight reveal — `examples/spotlight-reveal/`
 
-- **Feeling / story:** discovery and intimacy; "the secret is in the details". The fictional brand is Kāla Atelier, a Bangkok watchmaker. In near-total darkness the pointer is a soft torch. It reveals the headline, an illustrated watch dial, a blueprint drawn behind the dial (Ø 38.0 MM, PLATE 3/7), and four engraved notes in the corners (guilloché, calibre, moon phase, Nº 017/100) that are only legible inside the beam. Luminous hour markers glow faintly above the dark, so the page is never empty.
+- **Feeling / story:** discovery and intimacy; "the secret is in the details". The fictional brand is Kāla Atelier, a Geneva watchmaker. In near-total darkness the pointer is a soft torch. It reveals the headline, an illustrated watch dial, a blueprint drawn behind the dial (Ø 38.0 MM, PLATE 3/7), and four engraved notes in the corners (guilloché, calibre, moon phase, Nº 017/100) that are only legible inside the beam. Luminous hour markers glow faintly above the dark, so the page is never empty.
 - **Use when:** one hero moment with few words and a product with details worth hunting for (watches, perfume, jewellery, a gallery opening, a teaser, a night bar or hotel).
 - **Avoid when:** the page must be scanned fast (pricing, docs, forms), or the hero holds information users need right away.
 - **Ambition:** bold / cinematic.
@@ -164,18 +164,17 @@ stage.addEventListener('focusin', (e) => { const r = e.target.getBoundingClientR
 ```
 - **Knobs:** CSS `--ambient` (0–1 darkness outside the beam), `--night/--brass/--cream/--lume`. JS `CFG.follow` (lerp), `idle` (ms before the auto-light wanders again), `holdTap`, `rMin/rMax` (radius clamp, 0.34 × the smaller stage side), and `breathe`.
 - **Reduced motion:** no loop. The light is static on the dial with 1.45× radius and `--ambient` drops to 0.55, so everything reads. This is a composed still, and the lights toggle still works.
-- **Mobile / touch:** the auto-light wanders slowly through the visible part of the stage. A tap aims it and holds for 2.6 s. The hint text switches to "Tap to aim the light · แตะเพื่อส่องไฟ". Notes become a 2-column grid under the dial, and the blueprint is trimmed so nothing overflows.
+- **Mobile / touch:** the auto-light wanders slowly through the visible part of the stage. A tap aims it and holds for 2.6 s. The hint text switches to "Tap to aim the light". Notes become a 2-column grid under the dial, and the blueprint is trimmed so nothing overflows.
 - **A11y:** real text in DOM order. "Turn on the lights" button (`aria-pressed`, also the L key). Keyboard focus pulls the light to the focused control. Decorative SVG is `aria-hidden`.
 - **Gotchas hit:**
   - Headless Chrome fires no `focus`/`focusin` when the page isn't focused (`document.hasFocus()` = false), so the focus-follow looked broken in shots. The page was fine. The shot job now dispatches `FocusEvent('focusin')` after `.focus()`; the alternative is CDP `Emulation.setFocusEmulationEnabled`.
   - Notes wrapped mid-phrase ("YRS." alone on a line), fixed by widening them to 17em.
-  - The blueprint label "R 19.0" collided with a Thai note, so I removed it.
+  - The blueprint label "R 19.0" collided with a corner note, so I removed it.
   - The first auto-light wandered below the fold on mobile (the stage is taller than the viewport). The path is now clamped to the visible slice.
-- **Contact sheet:** `…/scratchpad/recipes/spotlight-reveal/sheet.png`
 
 ## Light text — `examples/light-text/`
 
-- **Feeling / story:** guidance, arrival, "a light left on for you". The fictional brand is Phare Lanta, six rooms in a working lighthouse. The four-line headline "Light finds / its way home. / แสงนำทางคุณ / กลับบ้านเสมอ" is dark until a lighthouse beam sweeps across it line by line. Lit lines keep a warm afterglow, and the sequence ends on a fully lit headline.
+- **Feeling / story:** guidance, arrival, "a light left on for you". The fictional brand is Phare Verra, six rooms in a working lighthouse. The four-line headline "Light finds / its way home. / Let it / guide you." is dark until a lighthouse beam sweeps across it line by line. Lit lines keep a warm afterglow, and the sequence ends on a fully lit headline.
 - **Use when:** the headline IS the hero, in 2–5 short lines at display size (≥ ~48 px).
 - **Avoid when:** long copy, small type, pages people must scan, or any information users need before the light arrives.
 - **Ambition:** cinematic.
@@ -189,7 +188,6 @@ stage.addEventListener('focusin', (e) => { const r = e.target.getBoundingClientR
   --light:radial-gradient(circle var(--rad) at var(--x) var(--y),#fff8e8 0,#ffd88f calc(var(--rad)*.16),
           #f39a3c calc(var(--rad)*.42),rgba(190,90,30,0) var(--rad));
   color:transparent;background:var(--light) no-repeat,var(--base);-webkit-background-clip:text;background-clip:text}
-.ln:lang(th){line-height:1.08;padding-top:.16em;padding-bottom:.14em}   /* Thai marks above/below */
 .bloom{position:absolute;inset:0;filter:blur(16px);opacity:.8;mix-blend-mode:screen;pointer-events:none}
 .bloom .ln{background:var(--light) no-repeat;-webkit-background-clip:text;background-clip:text}
 @supports not ((background-clip:text) or (-webkit-background-clip:text)){.ln{color:var(--gold)}.bloom{display:none}}
@@ -217,12 +215,11 @@ function render(p, now) {                         // p = smoothed scroll progres
 - **Reduced motion:** no pin and no sweep. The section is one viewport showing `render(1)`: the headline fully lit in warm gold with a static beam from the lamp.
 - **Mobile:** the same sweep with bloom off. The lighthouse stands bottom-right on a headland and the beam angles steeply up to the type. Font size is `min(12.6vw, 15.5vh)`.
 - **Gotchas hit:**
-  - With `background-clip:text`, anything outside the element box is not painted. Thai tone marks and English descenders would vanish, so every line gets padding with an equal negative margin, and Thai lines get extra padding.
+  - With `background-clip:text`, anything outside the element box is not painted. Ascenders, descenders and any diacritics would vanish, so every line gets padding with an equal negative margin.
   - At progress 0 the gradient was already lighting the "L", because intensity only drove the beam and not the text light. The text radius is now multiplied by intensity.
   - Four lines at 12.6vw overflowed a 900 px viewport; size by `min(vw, vh)`.
-  - The sea reflection sat on land, so I removed it. The horizon line cut through the Thai line, so I moved it to 84%.
+  - The sea reflection sat on land, so I removed it. The horizon line cut through the last headline line, so I moved it to 84%.
   - `background-attachment:fixed` would avoid per-line coordinates, but it is unreliable on iOS, so I didn't use it.
-- **Contact sheet:** `…/scratchpad/recipes/light-text/sheet.png`
 
 ## Intro iris — `examples/intro-iris/`
 
@@ -276,7 +273,7 @@ function open() {                                   // auto at 1.2 s or on first
 ```
 - **Knobs:** `CFG.autoOpen` (1200 ms), `irisMs` (1250), `maxLock` (2500), `storageKey`. Add `?intro` to force a replay, or call `lumenIntro.replay()` / `.skip()`. CSS `--arch-top` / `--arch-w` keep the sun at the viewport centre, and `--bone/--clay/--ink` set the palette.
 - **Reduced motion:** the head script never adds `has-intro`, so the page is there at first paint. Verified: `<html>` class is empty under reduce.
-- **Mobile:** the same intro. The headline sits above the arch; the Thai copy and CTA sit on the floor band.
+- **Mobile:** the same intro. The headline sits above the arch; the supporting copy and CTA sit on the floor band.
 - **Fallback:** without `CSS.registerProperty`, the curtain is black from the start and simply fades out.
 - **Gotchas hit:**
   - With `--ease-emphasized-out` alone, the iris was 90% open within 180 ms and nobody saw an iris. Splitting the curve into the two emphasized halves fixed it.
@@ -284,11 +281,10 @@ function open() {                                   // auto at 1.2 s or on first
   - Replay needs a style flush (`void el.offsetWidth`) between removing and re-adding the class, or canceled CSS animations don't restart.
   - The desktop headline wrapped to 3 lines in the side column. I narrowed the arch to 22vw and sized the h1 at 5.6vw.
   - Probe "invisible" in the timed intro frames is expected.
-- **Contact sheet:** `…/scratchpad/recipes/intro-iris/sheet.png` (row 1: t = 120, 600, 1000, 1450 ms; row 2: 1700, 1900, 2300, 3600 ms; then early-wheel and page frames)
 
 ## Word-swap hero — `examples/word-swap-hero/`
 
-- **Feeling / story:** "this was made for you, whoever you are". The fictional brand is nadd., a booking SaaS, in the style of jongque.com. A big "Your ___." headline sits over a framed image card, and scrolling swaps **studio → clinic → salon → café**. Each swap brings a bottom-up wipe of the scene, a Thai subline swap (ระบบจองคิวออนไลน์สำหรับ…ของคุณ), and a booking chip per scene ("Reformer · 07:30 · จองแล้ว 8 จาก 10 ที่"). Side widgets (today's queue, −62% no-shows) drift at their own depth. The card then scales to full-bleed and the dark next section slides over it.
+- **Feeling / story:** "this was made for you, whoever you are". The fictional brand is slotly., a booking SaaS, in the style of a vertical-SaaS landing page. A big "Your ___." headline sits over a framed image card, and scrolling swaps **studio → clinic → salon → café**. Each swap brings a bottom-up wipe of the scene, a subline swap ("Online booking for your studio / clinic / salon / café"), and a booking chip per scene ("Reformer · 07:30 · 8 of 10 spots booked"). Side widgets (today's queue, −62% no-shows) drift at their own depth. The card then scales to full-bleed and the dark next section slides over it.
 - **Use when:** 3–5 audiences or variants share one promise and each has a strong picture.
 - **Avoid when:** there is one audience (just say it), or the variants need explaining (use tabs or cards).
 - **Ambition:** bold.
@@ -330,26 +326,25 @@ mm.add('(prefers-reduced-motion: no-preference)', () => {
     .to({}, { duration: 2.2 });            // full-bleed hold = the last 25 % of the pin, while .next (margin-top:-100vh) slides over
 });
 ```
-- **Knobs:** the words, scenes and chips in the markup (keep the EN track, TH track, scenes and chips the same length). `CFG.pinVh`, `scrub`, `holdEnd`, `lenis`. CSS `--card-w` / `--card-ar` and the palette.
-- **Reduced motion / no JS / GSAP failed:** the head script adds `.motion` only when motion is allowed, and every static rule is `html:not(.motion) …`. The static view shows the full sentence "Your studio, clinic, salon or café." (the h1's screen-reader text, now visible), the Thai sentence, and all four scenes in a 2×2 grid (1 column on mobile).
+- **Knobs:** the words, scenes and chips in the markup (keep the headline track, the subline track, scenes and chips the same length). `CFG.pinVh`, `scrub`, `holdEnd`, `lenis`. CSS `--card-w` / `--card-ar` and the palette.
+- **Reduced motion / no JS / GSAP failed:** the head script adds `.motion` only when motion is allowed, and every static rule is `html:not(.motion) …`. The static view shows the full sentence "Your studio, clinic, salon or café." (the h1's screen-reader text, now visible), the subline sentence, and all four scenes in a 2×2 grid (1 column on mobile).
 - **Mobile:** the same pinned sequence with a 4:5 card, side widgets hidden, and `font-stretch:100%` so "clinic." fits at 390 px.
 - **Gotchas hit:**
   - I followed the user's lesson. `.cardpos` is positioned by flex and measured; the tween target is the inner `.cardzoom`; nothing animated has CSS `translate` or `transition:transform`.
   - A centred headline with a fixed-width word slot sits off-centre for short words. I shifted the whole line by `(max − w)/2` with a transform, which avoids animating width.
   - A scrubbed word roll leaves half-words when the user stops mid-way. The roll now happens only in the middle third of each wipe.
   - `navigator.webdriver` is **false** in `shoot.mjs`'s headless Chrome, so tests must pass `?nolenis`. A check with Lenis on still drove the timeline from `scrollTo` (scene 2 revealed, track at −25%).
-  - "ลด / การเบี้ยวนัด" broke mid-phrase in a narrow widget, so the Thai went on its own line.
+  - A short phrase ("no-shows since deposits") broke mid-phrase in a narrow widget, so it now sits on its own line.
   - The lesson's resize/reload test was run over CDP:
     - Reload at 80% progress: the full-bleed card still covers the stage (card −51…1491 × −167…1067 on 1440×900).
     - Resize to 390×844, then scroll back to 80%: it still covers (−173…563 × −38…882).
     - Resize back to 1440: identical to the first measurement.
 
     Note that a viewport resize resets `scrollY` in headless mobile emulation, so re-scroll before you assert.
-- **Contact sheet:** `…/scratchpad/recipes/word-swap-hero/sheet.png`
 
 ## Zoom-through — `examples/zoom-through/`
 
-- **Feeling / story:** step into the picture; escape and arrival. The fictional brand is Doi Mok Retreat, misty mountain cabins in Chiang Mai. A dark timber interior with a pendant lamp looks through an arched window at a dawn sea of mist. Scrolling flies the camera through the window:
+- **Feeling / story:** step into the picture; escape and arrival. The fictional brand is Mistfall Retreat, misty mountain cabins in the Cascade Range. A dark timber interior with a pendant lamp looks through an arched window at a dawn sea of mist. Scrolling flies the camera through the window:
   - the wall scales around the window centre until it leaves the frame;
   - the plant and steaming cup on the sill pass under the camera;
   - five landscape layers scale and sink at their own depths;
@@ -397,11 +392,10 @@ function render(p) {                                 // p = lerped progress of t
   - The lamp glow was invisible because it came before the hole in the DOM, so the hole's box-shadow wall painted over it. Order matters with box-shadow walls.
   - Cream header text on the peach sky was unreadable. A threshold on progress was wrong per viewport, so I replaced it with a point-in-scaled-arch test.
   - The probe flags the cross-faded headlines (deliberate).
-- **Contact sheet:** `…/scratchpad/recipes/zoom-through/sheet.png`
 
 ## Particle constellation — `examples/particle-constellation/`
 
-- **Feeling / story:** scattered stars find their form. A brand name assembles out of the night sky. The fictional brand is Naksat (นักษัตร), a Bangkok night-perfume atelier. The sky gathers into **นักษัตร**, bursts, regathers as **NAKSAT**, then forms the mark (a crescent holding a four-point star inside an orbit ring).
+- **Feeling / story:** scattered stars find their form. A brand name assembles out of the night sky. The fictional brand is Asterra, a Paris night-perfume atelier. The sky gathers into **STARLIGHT**, bursts, regathers as **ASTERRA**, then forms the mark (a crescent holding a four-point star inside an orbit ring).
 - **Use when:** you have one name or mark reveal near the top of a landing page, a short word (≤ 8 glyphs), a bold, simple mark, and dark art direction.
 - **Avoid when:** words are long or logos thin and detailed (they sample into mush), the theme is light (additive glow needs a dark ground), or the page is a task page.
 - **Ambition:** cinematic.
@@ -419,19 +413,22 @@ function render(p) {                                 // p = lerped progress of t
 
 ```js
 async function init() {           // sample only after the exact font is loaded, or you sample the fallback face
-  await document.fonts.load('700 100px "Noto Serif Thai"', 'นักษัตร');
+  await document.fonts.load('600 100px "Cormorant Garamond"', 'STARLIGHT');
 }
 function sampleShape(shape, n) {   // returns n target points (stage px) for one word or mark
   const bw = Math.round(W * fit), bh = Math.round(Math.min(H * 0.42, bw * 0.5));
   const c = document.createElement('canvas'); c.width = bw; c.height = bh;
   const g = c.getContext('2d', { willReadFrequently: true }); g.fillStyle = '#fff';
-  g.font = shape.font;                                   // '700 100px "Noto Serif Thai"'
-  const m = g.measureText(shape.text);                   // actualBoundingBox* includes Thai upper vowels/tone marks
+  g.font = shape.font;                                   // '600 100px "Cormorant Garamond"'
+  const m = g.measureText(shape.text);                   // actualBoundingBox* includes ascenders, descenders and diacritics
   const k = Math.min(bw / m.width, bh / (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent)) * 0.96;
   g.font = shape.font.replace('100px', 100 * k + 'px'); g.textAlign = 'center';
-  g.fillText(shape.text, bw / 2, bh / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) * k / 2);
-  const data = g.getImageData(0, 0, bw, bh).data, pts = [];
   const step = Math.max(1, Math.round(Math.sqrt(bw * bh / (n * 3.2))));   // grid ≈ 3.2n cells → enough hits
+  const ty = bh / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) * k / 2;
+  g.fillText(shape.text, bw / 2, ty);
+  g.strokeStyle = '#fff'; g.lineWidth = step; g.lineJoin = 'round';       // hairlines thinner than the grid get no
+  g.strokeText(shape.text, bw / 2, ty);                                   // particles: thicken by one grid step
+  const data = g.getImageData(0, 0, bw, bh).data, pts = [];
   for (let y = 0; y < bh; y += step) for (let x = 0; x < bw; x += step)
     if (data[(y * bw + x) * 4 + 3] > 140) pts.push(x, y);
   const out = new Float32Array(n * 2), cnt = pts.length / 2, ox = (W - bw) / 2, oy = H * 0.42 - bh / 2;
@@ -458,11 +455,11 @@ const sw = Math.sin(Math.PI * p) * CONFIG.swirl;         // galaxy spin around t
   3. The intro caption over a dense starfield lost contrast. Each caption now gets a `closest-side` dark radial vignette (`::before`).
   4. Captions must not use `visibility: hidden` when faded out, or the CTA becomes unfocusable. They use opacity only, and a `focusin` handler scrolls to the shape where the caption is shown (verified: focus → scrollY 4714, caption opacity 1).
   5. `ctx.letterSpacing` is a no-op where unsupported. Tracking then degrades gracefully.
-- **Contact sheet:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/particle-constellation/sheet.png`
+  6. In a high-contrast serif the word read "STARLIGIIT": the H's crossbar is thinner than the sampling grid, so it got no particles. Fix: `strokeText` the glyphs with `lineWidth = step` before sampling. Read the formed word at 390 and 1280 px, letter by letter.
 
 ## Aurora shader — `examples/aurora-shader/`
 
-- **Feeling / story:** calm awe; the sky is alive. The fictional brand is Saeng (แสงเหนือ), a spatial-sound sleep app. The aurora's colours follow the night as you scroll: midnight teal, deep violet, then dawn gold, rose and lilac. Each colour matches the chapter on screen.
+- **Feeling / story:** calm awe; the sky is alive. The fictional brand is Nocta, a spatial-sound sleep app. The aurora's colours follow the night as you scroll: midnight teal, deep violet, then dawn gold, rose and lilac. Each colour matches the chapter on screen.
 - **Use when:** the hero needs atmosphere, the copy is short, and the scroll moves through moods or chapters.
 - **Avoid when:** the page is content-dense, the brand colours have low contrast behind long text, or there is already another WebGL scene on the screen.
 - **Ambition:** bold → cinematic.
@@ -509,14 +506,13 @@ canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); fallbac
 - **Mobile:** render scale 0.45, 30 fps cap. The layout is unchanged; chapters go left-aligned below 768 px.
 - **Gotchas hit:**
   1. Dim orange/yellow light on a dark base reads as mud or khaki. The first dawn palette (`#ff9d5c / #ff4f7a / #ffd27a`) looked brown. The fix was to keep warm hues only in the bright core and put pink and lilac in the dim areas (`#ffb46a / #ff4f8b / #b48cff`).
-  2. The Thai headline broke as "ฟังแสง ที่ / เคลื่อนไหว". It is now explicit line spans: `ฟังแสง` / `ที่เคลื่อนไหว`.
+  2. The headline broke mid-phrase ("Hear the sky / move."). It is now explicit line spans: `Hear the` / `sky move.`.
   3. Small text over bright curtains needed `text-shadow: 0 1px 28px #04060b99` on sections.
   4. WebGL jobs shoot slowly. Twenty-two jobs with three Chrome instances in parallel hit shoot.mjs's 180 s hard stop. Splitting them into two job files fixed it.
-- **Contact sheets:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/aurora-shader/sheet.png` and the fallback sheet at `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/aurora-shader-nogl/sheet.png`
 
 ## Velocity gallery — `examples/velocity-gallery/`
 
-- **Feeling / story:** walking past a wall of work that answers your pace. The fictional gallery is Sala, showing the exhibition "แสงมรสุม / Monsoon Light": seven CSS-gradient "paintings" with SVG grain, plus a "Book a viewing" end card.
+- **Feeling / story:** walking past a wall of work that answers your pace. The fictional gallery is Oriel, showing the exhibition "Monsoon Light": seven CSS-gradient "paintings" with SVG grain, plus a "Book a viewing" end card.
 - **Use when:** you have 5–10 visuals of similar weight, the page is about browsing, and it's for a portfolio, exhibition, lookbook or product range.
 - **Avoid when:** items need side-by-side comparison, captions are long, or there are more than 12 items. Keep the pinned distance honest for wheel-mouse users.
 - **Ambition:** bold. This is the only light theme in the batch.
@@ -562,11 +558,10 @@ track.addEventListener('focusin', (e) => { const li = e.target.closest('li');
   1. With alternating top/bottom-aligned frames, the outlined marquee was invisible because every band was covered. Fix: bottom-align the row with varied frame heights and run the title band across the top 30 %, with the tallest frames overlapping its foot.
   2. Use `overflow: clip` (fallback `hidden`) on the pin, so focusing an offscreen card can't scroll the pinned container sideways. Then map focus to page scroll; verified: focusing the end link scrolls to y = 3749 and the link is in view.
   3. Keep the outline stroke at about 40 % ink. At 26 % it vanished on cream.
-- **Contact sheet:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/velocity-gallery/sheet.png`. It includes `d08-motion-fwd` and `d09-motion-back`, captured mid-scroll to show the skew.
 
 ## Glow cursor CTA — `examples/glow-cursor-cta/`
 
-- **Feeling / story:** ignition; one action matters here. The fictional event is Ember/26, a creative-tech summit. The comet cursor sweeps toward "จองที่นั่ง / Reserve a seat". The button leans toward the comet, blooms, squashes on press, and springs back with a ring and sparks.
+- **Feeling / story:** ignition; one action matters here. The fictional event is Ember/26, a creative-tech summit. The comet cursor sweeps toward "Reserve a seat". The button leans toward the comet, blooms, squashes on press, and springs back with a ring and sparks.
 - **Use when:** the page has one primary action on a dark, energetic brand, with ≥ 160 px of clear space around the CTA.
 - **Avoid when:** there are forms or dense UI (a hidden native cursor costs precision), several competing CTAs, a light theme, or a quiet or clinical brand.
 - **Ambition:** bold.
@@ -613,11 +608,10 @@ glowWrap.style.transform = `translate3d(${m.x}px,${m.y}px,0)`;           // bloo
   3. Synthetic `PointerEvent`s don't set `:hover`, so the hot state is computed in JS from the pointer position (`.is-hot`), with CSS `:hover` kept as an enhancement. This is also how the state is testable.
   4. Avoid global `scroll-behavior: smooth`: it would smooth every programmatic `scrollTo`, including tests and other scripts. Smooth only the CTA's own `scrollIntoView`.
   5. A test-path bug made the effect look broken. The synthetic path ended at `sin(1.4π) × 120` px below the target, so the "hover" shot showed the comet under the button. Measuring the rects (`magnet` 555–651, `cta` 561–645) proved the page was right.
-- **Contact sheet:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/glow-cursor-cta/sheet.png` (pointer and `?touch` runs). A close-up of the near, hover, press and release states is at `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/glow-cursor-cta/crop-cta.png`.
 
 ## Mask transitions — `examples/mask-transitions/`
 
-- **Feeling / story:** "and now the scene changes". The fictional theatre is Moonlight Playhouse (โรงละครแสงจันทร์), staging three acts in one night:
+- **Feeling / story:** "and now the scene changes". The fictional theatre is Moonlight Playhouse, staging three acts in one night:
   - The velvet curtain **parts from the centre line** to reveal Act I, Moonrise, on ivory.
   - Act II, a single spotlight on black, **grows as a circle out of Act I's moon** (it reads as an eclipse).
   - Act III, reflections in river teal with brass, **slices in diagonally**, with a bright blade riding the edge.
@@ -673,12 +667,11 @@ blade.style.opacity = Math.sin(Math.PI * p);
   - Per act: `data-wipe="curtain|circle|diagonal"` and `data-origin="<selector>"`.
   - CSS custom properties: `--velvet`, `--ivory`, `--saffron`, `--teal`, `--brass`.
 - **Reduced motion and no JS:** no pin and no clip. The acts are stacked full-height sections with all content visible, and the blade is hidden.
-- **Mobile:** same mechanism; clip-path is cheap at phone size, and the stage uses `100svh`. Act III goes left-aligned. The Thai h1 uses nowrap phrase spans (`สามองก์` / `ในคืนเดียว`).
+- **Mobile:** same mechanism; clip-path is cheap at phone size, and the stage uses `100svh`. Act III goes left-aligned. The h1 uses nowrap phrase spans (`Three acts.` / `One night.`).
 - **Gotchas hit:**
   1. **`visibility: hidden` on not-yet-revealed acts made their links unfocusable.** Tab skipped "Book seats" entirely: `focus()` left `activeElement` unchanged. Fix: rely on the zero-area clip, and add a `focusin` handler that scrolls to the act's reveal point. Verified: focus → scrollY 3195, act revealed, button in view.
-  2. Chrome split "ในคืนเดียว" at 390 px. Fixed with nowrap spans; matches the existing lesson html-deck-css-gotchas.
+  2. A two-word phrase ("One night.") split across lines at 390 px. Fixed with nowrap spans; matches the existing lesson html-deck-css-gotchas.
   3. Revealing with opacity would leave invisible text at some scroll positions. Clip and translate keep the text "present" and look more like the wipe itself.
-- **Contact sheet:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/mask-transitions/sheet.png`
 
 ## Testing notes (headless Chrome)
 

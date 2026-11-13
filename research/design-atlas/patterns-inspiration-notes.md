@@ -224,7 +224,6 @@ How SOTY is picked (search snippet of Wikipedia mirror): jury chooses from the 1
 - NHS service manual: reading age 9–11 (medical info: ensure 11–14-year-old can understand); sentences ≤ ~20 words; paragraphs ≤ ~3 sentences; plain term first then medical term "piles (haemorrhoids)"; active voice; neutral. https://service-manual.nhs.uk/content/how-we-write
 - HIPAA (Wikipedia): PHI = info held by covered entity about health status, care, payment linkable to individual; covered entities (plans, clearinghouses, providers) + business associates; minimum necessary; Security Rule administrative/physical/technical safeguards. https://en.wikipedia.org/wiki/Health_Insurance_Portability_and_Accountability_Act (hhs.gov and ecfr.gov returned 403/bot wall to automated fetch).
 - GDPR Art. 9: health data, genetic, biometric (for unique ID), sex life/orientation, racial/ethnic origin, political, religious, trade union = special categories. https://gdpr-info.eu/art-9-gdpr/
-- Thailand PDPA: regulator site https://www.pdpc.or.th/ (สคส., Personal Data Protection Committee office) reachable but landing page only showed a cookie banner; PDPA specifics (B.E. 2562 / 2019, sensitive data incl. health needs explicit consent) NOT verified from a fetched source in this pass → marked (unverified) in reference.
 
 ### Gaming
 - Xbox Accessibility Guidelines v3.2 published 2023-06-08 (doc updated 2026-08-18); each XAG: goal, overview, scoping questions, key areas, implementation guidelines, examples, player impact. https://learn.microsoft.com/en-us/xbox/accessibility/guidelines

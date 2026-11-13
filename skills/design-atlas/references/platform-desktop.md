@@ -114,7 +114,7 @@ Siblings: `platform-web.md` (responsive web, Baseline CSS), `platform-mobile.md`
 | Title Large | Semibold | 40 / 52 |
 | Display | Semibold | 68 / 92 |
 
-- Minimums: 14px Semibold or 12px Regular. Sentence case for all UI text, including titles. Emphasis = Semibold (no Bold/Italic in the ramp). 50–60 characters per line. Thai UI font: **Leelawadee UI**.
+- Minimums: 14px Semibold or 12px Regular. Sentence case for all UI text, including titles. Emphasis = Semibold (no Bold/Italic in the ramp). 50–60 characters per line. Windows picks a per-script UI font (Segoe UI for Latin); don't hard-code one family for all scripts.
 
 ### Geometry, spacing, materials
 

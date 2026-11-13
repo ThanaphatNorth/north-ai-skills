@@ -26,7 +26,7 @@ Raw perf output is at `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-
 
 ## 1. Particle constellation · `particle-constellation`
 
-- **Feeling / story:** scattered stars find their form. A brand name assembles out of the night sky. The fictional brand is Naksat (นักษัตร), a Bangkok night-perfume atelier. The sky gathers into **นักษัตร**, bursts, regathers as **NAKSAT**, then forms the mark (a crescent holding a four-point star inside an orbit ring).
+- **Feeling / story:** scattered stars find their form. A brand name assembles out of the night sky. The fictional brand is Naksat, a night-perfume atelier. The sky gathers into a native-script wordmark, bursts, regathers as **NAKSAT**, then forms the mark (a crescent holding a four-point star inside an orbit ring).
 - **Use when:** you have one name or mark reveal near the top of a landing page, a short word (≤ 8 glyphs), a bold, simple mark, and dark art direction.
 - **Avoid when:** words are long or logos thin and detailed (they sample into mush), the theme is light (additive glow needs a dark ground), or the page is a task page.
 - **Ambition:** cinematic.
@@ -44,7 +44,7 @@ Raw perf output is at `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-
 
 ```js
 async function init() {           // sample only after the exact font is loaded, or you sample the fallback face
-  await document.fonts.load('700 100px "Noto Serif Thai"', 'นักษัตร');
+  await document.fonts.load('700 100px "Noto Serif Thai"', 'Naksat');
 }
 function sampleShape(shape, n) {   // returns n target points (stage px) for one word or mark
   const bw = Math.round(W * fit), bh = Math.round(Math.min(H * 0.42, bw * 0.5));
@@ -87,7 +87,7 @@ const sw = Math.sin(Math.PI * p) * CONFIG.swirl;         // galaxy spin around t
 
 ## 2. Aurora shader · `aurora-shader`
 
-- **Feeling / story:** calm awe; the sky is alive. The fictional brand is Saeng (แสงเหนือ), a spatial-sound sleep app. The aurora's colours follow the night as you scroll: midnight teal, deep violet, then dawn gold, rose and lilac. Each colour matches the chapter on screen.
+- **Feeling / story:** calm awe; the sky is alive. The fictional brand is Saeng, a spatial-sound sleep app. The aurora's colours follow the night as you scroll: midnight teal, deep violet, then dawn gold, rose and lilac. Each colour matches the chapter on screen.
 - **Use when:** the hero needs atmosphere, the copy is short, and the scroll moves through moods or chapters.
 - **Avoid when:** the page is content-dense, the brand colours have low contrast behind long text, or there is already another WebGL scene on the screen.
 - **Ambition:** bold → cinematic.
@@ -134,14 +134,13 @@ canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); fallbac
 - **Mobile:** render scale 0.45, 30 fps cap. The layout is unchanged; chapters go left-aligned below 768 px.
 - **Gotchas hit:**
   1. Dim orange/yellow light on a dark base reads as mud or khaki. The first dawn palette (`#ff9d5c / #ff4f7a / #ffd27a`) looked brown. The fix was to keep warm hues only in the bright core and put pink and lilac in the dim areas (`#ffb46a / #ff4f8b / #b48cff`).
-  2. The Thai headline broke as "ฟังแสง ที่ / เคลื่อนไหว". It is now explicit line spans: `ฟังแสง` / `ที่เคลื่อนไหว`.
   3. Small text over bright curtains needed `text-shadow: 0 1px 28px #04060b99` on sections.
   4. WebGL jobs shoot slowly. Twenty-two jobs with three Chrome instances in parallel hit shoot.mjs's 180 s hard stop. Splitting them into two job files fixed it.
 - **Contact sheets:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/aurora-shader/sheet.png` and the fallback sheet at `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/aurora-shader-nogl/sheet.png`
 
 ## 3. Velocity gallery · `velocity-gallery`
 
-- **Feeling / story:** walking past a wall of work that answers your pace. The fictional gallery is Sala, showing the exhibition "แสงมรสุม / Monsoon Light": seven CSS-gradient "paintings" with SVG grain, plus a "Book a viewing" end card.
+- **Feeling / story:** walking past a wall of work that answers your pace. The fictional gallery is Sala, showing the exhibition "Monsoon Light": seven CSS-gradient "paintings" with SVG grain, plus a "Book a viewing" end card.
 - **Use when:** you have 5–10 visuals of similar weight, the page is about browsing, and it's for a portfolio, exhibition, lookbook or product range.
 - **Avoid when:** items need side-by-side comparison, captions are long, or there are more than 12 items. Keep the pinned distance honest for wheel-mouse users.
 - **Ambition:** bold. This is the only light theme in the batch.
@@ -191,7 +190,7 @@ track.addEventListener('focusin', (e) => { const li = e.target.closest('li');
 
 ## 4. Glow cursor CTA · `glow-cursor-cta`
 
-- **Feeling / story:** ignition; one action matters here. The fictional event is Ember/26, a creative-tech summit. The comet cursor sweeps toward "จองที่นั่ง / Reserve a seat". The button leans toward the comet, blooms, squashes on press, and springs back with a ring and sparks.
+- **Feeling / story:** ignition; one action matters here. The fictional event is Ember/26, a creative-tech summit. The comet cursor sweeps toward "Reserve a seat". The button leans toward the comet, blooms, squashes on press, and springs back with a ring and sparks.
 - **Use when:** the page has one primary action on a dark, energetic brand, with ≥ 160 px of clear space around the CTA.
 - **Avoid when:** there are forms or dense UI (a hidden native cursor costs precision), several competing CTAs, a light theme, or a quiet or clinical brand.
 - **Ambition:** bold.
@@ -242,7 +241,7 @@ glowWrap.style.transform = `translate3d(${m.x}px,${m.y}px,0)`;           // bloo
 
 ## 5. Mask transitions · `mask-transitions`
 
-- **Feeling / story:** "and now the scene changes". The fictional theatre is Moonlight Playhouse (โรงละครแสงจันทร์), staging three acts in one night:
+- **Feeling / story:** "and now the scene changes". The fictional theatre is Moonlight Playhouse, staging three acts in one night:
   - The velvet curtain **parts from the centre line** to reveal Act I, Moonrise, on ivory.
   - Act II, a single spotlight on black, **grows as a circle out of Act I's moon** (it reads as an eclipse).
   - Act III, reflections in river teal with brass, **slices in diagonally**, with a bright blade riding the edge.
@@ -298,10 +297,9 @@ blade.style.opacity = Math.sin(Math.PI * p);
   - Per act: `data-wipe="curtain|circle|diagonal"` and `data-origin="<selector>"`.
   - CSS custom properties: `--velvet`, `--ivory`, `--saffron`, `--teal`, `--brass`.
 - **Reduced motion and no JS:** no pin and no clip. The acts are stacked full-height sections with all content visible, and the blade is hidden.
-- **Mobile:** same mechanism; clip-path is cheap at phone size, and the stage uses `100svh`. Act III goes left-aligned. The Thai h1 uses nowrap phrase spans (`สามองก์` / `ในคืนเดียว`).
+- **Mobile:** same mechanism; clip-path is cheap at phone size, and the stage uses `100svh`. Act III goes left-aligned. The h1 uses nowrap phrase spans.
 - **Gotchas hit:**
   1. **`visibility: hidden` on not-yet-revealed acts made their links unfocusable.** Tab skipped "Book seats" entirely: `focus()` left `activeElement` unchanged. Fix: rely on the zero-area clip, and add a `focusin` handler that scrolls to the act's reveal point. Verified: focus → scrollY 3195, act revealed, button in view.
-  2. Chrome split "ในคืนเดียว" at 390 px. Fixed with nowrap spans; matches the existing lesson html-deck-css-gotchas.
   3. Revealing with opacity would leave invisible text at some scroll positions. Clip and translate keep the text "present" and look more like the wipe itself.
 - **Contact sheet:** `/private/tmp/claude-501/-Users-thanaphatnorth-Desktop-ai-skills-north-ai-skills/b3acc423-6456-4200-b4ca-c215c443d2cc/scratchpad/recipes/mask-transitions/sheet.png`
 

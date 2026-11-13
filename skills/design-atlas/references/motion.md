@@ -99,7 +99,7 @@ M3 duration tokens (ms): short1 50 · short2 100 · short3 150 · short4 200 · 
 }
 ```
 
-Emphasized is a two-segment path (`M 0,0 C 0.05,0, 0.133333,0.06, 0.166666,0.4 C 0.208333,0.82, 0.25,1, 1,1`) with no single cubic-bezier. M3 says to use Standard as the CSS fallback. If you need the real shape, sample it into CSS `linear()` (Baseline, all browsers since Dec 2023).
+Emphasized is a two-segment path (`M 0,0 C 0.05,0, 0.133333,0.06, 0.166666,0.4 C 0.208333,0.82, 0.25,1, 1,1`) with no single cubic-bezier. M3 says to use Standard as the CSS fallback. If you need the real shape, sample it into CSS `linear()` (in all browsers since Dec 2023; Baseline widely available since 2026-06).
 
 Carbon alternative: productive standard `cubic-bezier(0.2, 0, 0.38, 0.9)`, expressive standard `cubic-bezier(0.4, 0.14, 0.3, 1)`.
 
@@ -129,11 +129,23 @@ Platform spring defaults (verify after upgrades, they change):
 
 Defaults for a product (pick once, put in tokens; ranges follow M3 standard vs expressive): UI controls ζ ≈ 0.9–1.0 (no visible bounce); playful/brand surfaces ζ ≈ 0.6–0.8; never bounce color or opacity.
 
-CSS spring without JS: sample a real spring into `linear()` points (the values below only illustrate the shape: overshoot past 1, settle back):
+CSS spring without JS: sample a real spring into `linear()` points (Baseline widely available since 2026-06). The starter ships two, sampled from the under-damped spring equation `x(t) = 1 − e^(−ζωt)·(cos ω_d t + (ζω/ω_d)·sin ω_d t)` with `ω = √stiffness`, `ω_d = ω·√(1 − ζ²)`, settled to 0.2% and simplified to about 20 points:
+
+| Token | Spring (ζ / stiffness) | Duration token | Overshoot | Use |
+|---|---|---|---|---|
+| `--ease-spring-bouncy` | 0.6 / 800 (M3 Expressive fast spatial) | `--duration-spring-fast` 350 ms | 9.5% | switches, chips, icon buttons, press release |
+| `--ease-spring` | 0.8 / 380 (default spatial) | `--duration-spring` 400 ms | 1.5% | sheets, cards, menus, layout moves |
+| `--ease-spring` | 0.8 / 200 (slow spatial) | `--duration-spring-slow` 550 ms | 1.5% | full-screen moves |
+
+The curve's shape depends only on the damping ratio; stiffness sets the duration, so one curve serves two speeds.
 
 ```css
-.sheet { transition: transform 500ms linear(0, 0.36 10%, 0.82 22%, 1.04 34%, 1.06 42%, 1.01 58%, 0.99 74%, 1); }
+.sheet  { transition: translate var(--duration-spring) var(--ease-spring); }
+.switch-thumb { transition: translate var(--duration-spring-fast) var(--ease-spring-bouncy); }
+.fade   { transition: opacity var(--duration-moderate) var(--ease-out); }   /* colour and opacity never overshoot */
 ```
+
+Use them in transitions (a transition retargets when interrupted; a keyframe animation restarts). A real spring keeps velocity through an interruption; a sampled curve does not, so gesture-driven motion (drag release, sheets that follow a finger) still wants a JS or native spring.
 
 ## 5. Choreography and stagger
 
@@ -286,7 +298,7 @@ Rules:
 - Animate headlines and short display text only. Never split body copy or anything users read while it moves.
 - Wait for fonts (`autoSplit`, or `document.fonts.ready`) or line breaks will be wrong.
 - `aria: "auto"` drops nested links/markup from the accessible name; for rich text use `aria: "none"` plus a visually hidden copy.
-- **Thai / complex scripts:** never split Thai by `chars`: tone marks and above/below vowels (e.g. ่ ้ ิ ุ) are separate code points and will detach from their base consonant. Split Thai by words, and get word boundaries from `Intl.Segmenter('th', { granularity: 'word' })` (Thai has no spaces), then feed them to SplitText via `prepareText`/`wordDelimiter` or your own spans. Test with real copy.
+- **Scripts with combining marks or without word spaces:** never split by `chars` outside plain Latin: marks above and below a letter are separate code points and detach from their base (so do emoji modifiers). Split by words, and get word boundaries from `new Intl.Segmenter(document.documentElement.lang, { granularity: 'word' })` (some scripts have no spaces between words), then feed them to SplitText via `prepareText`/`wordDelimiter` or your own spans. Test with real copy.
 
 ## 11. Tool selection
 
@@ -369,13 +381,17 @@ Put motion in the token system (format and DTCG details: `design-systems.md`). `
   --ease-in: cubic-bezier(0.3, 0, 1, 1);                 /* exit */
   --ease-emphasized-out: cubic-bezier(0.05, 0.7, 0.1, 1); /* emphasized enter, scroll reveals */
   --ease-emphasized-in: cubic-bezier(0.3, 0, 0.8, 0.15);
-  /* springs (consumed by JS: Motion / Reanimated / SwiftUI / Compose) */
-  --spring-fast: 0.9 1400;     /* dampingRatio stiffness */
-  --spring-default: 0.9 700;
-  --spring-slow: 0.9 300;
+  /* CSS springs (linear() curves in the starter's expression layer) + their durations */
+  /* --ease-spring, --ease-spring-bouncy */
+  --duration-spring-fast: 350ms; --duration-spring: 400ms; --duration-spring-slow: 550ms;
+  --press-scale: 0.97;
+  /* springs for JS engines (Motion / Reanimated / SwiftUI / Compose): dampingRatio stiffness */
+  --spring-fast: 0.9 1400;  --spring-default: 0.9 700;  --spring-slow: 0.9 300;             /* standard: calm product UI */
+  --spring-expressive-fast: 0.6 800;  --spring-expressive-default: 0.8 380;  --spring-expressive-slow: 0.8 200;
 }
 @media (prefers-reduced-motion: reduce) {
-  :root { --duration-moderate: 0ms; --duration-slow: 0ms; --duration-slower: 0ms; }
+  :root { --duration-moderate: 0ms; --duration-slow: 0ms; --duration-slower: 0ms;
+          --duration-spring-fast: 0ms; --duration-spring: 0ms; --duration-spring-slow: 0ms; --press-scale: 1; }
 }
 ```
 

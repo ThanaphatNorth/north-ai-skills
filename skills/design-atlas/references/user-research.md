@@ -1,8 +1,8 @@
 # User research: learn the target group's behaviour before designing
 
-> Read when: starting any new product, feature or redesign; the user can't say who the audience is or what they struggle with; you have no direct access to users and must research from the desk; choosing a research method or sample size; writing an interview guide or survey; building personas, job stories or journey maps; prioritizing features (Kano); planning card sorts, tree tests or A/B tests; including disabled or older users; synthesizing findings and tracing them to design decisions; designing for Thai users.
+> Read when: starting any new product, feature or redesign; the user can't say who the audience is or what they struggle with; you have no direct access to users and must research from the desk; choosing a research method or sample size; writing an interview guide or survey; building personas, job stories or journey maps; prioritizing features (Kano); planning card sorts, tree tests or A/B tests; including disabled or older users; synthesizing findings and tracing them to design decisions; researching a local market (§15).
 
-**Contents:** 1 Choose a method · 2 Lean research without user access · 3 Interviews · 4 Surveys · 5 Jobs to be done · 6 Personas vs JTBD vs segments · 7 Journey maps & service blueprints · 8 Kano · 9 Card sorting & tree testing · 10 Diary studies · 11 A/B testing · 12 Accessibility research · 13 Synthesis · 14 Traceability · 15 Thailand · Pitfalls · Sources
+**Contents:** 1 Choose a method · 2 Lean research without user access · 3 Interviews · 4 Surveys · 5 Jobs to be done · 6 Personas vs JTBD vs segments · 7 Journey maps & service blueprints · 8 Kano · 9 Card sorting & tree testing · 10 Diary studies · 11 A/B testing · 12 Accessibility research · 13 Synthesis · 14 Traceability · 15 Local market context · Pitfalls · Sources
 
 Related: what "good" means and how to measure it → `ux-foundations.md`; biases that distort answers → `psychology.md`; WCAG → `accessibility.md`. Templates: intake `../templates/design-brief.md`, personas/job stories/journey/empathy map `../templates/persona-jtbd.md`, test script `../templates/usability-test-script.md`.
 
@@ -37,7 +37,7 @@ Sample-size anchors (NN/g): 5 users per qualitative round finds most problems; q
 You can almost always do this from the desk in 1–3 hours. Label every output with an **evidence level**:
 **E3** observed behaviour of real users (analytics, tests) · **E2** self-report from real users (reviews, interviews, surveys) · **E1** secondary (market data, competitor patterns, published research) · **E0** assumption (team belief, proto-persona).
 
-**Step 1. Desk research (E1).** Collect the context of use: market size and demographics, device and connectivity mix, dominant platforms and payment habits, regulation, accessibility needs of the population. Prefer primary sources (government statistics, DataReportal/Kepios, regulators, platform docs), and record the date and source for each fact. For Thailand, start with §15.
+**Step 1. Desk research (E1).** Collect the context of use: market size and demographics, device and connectivity mix, dominant platforms and payment habits, regulation, accessibility needs of the population. Prefer primary sources (government statistics, DataReportal/Kepios, regulators, platform docs), and record the date and source for each fact. For the market facts to collect, see §15.
 
 **Step 2. Competitor teardown (E1).** Choose 2–4 products: direct competitors, the product users most likely compare you with, and one with outstanding UX outside the category. For each, walk the core task end to end and fill in:
 
@@ -46,7 +46,7 @@ You can almost always do this from the desk in 1–3 hours. Label every output w
 
 Screenshot every state. The aim is to beat the competitors, not copy them. Conventions shared by all of them are users' expectations (Jakob's law, `psychology.md`).
 
-**Step 3. Review and forum mining with a coding scheme (E2).** Sources: App Store and Google Play reviews (yours and competitors'), G2/Capterra/TrustRadius (B2B), Reddit, product communities, Facebook groups, Pantip (Thai). Sample both the most recent reviews (current version) and the most helpful ones, across 1–2★ and 4–5★. Code each review into a spreadsheet row:
+**Step 3. Review and forum mining with a coding scheme (E2).** Sources: App Store and Google Play reviews (yours and competitors'), G2/Capterra/TrustRadius (B2B), Reddit, product communities, social groups, local forums. Sample both the most recent reviews (current version) and the most helpful ones, across 1–2★ and 4–5★. Code each review into a spreadsheet row:
 
 | Field | Values |
 |---|---|
@@ -54,7 +54,7 @@ Screenshot every state. The aim is to beat the competitors, not copy them. Conve
 | quote | verbatim, with personal data removed |
 | JOB | what they hired the product for ("track spending with my partner") |
 | PAIN | the problem, plus journey phase: discover / sign up / first use / core task / pay / support / leave |
-| WORKAROUND | what they do instead (spreadsheets, screenshots, LINE chat) |
+| WORKAROUND | what they do instead (spreadsheets, screenshots, messaging-app threads) |
 | SWITCH | from/to which product, and why (feeds the §5 forces) |
 | DELIGHT | what they praise |
 | REQUEST | feature asked for (translate it into the underlying need) |
@@ -80,7 +80,7 @@ If none exist, specify the events to instrument (HEART, `ux-foundations.md` §11
 
 | ID | Assumption | Type | Importance | Evidence (E-level + source) | Cheapest test | Pass criterion |
 |---|---|---|---|---|---|---|
-| A1 | Shoppers will pay by PromptPay QR rather than card | Desirability | High | E1: BOT PromptPay info | Analytics on payment mix; fake-door test | ≥ X% choose QR |
+| A1 | Shoppers will pay by instant-payment QR rather than card | Desirability | High | E1: central-bank payment data | Analytics on payment mix; fake-door test | ≥ X% choose QR |
 
 **Step 6. Proto-personas and job stories, flagged as assumptions (E0).** Use `../templates/persona-jtbd.md`. Each attribute carries its evidence level. Proto-personas are cheap (a 2–4 h workshop, 3–6 personas) and good for aligning a team, but they can turn into an echo chamber of wrong guesses. Replace them with research as soon as possible.
 
@@ -234,32 +234,27 @@ Every non-trivial design decision should point to an insight or to a named assum
 
 Rules: E0 decisions must have a validation plan and a review date. When a test refutes an insight, update the table and every decision that cites it. In a handoff, cite IDs ("D2 per A1") so reviewers can audit the reasoning.
 
-## 15. Thailand (ไทย): context facts and design implications
+## 15. Local market context: facts to collect and design implications
 
-Sourced from DataReportal *Digital 2026: Thailand* (published 8 Nov 2025, data around Oct 2025) unless noted.
+Collect these facts for the target market before designing, record the source and date for each, and mark anything you could not verify as an assumption (E0). Do not reuse numbers from another country.
 
-| Fact | Value |
-|---|---|
-| Population · median age | 71.6 M · 40.6 years |
-| Age 55–64 · 65+ | 14.1% · 16.0% of population |
-| Urban share | 55.2% |
-| Internet users | 67.8 M (94.7%); about 3.78 M (5.3%) offline |
-| Cellular connections | 96.6 M (135% of population) |
-| Median download speed (Ookla, 12 months to Aug 2025) | Mobile 124.33 Mbps · fixed 262.42 Mbps (early 2025: mobile 61.21 Mbps) |
-| Social media user identities | 56.6 M (79.1%) |
-| LINE monthly active users | 56 M (78.2% of population, 82.6% of internet users) |
-| Facebook ad reach | 51.5 M (71.9%) |
-| YouTube ad reach | 47.2 M (65.9%) |
-| TikTok ad reach | 56.6 M users aged 18+ (DataReportal warns about comparability across years) |
-| PromptPay (Bank of Thailand) | Launched 2016; Thai QR Payment = scan a QR in a mobile banking app; PromptPay transfers free up to 5,000 baht; most banks waived digital-payment fees since 2018 |
+| Fact to collect | Where to find it | Design implication |
+|---|---|---|
+| Population online, age mix (share aged 55+) | National statistics office; DataReportal country report | Mobile-first or desktop-first; text size, targets and support paths for older users |
+| Device and OS mix (Android vs iOS, low-end share) | DataReportal; platform dashboards (analytics, store consoles) | Performance budget, test devices, which platform guidelines lead |
+| Connection quality (speeds, share on mobile data) | Ookla/DataReportal country report; your own field data | Image weight, offline and interrupted-session states (`ux-foundations.md` §7) |
+| Dominant messaging app | DataReportal; client interviews | Share-to, chat hand-off, notification channel; keep phone/email alternatives |
+| Dominant social and login providers | DataReportal; platform dashboards | Which sign-in buttons to show beside Apple/Google; account-linking rules |
+| Local payment rails and instant-payment QR schemes | Central bank; payment regulator; client | Payment methods order; QR flow: amount, payee, expiry, save-QR, poll for confirmation |
+| Language(s) and script(s) | Census; client; review mining | Copy length and line-breaking tests; font per script; tone and formality per locale (`typography-layout.md`, Multi-script typography) |
+| Calendar, number, currency, phone and address formats | Locale data (CLDR); central bank; postal operator | Format through `Intl` with the user's locale and calendar; store ISO values |
+| Privacy and consumer law | Data-protection regulator; local counsel | Consent UX, retention, cross-border data, cancellation and refund rules |
+| Accessibility law and target standard | Disability regulator; procurement rules | Name the standard in requirements (`accessibility.md`, Localization notes) |
 
-Design implications:
-- **Mobile-first is the default** for consumer products: connections exceed the population and speeds are high. Still design for interrupted sessions and the offline state (`ux-foundations.md` §7). B2B and back-office tools are often used on desktop; verify with analytics (brief Q7).
-- **LINE is the default messaging layer:** consider LINE Login, share-to-LINE, LINE Official Account notifications and hand-off to chat support. Ask the client which ones they use, and keep phone/email alternatives.
-- **QR / PromptPay belongs in payment flows** alongside cards. Show the amount, payee name and expiry next to the QR. When the user pays on the same phone, add a "Save QR image" action so they can open it in their banking app, and keep the order page polling for confirmation.
-- **Older users are a large group** (16% aged 65+): use larger default text and targets, strong contrast, labelled icons, no gesture-only actions, forgiving forms and phone support paths (`accessibility.md`).
-- **Bilingual TH/EN:** test the Thai copy length and line breaking (`typography-layout.md`), use the Thai vocabulary found in reviews and Pantip threads, and set date, number and currency formats (฿, Buddhist Era years where the domain expects them, such as government or health documents) per product decision.
-- Review mining in Thai: Google Play/App Store TH reviews, Pantip, Facebook groups. Code them with the same scheme as §2 and keep the Thai quotes verbatim.
+Method:
+- Fill the table in the desk-research step (§2, Step 1); verify with 3-5 local users or the client where a fact drives a major decision.
+- Mine reviews and forums in the local language (store reviews, local forums, social groups). Code them with the same scheme as §2 and keep quotes verbatim.
+- Write each implication as a decision in the traceability table (§14) with the fact as its evidence.
 
 ## Pitfalls
 
@@ -306,6 +301,3 @@ Design implications:
 - W3C WAI, Involving Users in Evaluating Web Accessibility — https://www.w3.org/WAI/test-evaluate/involving-users/
 - NN/g, Affinity Diagramming — https://www.nngroup.com/articles/affinity-diagram/
 - NN/g, Using "How Might We" Questions — https://www.nngroup.com/articles/how-might-we-questions/
-- DataReportal, Digital 2026: Thailand — https://datareportal.com/reports/digital-2026-thailand
-- DataReportal, Digital 2025: Thailand — https://datareportal.com/reports/digital-2025-thailand
-- Bank of Thailand, PromptPay — https://www.bot.or.th/en/financial-innovation/digital-finance/digital-payment/promptpay.html

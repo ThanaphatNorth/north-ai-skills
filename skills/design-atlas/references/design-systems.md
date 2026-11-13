@@ -1,16 +1,16 @@
 # Design systems and design tokens
 
-> Read when: starting a product's visual foundation, creating or refactoring tokens / theming (light-dark, multi-brand, density), choosing a component library, writing a component spec, syncing Figma variables with code, auditing an inconsistent UI, or setting up design-system docs, versioning and handoff.
+> Read when: starting a product's visual foundation, creating or refactoring tokens / theming (light-dark, multi-brand, density), making a system look like one brand instead of a library default (expression layer), choosing which modern CSS a token system can rely on, choosing a component library, writing a component spec, syncing Figma variables with code, auditing an inconsistent UI, or setting up design-system docs, versioning and handoff.
 
-**Contents:** 1 Scope · 2 Token architecture · 3 Naming · 4 DTCG format 2025.10 · 5 Token pipeline · 6 Figma variables → code · 7 Multi-brand and modes · 8 Foundation scales · 9 Component spec and states · 10 Iconography · 11 Component libraries 2026 · 12 Reference systems · 13 Bootstrap a minimal system · 14 Audit an existing UI · 15 Docs, versioning, governance, handoff · Pitfalls · Sources
+**Contents:** 1 Scope · 2 Token architecture (+ expression layer) · 3 Naming · 4 DTCG format 2025.10 · 5 Token pipeline · 6 Figma variables → code · 7 Multi-brand and modes · 8 Foundation scales · 9 Component spec and states · 10 Iconography · 11 Component libraries 2026 · 12 Reference systems · 13 Bootstrap a minimal system · 14 Audit an existing UI · 15 Docs, versioning, governance, handoff · 16 Modern CSS for token systems · Pitfalls · Sources
 
-Templates: `templates/tokens-starter.css` (complete token set, light/dark, brand, density) and `templates/tailwind-theme.css` (Tailwind v4 mapping). Color theory and palette generation: `color.md`. Type scale choice: `typography-layout.md`. Motion usage: `motion.md`. Contrast rules: `accessibility.md`.
+Templates: `templates/tokens-starter.css` (complete token set: primitives, themed roles, expression layer, density, brand modes) and `templates/tailwind-theme.css` (Tailwind v4 mapping). Color theory and palette generation: `color.md`. Type scale choice: `typography-layout.md`. Motion usage: `motion.md`. Contrast rules: `accessibility.md`. How to spend the expression tokens and finish a screen: `visual-craft.md`.
 
 ## 1. Scope
 
 | Part | What it contains | Minimum viable version |
 |---|---|---|
-| Tokens | Named design decisions: color, type, space, radius, elevation, motion, z-index | One CSS file + DTCG JSON (if multi-platform) |
+| Tokens | Named design decisions: color, type, space, radius, elevation, motion, z-index, plus the expression layer that carries the brand (§2) | One CSS file + DTCG JSON (if multi-platform) |
 | Components | Coded, accessible building blocks with variants, sizes, states | 12-15 components (§13) |
 | Patterns | Multi-component solutions: forms + validation, empty/loading/error, navigation, tables | 4-6 documented patterns |
 | Content guidelines | Voice, casing, labels, error-message formula, date/number formats | One page |
@@ -35,7 +35,28 @@ Rules:
 - A theme remaps semantic → primitive; semantic names stay identical across light, dark and brands (Carbon: "tokens stay the same across themes, only values change").
 - Add a component token only when the component deviates from the semantic default or needs a public override; keep them under ~15% of the set (heuristic).
 - Mint a new token when a value encodes a decision reused in 3+ places; one-offs stay local.
-- Theme-dependent component tokens belong on the component selector (`.btn { --btn-bg: var(--primary) }`), not on `:root`, or scoped themes freeze (see Pitfalls).
+- Themed roles are single `light-dark()` values (§16), so a component token that only aliases a role (`--btn-bg: var(--primary)`) may sit on `:root`: it stays unresolved until a property uses it. Tokens that *compute* from a per-scope input (a ramp from `--brand-h`) still freeze where they are declared (see Pitfalls).
+
+### Expression layer: recognisable, not only consistent
+
+Primitive → semantic → component buys consistency. A product built from those three alone looks like every other product on the same library. Identity lives in a small fourth set, the **expression tokens** (`tokens-starter.css` section 3). A rebrand edits them and the brand hues, never the components.
+
+| Carrier | Tokens (starter) | What it decides | How a reference system does it |
+|---|---|---|---|
+| Display type | `--font-display`, `--font-size-display`, `--font-weight-display`, `--tracking-display`, `--line-height-display` | The voice of the headlines | Carbon ships two type registers: productive sets (14 px base, `-01` suffix) for product UI and expressive sets (16 px base, `-02`, fluid display up to 92/102 px at weight 300) for editorial moments |
+| Shape | `--shape-control`, `--shape-container`, `--shape-pill` | Corner personality: sharp, soft or round | M3 Expressive corner scale: 0 · 4 · 8 · 12 · 16 · 20 · 28 · 32 · 48 · full |
+| Motion | `--ease-spring`, `--ease-spring-bouncy`, `--duration-spring*`, `--press-scale`, `--spring-expressive-*` | How things arrive and answer a press: calm or lively | M3 motion physics: spatial springs (position, size) may overshoot, effects springs (colour, opacity) never do |
+| Colour moments | `--gradient-brand`, `--gradient-aura`, `--glow-primary` | Where the brand colour is allowed to be loud | Radix: step 9 of each 12-step scale is the purest, highest-chroma step, reserved for solid fills |
+| Light and material | `--shadow-ink`, `--edge`, `--highlight`, `--grain` | One light source and the quality of surfaces | Fluent 2 materials (Solid, Acrylic for menus, Mica for the window base, Smoke for scrims); Apple Liquid Glass on controls and bars |
+| Rhythm | `--space-section`, `--space-gutter`, `--layout-max` | Breathing room between sections and at the page edge | — |
+
+Rules:
+- **Two registers, one system.** Productive surfaces (app shell, forms, tables, settings) use semantic tokens only and stay quiet. Expressive surfaces (landing pages, onboarding, empty states, a feature's hero, a celebration) add the expression tokens. Both share primitives and roles, so they read as one brand (`styles-catalog.md` §6: marketing may run one loudness step higher).
+- **Budget it.** Per view: at most one display moment, one gradient surface, one glow. Expression on everything is noise (`visual-craft.md` §1).
+- **Expression never carries meaning alone.** Status, focus, selection and disabled come from semantic tokens; a spring or a gradient is never the only signal.
+- **Derive, don't hard-code.** Expression tokens reference primitives and roles (`oklch(from var(--primary) l c h / .4)`), so they follow the theme and the brand mode.
+- **Every expression value records its source.** A comment beside each one says where in the subject it comes from (`--brand-h: 262; /* carbon blue: what a copy is written in */`). The starter's own values (indigo, Inter, an aura, grain, a glow) are placeholders and, used as they are, produce exactly the look people read as machine-made: replace each from the subject's material and delete the ones with no source (`ai-tells.md` §4).
+- **Expression must sharpen hierarchy.** Google's research behind M3 Expressive (46 studies, 18,000+ participants) reports key elements spotted up to 4× faster in expressive layouts. It also reports the limits: a layout that looked modern but hid its structure scored lower on usability, and removing text labels hurt.
 
 ## 3. Naming
 
@@ -56,7 +77,7 @@ Examples: `color-bg-primary-hover`, `space-inset-md`, `ds-color-text-danger`. Na
 
 ## 4. DTCG format 2025.10
 
-Status (verified 2026-10-10): the W3C Design Tokens Community Group published the **first stable version, 2025.10, on 2025-10-28**. It is a Community Group report, not on the W3C Standards Track; the FAQ calls it safe to use while refinement continues. Three modules: **Format**, **Color**, **Resolver** (themes/modes). Named implementers: Style Dictionary, Tokens Studio, Terrazzo (reference implementations), plus Figma, Penpot, Sketch, Framer, Knapsack, Supernova, zeroheight.
+Status (verified 2026-11-13): the W3C Design Tokens Community Group published the **first stable version, 2025.10, on 2025-10-28**. It is a Community Group report, not on the W3C Standards Track; the FAQ calls it safe to use while refinement continues. Three modules: **Format**, **Color**, **Resolver** (themes/modes). Named implementers: Style Dictionary, Tokens Studio, Terrazzo (reference implementations), plus Figma, Penpot, Sketch, Framer, Knapsack, Supernova, zeroheight.
 
 Format essentials:
 - Files `.tokens` or `.tokens.json`; media type `application/design-tokens+json`.
@@ -116,25 +137,21 @@ Resolver module (`.resolver.json`, `"version": "2025.10"`): `sets` (always appli
 
 Source of truth: DTCG JSON in git (multi-platform) or the CSS file itself (web-only, one app). Flow: Figma variables ⇄ JSON (Tokens Studio sync or Figma native export/import) → PR review → Style Dictionary / Terrazzo build → CSS vars + Tailwind theme + Swift/Kotlin/Flutter constants → published package.
 
-| Tool (2026-10) | Role | Notes |
+| Tool (2026-11) | Role | Notes |
 |---|---|---|
-| Style Dictionary 5.x (5.6.0) | Build JSON → any platform | v5.0.0 2025-05-16; Node ≥ 22; DTCG auto-detected; refs must target tokens, not groups |
-| Tokens Studio + `@tokens-studio/sd-transforms` 2.x | Figma plugin, git sync, themes (Pro) | sd-transforms 2.x peer-requires Style Dictionary ^5; `preprocessors: ['tokens-studio']` |
-| Terrazzo (`@terrazzo/cli` 2.7) | DTCG-native CLI with CSS/Tailwind plugins | Reference implementation of 2025.10 |
-| Figma native | Export one mode or all modes to JSON; import requires DTCG JSON | Right-click collection → Export modes; only tokens present in every imported file become variables |
+| Style Dictionary 5.x (5.8.0, 2026-11-03) | Build JSON → any platform | Node ≥ 22; DTCG auto-detected; refs must target tokens, not groups; 5.7.0 added DTCG 2025.10 `duration` objects; stay ≥ 5.7.1 (fixes a prototype-pollution advisory in `convertTokenData`) |
+| Tokens Studio + `@tokens-studio/sd-transforms` 2.x (2.0.3) | Figma plugin, git sync, themes (Pro) | sd-transforms 2.x peer-requires Style Dictionary ^5; `preprocessors: ['tokens-studio']` |
+| Terrazzo (`@terrazzo/cli` 2.10) | DTCG-native CLI with CSS/Tailwind plugins | Reference implementation of 2025.10 |
+| Figma native | Export one mode or all modes to DTCG JSON; import DTCG JSON | Import covers color, dimension, duration (px and s), number and boolean; only tokens present in every imported file become variables |
+| Lightning CSS (1.33) | Down-level the built CSS | Compiles `light-dark()` to a variable fallback, evaluates relative colours and `color-mix()` when every component is known, adds fallbacks for `oklch()` |
 
-Style Dictionary 5 recipe for 2025.10 tokens (tested with 5.6.0). The stock `css` group turns OKLCH into hex and prints DTCG `duration` objects as `[object Object]` (`time/seconds` only matches `$type: "time"`); this fixes both:
+Style Dictionary recipe for 2025.10 tokens (tested with 5.8.0 on the JSON in §4). The stock `css` group now prints DTCG durations (`0.1s`) and a `$root` token under its group name (`--color-primary`). It still converts OKLCH to hex; swapping one transform keeps OKLCH:
 
 ```js
 // build.mjs — node build.mjs
 import StyleDictionary from 'style-dictionary';
-StyleDictionary.registerTransform({
-  name: 'duration/css', type: 'value',
-  filter: (t) => t.$type === 'duration',
-  transform: (t) => (typeof t.$value === 'object' ? `${t.$value.value}${t.$value.unit}` : t.$value),
-});
 const transforms = StyleDictionary.hooks.transformGroups.css
-  .filter((n) => n !== 'color/css').concat(['color/oklch', 'duration/css']);
+  .filter((n) => n !== 'color/css').concat(['color/oklch']);
 await new StyleDictionary({
   source: ['tokens/**/*.tokens.json'],
   platforms: { css: { transforms, buildPath: 'build/', files: [
@@ -142,21 +159,21 @@ await new StyleDictionary({
 }).buildAllPlatforms();
 ```
 
-Output keeps aliases (`--color-primary-foreground: var(--color-neutral-0);`). Note `$root` tokens come out as `--color-primary-root`; rename in a name transform if you want `--color-primary`.
+Output keeps aliases (`--color-primary: var(--color-brand-600); --color-primary-foreground: var(--color-neutral-0);`). Themes come from the resolver (one build per `theme` context); to emit `light-dark()` pairs, build light and dark and join them per token in a small format function.
 
 ## 6. Figma variables → code
 
 | Figma | Code | Rule |
 |---|---|---|
 | Collection "Primitives" (1 mode, hidden from publishing) | primitive tier | Designers pick only from semantic collections |
-| Collection "Theme" with modes Light / Dark | semantic tier; CSS `:root` / `[data-theme="dark"]`; resolver `theme` modifier | Same variable names in every mode |
+| Collection "Theme" with modes Light / Dark | semantic tier; one `light-dark(<light>, <dark>)` per role; resolver `theme` modifier | Same variable names in every mode |
 | Collection "Brand" modes or extended collections | `[data-brand]`; resolver `brand` modifier | Extended collections are Enterprise-only (plugin API) |
 | Collection "Density" (Compact / Default / Comfortable) or "Breakpoint" (Mobile / Desktop) | `[data-density]`; media/container queries | Number variables for heights, padding, type sizes |
 | Variable alias | `var(--x)` / `{x}` | Never hard-code a hex in a semantic variable |
 | Variable scopes | which property pickers show the variable | Scope fills vs strokes vs gap so designers cannot misuse |
 | Code syntax (Web / iOS / Android) | what Dev Mode prints | Set Web syntax to `var(--primary)` so handoff shows the real token |
 
-Modes inherit from the parent frame (Auto). Mode count per collection depends on plan; forum reports Pro 10, Org 20, Enterprise 40 (not in official docs; verify in the file). Figma types are color/number/string/boolean: typography and shadow composites live in Styles (or Tokens Studio), not variables.
+Modes inherit from the parent frame (Auto). Mode count per collection depends on plan; forum reports Pro 10, Org 20, Enterprise 40 (not in official docs; verify in the file). Figma types are color/number/string/boolean: typography and shadow composites live in Styles (or Tokens Studio), not variables. **Check designs** (Organization, Enterprise, Education, Government plans) finds hard-coded colours, text, radius and spacing on a page and swaps them for variables or styles: run it before handoff.
 
 ## 7. Multi-brand and modes
 
@@ -168,7 +185,7 @@ Strategies, cheapest first:
 
 Rules: semantic and component names never vary by brand; test every brand × theme × density combination for contrast (n × m runs, automate it); keep brand switching on `<html>` (derived CSS vars are computed where declared, see Pitfalls). Ant Design's model is a good mental template: seed tokens (`colorPrimary`, `borderRadius`) → algorithm → map tokens → alias tokens, with `darkAlgorithm` and `compactAlgorithm` composable.
 
-Modes worth supporting: light/dark (always), high contrast (`@media (prefers-contrast: more)` → stronger borders and text), density (compact for data-heavy pro tools), reduced motion (durations → 0). Alternative to duplicated dark blocks: `light-dark()` in each token plus `color-scheme` (Chrome 123, Firefox 120, Safari 17.5); keep the duplicated blocks when older Safari matters.
+Modes worth supporting: light/dark (always), high contrast (`@media (prefers-contrast: more)` → stronger borders and text; `forced-colors: active` → system colours, keep borders), density (compact for data-heavy pro tools), reduced motion (durations → 0, springs off). Light/dark is one `light-dark()` value per role plus `color-scheme` (§16), as in the starter: nothing is declared twice, so the themes cannot drift. Write duplicated `[data-theme="dark"]` blocks only for targets older than Safari 17.5, or let Lightning CSS generate the fallback.
 
 ## 8. Foundation scales
 
@@ -190,11 +207,11 @@ Material 3 shape scale (dp): extra-small 4, small 8, medium 12, large 16, large-
 | 0 | page, flat cards, table | none + `--border` | 0 |
 | 1 | resting card, raised button | `--elevation-card` (`--shadow-xs`) | 1 |
 | 2 | hover lift, sticky header, scrolled app bar | `--elevation-raised` | 3 |
-| 3 | menu, popover, combobox list | `--elevation-popover` | 6 |
+| 3 | menu, popover, combobox list | `--elevation-popover` (edge ring + `--shadow-md`) | 6 |
 | 4 | dialog, drawer, sheet | `--elevation-dialog` | 8 |
 | 5 | toast, drag preview | `--elevation-toast` | 12 |
 
-Shadows: two layers (tight contact + soft ambient), neutral-tinted, alpha ≤ 0.16 in light mode. In dark mode shadows barely read: raise surface lightness per level (`--surface` → `--surface-raised`), as M3 does with surface-container tones (`surfaceContainerLowest … Highest`).
+Shadows: one light source for the whole product (the starter's sits straight above: x = 0 on every layer). Each level stacks the same ink (`--shadow-ink`, tinted with the neutral hue, α 0.07 in light) with offset and blur doubling per layer (1, 2, 4, 8, 16 px): the stack reads as one soft shadow where a single `0 4px 6px rgb(0 0 0 / .1)` reads as a grey smudge. Higher elevation = more layers. Floating levels add a 1 px `--edge` ring in place of a border, so the edge adapts to whatever is behind it; raised and filled surfaces can add `inset 0 1px 0 var(--highlight)` for the lit top rim. In dark mode shadows barely read: raise surface lightness per level (`--surface` → `--surface-raised`), as M3 does with surface-container tones (`surfaceContainerLowest … Highest`), and let the white `--edge` ring draw the boundary. Recipes: `visual-craft.md` §2.
 
 **Z-index**: named layers with gaps; never raw numbers in components.
 
@@ -208,7 +225,7 @@ Shadows: two layers (tight contact + soft ambient), neutral-tinted, alpha ≤ 0.
 
 `<dialog>.showModal()` (Safari 15.4+) and the Popover API (`popover` attribute; Chrome 114, Firefox 125, Safari 17, iOS Safari 18.3) render in the top layer, above every z-index; prefer them over z-index wars.
 
-**Motion tokens** (details and usage in `motion.md`): durations 100 (hover/press), 200 (small UI), 300 (menus, accordions), 500 ms (large surfaces); Material 3 curves standard `cubic-bezier(0.2, 0, 0, 1)`, standard-decelerate `(0, 0, 0, 1)`, standard-accelerate `(0.3, 0, 1, 1)`, emphasized-decelerate `(0.05, 0.7, 0.1, 1)`, emphasized-accelerate `(0.3, 0, 0.8, 0.15)`; M3 duration tokens run 50-1000 ms in 50/100 ms steps. Reduced motion: zero durations or swap movement for opacity.
+**Motion tokens** (details and usage in `motion.md`): springs for movement (`--ease-spring` 400 ms, `--ease-spring-bouncy` 350 ms: `linear()` curves sampled from M3 Expressive's spatial springs) and curves for colour and opacity; durations 100 (hover/press), 200 (small UI), 300 (menus, accordions), 500 ms (large surfaces); Material 3 curves standard `cubic-bezier(0.2, 0, 0, 1)`, standard-decelerate `(0, 0, 0, 1)`, standard-accelerate `(0.3, 0, 1, 1)`, emphasized-decelerate `(0.05, 0.7, 0.1, 1)`, emphasized-accelerate `(0.3, 0, 0.8, 0.15)`; M3 duration tokens run 50-1000 ms in 50/100 ms steps. Reduced motion: zero durations or swap movement for opacity.
 
 **Density**: control heights sm/md/lg = 32/40/48 px default; compact 28/32/40 (tables, pro tools); comfortable/touch 44/56. Touch targets ≥ 44 px (Apple), 48 dp (Material); WCAG 2.2 AA floor 24 px.
 
@@ -221,7 +238,7 @@ Spec template (one page per component):
 4. **Sizes**: sm/md/lg → height, padding-x, font size, icon size (16/16/20), gap.
 5. **States** (matrix below) for every variant.
 6. **Behaviour**: keyboard map, focus management, ARIA pattern (APG name), touch target.
-7. **Content**: label rules (verb first, ≤ 3 words, sentence case), truncation, room for text expansion (German, Finnish) and scripts without word spaces (Thai). In flex/inline-flex components (buttons, chips, list rows with icons) wrap the label in **one** element — `<button><svg/><span>จองคิว<span class="nw">วันนี้</span></span></button>` — because every bare text run and span inside a flex container becomes its own flex item and Thai words wrap out of order (`typography-layout.md`).
+7. **Content**: label rules (verb first, ≤ 3 words, sentence case), truncation, room for text expansion (short labels can double or triple in translation: `typography-layout.md`, Multi-script typography) and for scripts with stacked marks. In flex/inline-flex components (buttons, chips, list rows with icons) wrap the label in **one** element — `<button><svg/><span>Book <span class="nw">a table</span></span></button>` — because every bare text run and span inside a flex container becomes its own flex item and phrases wrap out of order.
 8. **Density / responsive** behaviour; RTL mirroring.
 9. **Accessibility acceptance**: contrast numbers, name/role/state, axe clean.
 10. **Tokens table** and **Do / Don't** with images.
@@ -231,7 +248,7 @@ Spec template (one page per component):
 | default | — | base tokens | — |
 | hover | pointer over | state layer 8% of content color | wrap in `@media (hover: hover)` so touch does not stick |
 | focus-visible | keyboard focus | 2 px ring, 2 px offset, ≥ 3:1 vs adjacent colors | `:focus-visible`; never remove outline without replacement |
-| active / pressed | pointer down, Enter/Space | state layer 10%; optional scale 0.98 | `:active`; toggle buttons expose `aria-pressed` |
+| active / pressed | pointer down, Enter/Space | state layer 10%; optional `scale: var(--press-scale)` (0.97) | `:active`; toggle buttons expose `aria-pressed` |
 | disabled | not available | 50% opacity, or M3: content 38%, container 10%; no hover | `disabled` attr; use `aria-disabled="true"` when it must stay focusable to explain why |
 | loading | async action running | spinner replaces/precedes label, width locked | `aria-busy="true"`, block double submit, keep focus |
 | error / invalid | validation failed | `--danger` border + icon + message text (never color alone) | `aria-invalid="true"` + `aria-describedby` → message |
@@ -265,13 +282,13 @@ Rules: one family per product; sizes 16 (dense UI, inline with 12-14 px text), 2
 
 ## 11. Component libraries 2026
 
-Web (versions from npm, 2026-10-10):
+Web (versions from npm, 2026-10-10; shadcn CLI and `radix-ui` re-checked 2026-11-13):
 
 | Library | Kind | Pick when |
 |---|---|---|
-| shadcn/ui (CLI 4.x) | Copy-in components, Tailwind v4, OKLCH CSS vars; base = Base UI (default since Jul 2026), Radix (`-b radix`) or React Aria (`--base aria`) | You own the code and the look; most new React/Next apps |
+| shadcn/ui (CLI 4.23) | Copy-in components, Tailwind v4, OKLCH CSS vars; base = Base UI (default since Jul 2026), Radix (`-b radix`) or React Aria (`--base aria`) | You own the code and the look; most new React/Next apps |
 | Base UI (`@base-ui/react` 1.9; 1.0 Dec 2025) | Unstyled primitives from the Radix, Floating UI and MUI teams | Building your own styled system on React; combobox/autocomplete-heavy UIs |
-| Radix Primitives (`radix-ui` 1.7, WorkOS) | Unstyled primitives, unified package | Existing Radix/shadcn codebases; not deprecated |
+| Radix Primitives (`radix-ui` 1.8, WorkOS) | Unstyled primitives, unified package | Existing Radix/shadcn codebases; not deprecated |
 | React Aria Components (1.22, Adobe) | Unstyled, hooks + components, strongest i18n/a11y (dates, RTL, touch) | Accessibility-critical, international, date/number-heavy apps |
 | Ark UI (5.x, Chakra team) | Headless, 45+ components, React/Solid/Vue/Svelte | Multi-framework or non-React design systems |
 | Headless UI (2.2, Tailwind Labs) | Small unstyled set, React/Vue | A few accessible widgets in a Tailwind site |
@@ -315,14 +332,15 @@ Selection rule: product-brand-led consumer app → shadcn (Base UI) or own syste
 ## 13. Bootstrap a minimal design system
 
 1. **Inputs.** Brand hue(s), typeface, product type (consumer / pro tool), platforms. Done when: written in `docs/design-system.md`.
-2. **Tokens.** Copy `templates/tokens-starter.css`; set `--brand-h/-c`, `--accent-h/-c`, fonts; keep `--brand-c` within the per-hue limit in the file header. With a logo or exact brand hex, run `scripts/palette.py build` instead and let its `tokens.css` replace the template's color section: its ramps are anchored on the exact brand color (the template's are generated from hue + chroma) and its semantic color names match the template's. Done when: contrast check passes for light and dark, screenshots of both reviewed.
-3. **Library + mapping.** Choose per §11; map its theme to semantic tokens (`templates/tailwind-theme.css` for Tailwind v4). Done when: no raw hex/px in app code; `bg-red-500`-style defaults removed.
-4. **Guardrails.** Lint raw values (`stylelint-declaration-strict-value` for color/z-index/shadow; CI grep for Tailwind arbitrary values `-[`). Done when: CI fails on a planted raw hex.
-5. **Core components (12-15):** Button, IconButton, Link, TextField/Textarea, Select/Combobox, Checkbox, Radio, Switch, Dialog, Menu/Popover, Tooltip, Toast, Tabs, Card, Badge. Done when: each has every state of §9 in Storybook, keyboard walkthrough passes, axe reports 0 violations.
-6. **Patterns:** form layout + validation, empty/loading/error states, page shell/navigation, data table. Done when: one real screen per pattern built only from system parts.
-7. **Docs.** Storybook (or zeroheight/Supernova) with foundations, components, patterns, content guide. Done when: a new dev can build a form screen without asking.
-8. **Design parity.** Figma variables mirror token names with Web code syntax; Code Connect on core components. Done when: Dev Mode shows `var(--primary)` and real component snippets.
-9. **Release.** `0.1.0`, changelog, owners. Done when: one product consumes the package from a registry.
+2. **Tokens.** Copy `templates/tokens-starter.css`; set `--brand-h/-c`, `--accent-h/-c`, fonts; keep `--brand-c` within the per-hue limit in the file header. With a logo or exact brand hex, run `scripts/palette.py build` and load its `tokens.css` after the template (or paste it over the ramps and colour roles): its ramps are anchored on the exact brand color (the template's are generated from hue + chroma) and its role names match the template's. Done when: contrast check passes for light and dark, screenshots of both reviewed.
+3. **Expression.** Set section 3 of the starter from the chosen direction (`creative-direction.md`, `styles-catalog.md`): display face and size, shape personality, spring or calm motion, the one gradient, glow and texture. Done when: a hero, a card and a button built only from tokens could not be mistaken for the library's defaults, and a second page built from the same tokens reads as the same brand.
+4. **Library + mapping.** Choose per §11; map its theme to semantic tokens (`templates/tailwind-theme.css` for Tailwind v4). Done when: no raw hex/px in app code; `bg-red-500`-style defaults removed.
+5. **Guardrails.** Lint raw values (`stylelint-declaration-strict-value` for color/z-index/shadow; CI grep for Tailwind arbitrary values `-[`). Done when: CI fails on a planted raw hex.
+6. **Core components (12-15):** Button, IconButton, Link, TextField/Textarea, Select/Combobox, Checkbox, Radio, Switch, Dialog, Menu/Popover, Tooltip, Toast, Tabs, Card, Badge. Done when: each has every state of §9 in Storybook, keyboard walkthrough passes, axe reports 0 violations, and the finish pass in `visual-craft.md` (§9, the beauty bar) is run on screenshots of each.
+7. **Patterns:** form layout + validation, empty/loading/error states, page shell/navigation, data table. Done when: one real screen per pattern built only from system parts.
+8. **Docs.** Storybook (or zeroheight/Supernova) with foundations, components, patterns, content guide. Done when: a new dev can build a form screen without asking.
+9. **Design parity.** Figma variables mirror token names with Web code syntax; Code Connect on core components. Done when: Dev Mode shows `var(--primary)` and real component snippets.
+10. **Release.** `0.1.0`, changelog, owners. Done when: one product consumes the package from a registry.
 
 ## 14. Audit an existing UI
 
@@ -362,27 +380,68 @@ Versioning (semver on the package):
 - **Patch**: bug fixes, a11y fixes that do not change API.
 - Deprecate before removing: mark `$deprecated` (DTCG) / `@deprecated` (TS), keep the old token as an alias for ≥ 1 minor release, log usage, remove in the next major. Salesforce's rule: keep old and new hooks side by side until both are tested.
 
-Governance: name an owner team (or rotating owners for small orgs) with CODEOWNERS on tokens and components; contributions start as an issue/discussion with evidence of need (GOV.UK model: community backlog, evidence of user need, yearly prioritisation); decide "core vs local": a component used by one product stays in that product until a second consumer appears. Review checklist per PR: tokens only, all states, keyboard, contrast, docs page, changelog entry.
+Governance: name an owner team (or rotating owners for small orgs) with CODEOWNERS on tokens and components; contributions start as an issue/discussion with evidence of need (GOV.UK model: community backlog, evidence of user need, yearly prioritisation); decide "core vs local": a component used by one product stays in that product until a second consumer appears. Review checklist per PR: tokens only, all states, keyboard, contrast, light and dark screenshots (plus one scoped theme), docs page, changelog entry. Automate what can be: a contrast matrix over every role pair × theme × brand (`scripts/palette.py contrast`), screenshot diffs of the component gallery, and the raw-value budget from §14.
 
 Handoff:
 - **Figma Dev Mode**: mark frames "Ready for dev"; variables with Web code syntax print token names instead of hex; annotate interactions and states.
 - **Code Connect** (Dev or Full seat, Organization/Enterprise): maps Figma components to repo components so Dev Mode and the Figma MCP server show real usage. Set up via Code Connect UI (GitHub link, one design component → many implementations) or CLI with template files (`Button.figma.ts`). 2.0.0 (2026-08-18) ended framework parsers: migrate with `figma connect migrate`, publish with `figma connect publish`.
 - Developers implement from tokens and components; if a design uses a value with no token, raise it before coding.
 
+## 16. Modern CSS for token systems
+
+Versions: MDN browser-compat-data 8.1.9 and webstatus.dev, read 2026-11-13 (Chrome / Firefox / Safari). **Widely** = Baseline widely available (30 months in every engine): use without a fallback. **Newly** = in every current engine: use with a fallback or as an enhancement. **Limited** = enhancement only.
+
+| Feature | What it gives a design system | Versions | Baseline |
+|---|---|---|---|
+| `@layer` | A fixed order (reset → tokens → base → components → utilities) that ends specificity fights | 99 / 97 / 15.4 | Widely |
+| `color-mix()` | Hover and pressed shades mixed from a role | 111 / 113 / 16.2 | Widely |
+| `linear()` easing | Spring curves as tokens | 113 / 112 / 17.2 | Widely (2026-06) |
+| `light-dark()` + `color-scheme` | One declaration per role for both themes | 123 / 120 / 17.5 | Widely (2026-11) |
+| `text-wrap: balance` | Balanced headings | 114 / 121 / 17.5 | Widely (2026-11) |
+| `@property` | Typed, animatable tokens (angles, percentages, numbers) | 85 / 128 / 16.4 | Newly (2024-07) |
+| `@starting-style`, `transition-behavior: allow-discrete` | Enter and exit transitions for popovers, dialogs, `display` | 117 / 129 / 17.5 | Newly (2024-08) |
+| Relative colours `oklch(from …)` | Alpha and lightness variants of a role | 125 / 128 / 18 | Newly (2024-09) |
+| View transitions (same document), `view-transition-class` | Animated state changes | 111 / 144 / 18 | Newly (2025-10) |
+| `@scope` | Component style boundaries without naming conventions | 118 / 146 / 26.4 | Newly (2026-03) |
+| `contrast-color()` | Black or white foreground chosen for a fill | 147 / 146 / 26 | Newly (2026-04) |
+| Container style queries `@container style(--x: y)` | Variants switched by one custom property | 111 / 151 / 18 | Newly (2026-05) |
+| `field-sizing: content` | Inputs that grow with their content | 123 / 152 / 26.2 | Newly (2026-06) |
+| `sibling-index()`, `sibling-count()` | Stagger without inline styles | 138 / 154 / 26.2 | Newly (2026-08) |
+| Scroll-driven animations | Scroll-linked motion without JS | 115 / 159 / 26 | Newly (2026-10) |
+| `text-box` (trim) | Optical vertical centring in buttons and badges | 133 / 154 / 18.2 | Limited |
+| Anchor positioning | Tooltips and menus tethered in CSS | 125 / 147 / 26 (sub-features differ) | Limited |
+| `text-wrap: pretty` | Fewer orphans in body copy | 117 / — / 26 | Limited (falls back to normal wrapping) |
+| `interpolate-size: allow-keywords` | Animate to `auto` | 129 / — / — | Limited |
+| `corner-shape` (squircle, bevel, scoop) | Superellipse corners | 139 / — / 27.3 beta | Limited |
+| `@function`, `if()` | Token maths and inline conditionals | 139, 137 / — / 27.3 beta | Limited |
+
+Rules (each one checked in Chrome on the starter, 2026-11-13):
+- **Themes: `light-dark()`.** `:root { color-scheme: light dark; --bg: light-dark(var(--neutral-50), var(--neutral-950)); }` and `[data-theme="dark"] { color-scheme: dark; }`. An unregistered custom property keeps `light-dark()` unresolved until a real property uses it, so a scoped theme needs only `color-scheme` (plus `color` and `background-color`, which inherit as computed values). Tested: page, scoped dark, light nested inside dark, OS dark with a scoped light section; shadows and glows built from those roles follow without being declared again. `light-dark()` accepts colours only, so shadows and gradients are composed from colour tokens that use it. High-contrast and brand modes still use media or attribute blocks.
+- **`@property` for motion, never for themed roles.** Register what you animate (`--angle`, `--progress`, a gradient stop). A registered `<color>` computes `light-dark()` where it is declared and hands that one side down: in the test a registered role stayed white inside a dark scope while the unregistered one turned black.
+- **Declare the layer order once**: `@layer reset, tokens, base, layout, components, utilities, overrides;`. Unlayered CSS beats every layer, so put third-party CSS in its own layer (`@import url(lib.css) layer(vendor);`). Tailwind v4 uses `theme, base, components, utilities`; load the token file unlayered next to it (`tailwind-theme.css`).
+- **Derive states from roles.** Hover or pressed: `color-mix(in oklch, var(--primary) 88%, black)` or a state layer (§9). Translucent: `oklch(from var(--primary) l c h / .35)` (`color.md`: mixing a low-chroma colour with `transparent` drops its hue).
+- **Variants from tokens.** A parent sets `--density: compact`; `@container style(--density: compact) { .field { … } }` restyles the subtree. Match the specificity of the rule it overrides, and keep an attribute fallback while Firefox below 151 matters.
+- **Springs as tokens.** `linear()` curves sampled from the spring equation (`--ease-spring`, `--ease-spring-bouncy`; method in `motion.md` §4). Use them in transitions: a CSS transition retargets mid-flight, a keyframe animation restarts.
+- **Limited features** ship inside `@supports` or as a pure enhancement, and the fallback is looked at in a browser that lacks the feature.
+
 ## Pitfalls
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| A `[data-theme="dark"]` section shows dark text on dark background | `color` inherits as an already-computed value from the light parent | Re-declare `color: var(--text); background-color: var(--bg)` on every theme scope (the starter does) |
+| A `[data-theme="dark"]` section shows dark text on dark background | `color` inherits as an already-computed value from the light parent | Re-apply `color: var(--text); background-color: var(--bg)` on every theme scope (the starter does) |
+| A scoped dark section keeps light role colours | The role was registered with `@property`, or written as two theme blocks without the scoped selector | Keep themed roles unregistered `light-dark()` values; the scope sets only `color-scheme` (§16) |
+| `light-dark()` always returns the light side | No `color-scheme` on the element or its ancestors | `:root { color-scheme: light dark; }` |
 | Child with `data-brand` or new `--brand-h` keeps the old brand color | Custom properties resolve `var()` where declared, then inherit fixed values; ramps declared on `:root` do not recompute | Switch brand on `<html>`, or re-declare the derived ramp + semantic tokens on the scoped selector |
-| Component tokens on `:root` ignore a scoped dark section | `:root { --btn-bg: var(--primary) }` froze the light value | Declare theme-dependent component tokens on the component selector |
-| Shadows look identical in scoped dark | Shadow tokens built from `--shadow-color` on `:root` only | Declare shadow tokens on `:root, [data-theme]` (starter does) |
-| Tailwind output contains `--radius-md: var(--radius-md)`; tokens break when loaded inside a layer before `theme` | `@theme inline` re-emits same-name mappings as self-references | Use `@theme inline reference` (emits nothing, utilities still point at the token; tested 4.3.3) |
-| `[object Object]` or hex instead of OKLCH in Style Dictionary output | 2025.10 `duration` objects unsupported by `time/seconds`; `color/css` converts to hex | Custom `duration/css` transform + `color/oklch` (§5) |
+| Shadows look identical in scoped dark | Shadow built from a theme-specific number (an alpha or strength variable) that only `:root` declares | Build shadows from colour tokens that use `light-dark()` (`--shadow-ink`, `--edge`): they resolve where the shadow is painted |
+| Double edge on menus and dialogs | A CSS `border` under an elevation token that already carries the `--edge` ring | Drop the border on surfaces that use `--elevation-popover` / `-dialog` / `-toast` |
+| Tailwind output contains `--radius-md: var(--radius-md)`; tokens break when loaded inside a layer before `theme` | `@theme inline` re-emits same-name mappings as self-references | Use `@theme inline reference` (emits nothing, utilities still point at the token; tested 4.3.5) |
+| `[object Object]` or hex instead of OKLCH in Style Dictionary output | Style Dictionary below 5.7 cannot read 2025.10 `duration` objects; `color/css` converts to hex | Upgrade to ≥ 5.7.1; swap `color/css` for `color/oklch` (§5) |
 | Ramp steps look different on sRGB vs P3 screens, or two steps look identical | OKLCH chroma beyond sRGB: P3 screens show it, sRGB screens gamut-map it | Keep `--brand-c` under the per-hue limit in the starter header (yellow ~0.11, cyan ~0.09) |
 | Hover style sticks after tap on phones | `:hover` applies on touch | Wrap hover in `@media (hover: hover)` |
 | Disabled button can't explain itself | `disabled` removes it from focus order and tooltips | `aria-disabled="true"` + prevent action, or show the reason inline |
 | Dialog under a sticky header | z-index arms race | Native `<dialog>`/popover top layer; named z scale for the rest |
+| A container style query changes nothing | The rule inside it is less specific than the rule it should override | Same selector inside the `@container style()` block (§16) |
+| Every screen looks like the component library's demo | Only primitives and roles were themed | Set the expression layer (§2) before building screens |
 | Tokens Studio → Figma variables silently skip tokens | Variables reject multi-value tokens, "AUTO", %, > 5,000 per collection | Keep composites in Styles; split collections |
 
 ## Sources
@@ -422,5 +481,14 @@ Handoff:
 - Lucide design principles — https://lucide.dev/contribute/icon-design-guide · Tabler Icons — https://github.com/tabler/tabler-icons
 - Phosphor — https://github.com/phosphor-icons/homepage · Material Symbols — https://developers.google.com/fonts/docs/material_symbols · SF Symbols — https://developer.apple.com/sf-symbols/
 - CSS Color 4 (gamut mapping, JND 0.02) — https://www.w3.org/TR/css-color-4/
+- Browser versions and Baseline status (§16) — https://github.com/mdn/browser-compat-data · https://webstatus.dev/
+- MDN light-dark() — https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark · @property — https://developer.mozilla.org/en-US/docs/Web/CSS/@property · @layer — https://developer.mozilla.org/en-US/docs/Web/CSS/@layer
+- Lightning CSS transpilation — https://lightningcss.dev/transpilation.html
+- Josh W. Comeau, Designing Beautiful Shadows in CSS (layered, tinted, one light source) — https://www.joshwcomeau.com/css/designing-shadows/
+- Google Design, Expressive Material Design: Google's research — https://design.google/library/expressive-material-design-google-research
+- Material Components Android, Motion and Shape theming docs (spring tokens, corner scale) — https://github.com/material-components/material-components-android/blob/master/docs/theming/Motion.md · https://github.com/material-components/material-components-android/blob/master/docs/theming/Shape.md
+- Carbon type sets (productive and expressive) — https://carbondesignsystem.com/elements/typography/type-sets/
+- Radix Colors, Understanding the scale — https://www.radix-ui.com/colors/docs/palette-composition/understanding-the-scale
+- Fluent 2 materials — https://fluent2.microsoft.design/material
 - Project Wallace tokens analyzer — https://www.projectwallace.com/design-tokens · CSS Stats — https://cssstats.com/
 - stylelint-declaration-strict-value — https://github.com/AndyOGo/stylelint-declaration-strict-value

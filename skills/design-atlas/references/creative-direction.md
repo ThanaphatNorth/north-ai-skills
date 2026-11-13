@@ -1,6 +1,6 @@
 # Creative direction: from brief to a cinematic concept
 
-> Read when: the user asks for something creative, different, "wow", "สวยอลัง", award-level, immersive or "like <award site>"; any landing, brand, campaign, launch or portfolio page; a design came out "ordinary"; Step 4 (direction) and Step 6 (signature experience) of the design process.
+> Read when: the user asks for something creative, different, "wow", award-level, immersive or "like <award site>"; any landing, brand, campaign, launch or portfolio page; a design came out "ordinary"; Step 4 (direction) and Step 6 (signature experience) of the design process.
 
 **Contents:** 1 Ambition dial (+ context-of-use gate) · 2 Concept before style · 3 The safe / bold / wild ladder · 4 Storyboard the scroll like film · 5 Art direction for cinematic web · 6 Signature mechanics → recipes · 7 Why it looks ordinary (and the move for each) · 8 Keep it usable and fast · 9 QA for cinematic pages · Pitfalls · Sources
 
@@ -10,13 +10,13 @@ Set it in the brief and write it down; every later choice follows it.
 
 | Dial | What it means | Motion level (`product-patterns.md`) | Typical surfaces |
 |---|---|---|---|
-| **calm** | Polished, conventional, fast. Craft lives in type, spacing, states. | none / subtle | Product UI, dashboards, checkout, settings, admin |
+| **calm** | Polished, conventional, fast. Craft lives in type, spacing, light and states, done exactly (`visual-craft.md`). | none / subtle | Product UI, dashboards, checkout, settings, admin |
 | **bold** | Strong art direction (one unmistakable look), kinetic type, 1–2 scroll set pieces, rich hover/press. | expressive | Marketing sites, e-commerce storefronts, SaaS landing |
 | **cinematic** | One concept carried through a scroll story with acts, an intro sequence, a signature mechanic the user drives, a payoff reveal. | immersive | Launches, brand stories, campaigns, portfolios, flagship landing pages |
 
 Defaults:
 - Marketing, brand, launch, portfolio, campaign, storefront home: **bold at minimum**. A plain hero + three cards is a failure for these, not a safe choice.
-- The user says creative / wow / อลัง / แตกต่าง / "like jongque.com, Lusion, Apple" / immersive → **cinematic**.
+- The user says creative / wow / different / immersive / "like <an award site>" (Lusion, Apple product pages) → **cinematic**.
 - Inside one site the dial can differ by surface: cinematic home, bold product pages, calm checkout.
 
 **Context-of-use gate (overrides the defaults above).** Before raising the dial, answer three questions about the most urgent persona:
@@ -26,21 +26,21 @@ Defaults:
 
 **Excited hurry** (a limited drop at 20:00, a flash sale, ticket release, a live event) is not distress: keep the dial, but the primary action (buy, enter the raffle, set a reminder) and the honest countdown sit in the first viewport, and a small persistent pill carries the action through the story.
 
-Cinematic storytelling can still serve these brands on **secondary** surfaces people choose to explore without urgency — a brand campaign, the "about us" story, an annual report, recruitment — with the primary CTA and nav reachable from the first screen. Fear-based story beats ("2 AM, a fever…") need care in regulated categories: health and finance advertising is regulated in most markets (Thailand included); confirm claims and tone with the client's legal team.
+Cinematic storytelling can still serve these brands on **secondary** surfaces people choose to explore without urgency — a brand campaign, the "about us" story, an annual report, recruitment — with the primary CTA and nav reachable from the first screen. Fear-based story beats ("2 AM, a fever…") need care in regulated categories: health and finance advertising is regulated in most markets; confirm claims and tone with the client's legal team.
 
 ## 2. Concept before style
 
-A style is how it looks; a **concept** is the idea the whole page enacts. Award-level sites start from the idea. Run these five steps and write each answer in one line.
+A style is how it looks; a **concept** is the idea the whole page enacts. Award-level sites start from the idea, and the idea starts from the subject: before the five steps, collect ten real artefacts of the trade and write down its vernacular (`ai-tells.md` §4–5). A concept built from that material cannot be reused for another product, which is the difference between designed and generated. Run these five steps and write each answer in one line.
 
 1. **Brand truth** — what the audience feels, from the Step 2 insights. "At 2 AM a child has a fever and nobody is awake."
 2. **Change** — the before → after the product creates: dark → light, chaos → order, alone → together, dull → radiant, raw → refined, closed → open, small → vast, noise → signal.
 3. **Metaphor** — a physical image of that change. A light reaching you in the dark; ingredients assembling into a jar; a thread weaving a garment; a lens pulling focus; water rising; a city waking; a seed becoming a forest.
-4. **Signature mechanic** — the one interaction that *enacts* the metaphor and that the user drives: scrolling draws the light; scrolling assembles the product; the cursor is a torch; dragging stirs the liquid. The user's own input causes the transformation — that is what makes it memorable.
-5. **Payoff** — the moment the change completes and the call to action appears inside it (the dawn floods the screen and says "ไม่ต้องรอเช้า"; the jar closes and becomes the buy button).
+4. **Signature mechanic** — the one interaction that *enacts* the metaphor and that the user drives: scrolling draws the light; scrolling assembles the product; the cursor is a torch; dragging stirs the liquid. Take it from what the object does in the hand (paper is pulled out, a lid lifts, a stamp comes down): that is where scroll and parallax get their job (`ai-tells.md` §6). The user's own input causes the transformation — that is what makes it memorable.
+5. **Payoff** — the moment the change completes and the call to action appears inside it (the dawn floods the screen and says "You don't have to wait for morning"; the jar closes and becomes the buy button).
 
 **Done when** the five lines fit in a tweet, a stranger could sketch the hero from them, and the mechanic would make no sense for a competitor.
 
-**Mine the brand's own assets first.** The rows below are examples, not answers — copying a row makes every serum page the same. In tests, the strongest mechanics came from the logo's own shapes: a lime slash became long-exposure light streaks (sneakers), a drop and a ring became a falling serum drop and its ripples (beauty), an orange dome and eight cells became a rice pot with eight dishes gathering round (social cooking), a squircle and a dot became a path that closes into the logo (clinic). Look at the logo, the product's physical form, the moment of use and the culture ("กินข้าวยัง?") before reaching for the table.
+**Mine the brand's own assets first.** The rows below are examples, not answers — copying a row makes every serum page the same. In tests, the strongest mechanics came from the logo's own shapes: a lime slash became long-exposure light streaks (sneakers), a drop and a ring became a falling serum drop and its ripples (beauty), an orange dome and eight cells became a rice pot with eight dishes gathering round (social cooking), a squircle and a dot became a path that closes into the logo (clinic). Look at the logo, the product's physical form, the moment of use and the culture it lives in (the everyday greeting, the ritual around the product) before reaching for the table.
 
 | Product | Truth → change | Metaphor | Signature mechanic | Payoff |
 |---|---|---|---|---|
@@ -55,8 +55,9 @@ A style is how it looks; a **concept** is the idea the whole page enacts. Award-
 | Online course | confusion → clarity | a lens pulling focus | blurred, noisy type sharpens as you progress (filter + mask) | crisp certificate and enrol button |
 | Real estate | listings → a home | a door opening into light | zoom-through the door into the interior (`examples/zoom-through/`) | the room at golden hour; book a viewing |
 | Dev tool | chaos → flow | tangled wires straightening | knotted SVG lines untangle into parallel tracks on scroll | clean pipeline diagram; install command |
-| Thai restaurant | hunger → warmth | the kitchen fire | darkness, a flame; scroll fans the fire, dishes appear in its light | table set; reserve button |
-| Booking platform (jongque) | business at the mercy of apps → owning its bookings | a storefront that becomes yours | pinned hero swaps "Your ___." words and images per business type, then the card becomes the full storefront (`examples/word-swap-hero/`) | your storefront, live; start free trial |
+| Neighbourhood restaurant | hunger → warmth | the kitchen fire | darkness, a flame; scroll fans the fire, dishes appear in its light | table set; reserve button |
+| Invoicing for studios | paperwork nobody looks at → a document with your hand in it, paid | the invoice book: white original, pink and yellow copies, the PAID stamp | scrolling pulls each copy out from under the sheet above; paying the client's copy brings the stamp down (`examples/craft-finish/`) | the stamped copy; "Make an invoice" on the perforated slip |
+| Booking platform | business at the mercy of apps → owning its bookings | a storefront that becomes yours | pinned hero swaps "Your ___." words and images per business type, then the card becomes the full storefront (`examples/word-swap-hero/`) | your storefront, live; start free trial |
 
 ## 3. The safe / bold / wild ladder
 
@@ -96,7 +97,7 @@ Pacing rules:
 
 Storyboard template (fill one row per beat and keep it in the spec):
 
-| Beat | Scroll % | Visual | Motion (what moves, easing) | Copy (TH / EN) | Reduced-motion frame | Mobile change |
+| Beat | Scroll % | Visual | Motion (what moves, easing) | Copy (each language shipped) | Reduced-motion frame | Mobile change |
 |---|---|---|---|---|---|---|
 
 ## 5. Art direction for cinematic web
@@ -105,7 +106,7 @@ Storyboard template (fill one row per beat and keep it in the spec):
 
 **Depth.** 3–5 planes moving at different rates; far planes blurred and darker; a vignette (radial dark edges) to focus the eye; 6–8% film grain overlay to kill gradient banding and add a filmic surface. When the payoff turns light, fade the vignette and grain out with it, or the corners look dirty.
 
-**Type as image.** One display size that is genuinely huge (12–20vw) for the hook or payoff; kinetic reveals by word (split Thai with `Intl.Segmenter`, never per character — tone marks detach); Latin display tracking −0.02 to −0.04em, Thai tracking 0.
+**Type as image.** One display size that is genuinely huge (12–20vw) for the hook or payoff; kinetic reveals by word (split with `Intl.Segmenter`, never per character outside plain Latin — combining marks detach); display tracking −0.02 to −0.04em for Latin, Greek and Cyrillic, 0 for other scripts (`--tracking-display`).
 
 **Colour.** One atmosphere colour + one light colour for most of the story; the payoff flips the palette (dark → dawn, monochrome → full colour) — the release is felt through colour.
 
@@ -146,9 +147,12 @@ More techniques: `scroll-parallax.md` (pinning, image sequences, step tracks, ho
 | Symmetric 12-column grid in every section | Break the grid for the hook and payoff; full-bleed, overlap, off-centre |
 | Products, food or people drawn as vector clip-art | Photography or photoreal renders/generations of those exact objects, lit like the scene |
 | Stock photos / generic 3D blobs | Generated plates in the scene's light, or no imagery — light and type are enough |
-| Copy as features ("Fast. Secure. Easy.") | Copy as story beats that the mechanic reveals ("ตีสอง ลูกตัวร้อน") |
+| Copy as features ("Fast. Secure. Easy.") | Copy as story beats that the mechanic reveals ("2 AM. Her forehead is burning.") |
 | Same pace top to bottom | Acts with pins, holds and empty viewports |
 | The CTA appears in a footer band | The CTA lives inside the payoff moment |
+| It reads as made by an AI, even after a restyle | Nothing on the page depends on the subject; one stock look was swapped for another. Rebuild from the subject's artefacts and run the four tests (`ai-tells.md` §4, §8) |
+| The concept is strong but the page still looks cheap | Default finish: one grey shadow, body tracking on display type, mathematically centred icons, no press feedback. Run the seven passes and the beauty bar (`visual-craft.md` §1, §9) |
+| Every page of the site looks like a different brand, or like the component library | The direction never reached the tokens. Write it into the expression layer: display face, shape, colour moment, motion personality (`design-systems.md` §2) |
 
 ## 8. Keep it usable and fast
 
@@ -183,7 +187,7 @@ Non-negotiables for a cinematic page:
 | Reveal "pops" as a hard white disc | `clip-path: circle()` has a hard edge | Feathered `mask-image: radial-gradient(circle at x y, #000 r, transparent r+feather)` |
 | Story stutters or races on fast wheels | Rendering straight from `scrollY` | Lerp the progress toward the scroll target with a time-constant (frame-rate independent `1 − e^(−dt/τ)`) |
 | Headless screenshots show the wrong scene | Smoothing, smooth-scroll libraries, or a frozen rAF in hidden tabs | Capture mode: no smoothing, no rAF, `window.__frame(dt)` stepped by the harness |
-| Thai headline breaks mid-word over the scene | Browser dictionary splits compounds | `<span class="nw">โรงพยาบาล</span>`, check every beat at 390 px (`typography-layout.md`) |
+| A headline breaks mid-phrase or mid-word over the scene | The phrase must stay together, or (in scripts without word spaces) the browser's dictionary split a compound | Wrap the short phrase in a nowrap span (`<span class="nw">New York</span>`), check every beat at 390 px, `shoot.mjs --keep-words` (`typography-layout.md`, Multi-script typography) |
 
 ## Sources
 
@@ -195,7 +199,7 @@ Non-negotiables for a cinematic page:
 - MDN — mask-image — https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image
 - MDN — CanvasRenderingContext2D.globalCompositeOperation — https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
 - MDN — Intl.Segmenter — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
-- jongque.com (user reference: ~10 s intro ending inside the product mock-up, pinned hero playing a real booking, GSAP 3.15 + Lenis, static fallback when the animation chunk fails) — https://www.jongque.com/
+- jongque.com (~10 s intro ending inside the product mock-up, pinned hero playing a real booking, GSAP 3.15 + Lenis, static fallback when the animation chunk fails) — https://www.jongque.com/
 - Bruno Simon portfolio (opens dark; a ring of light draws itself, then the world appears inside it; FWA of the Year) — https://bruno-simon.com/
 - Lando Norris (Awwwards Site of the Year 2025) — https://landonorris.com/
 - Apple AirPods Pro (scroll-scrubbed product storytelling) — https://www.apple.com/airpods-pro/

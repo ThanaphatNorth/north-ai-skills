@@ -9,8 +9,9 @@
 // Per width it loads the page, waits for fonts, scrolls the whole page in steps (so play-once
 // reveals fire), returns to the top, then saves a full-page PNG (or viewport only) and prints
 // probes as JSON: horizontal overflow and its widest offenders, elements still invisible after
-// the scroll pass, text clipped by an overflow-hidden box, Thai words split across two lines
-// (Intl.Segmenter word boundaries vs the rendered line boxes), interactive targets under 24x24 px,
+// the scroll pass, text clipped by an overflow-hidden box, words split across two lines (mid-word breaks
+// in space-separated scripts; Intl.Segmenter word boundaries vs the rendered line boxes in scripts written
+// without word spaces; phrases named with --keep-words a,b,c), interactive targets under 24x24 px,
 // loaded fonts, <html lang>, h1 count, images without alt, console errors. Exit code 1 when a probe fails.
 // Viewport-only jobs ("full": false) skip the slow full-page scroll pass unless "scrollPass": true.
 //
@@ -39,18 +40,16 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-const VERSION = '2026.10.10-6';
-// Thai compounds seen broken mid-word by Chrome's dictionary in design-atlas tests (Oct 2026)
-const THAI_COMPOUNDS = ['วิดีโอคอล', 'มือถือ', 'โรงพยาบาล', 'ตัวเอง', 'ใบอนุญาต', 'วันเดียวกัน', 'ส่วนบุคคล', 'รอคิว',
-  'ไนอาซินาไมด์', 'ใช้คู่กัน', 'กลับมา', 'หน้าประตู', 'เสี้ยววินาที', 'ชั่วโมง', 'ลำคอ', 'ก่อน', 'คืนเดียว', 'เคลื่อนไหว']
+const VERSION = '2026.11.13-1';
 const args = process.argv.slice(2);
 if (args.includes('--version')) { console.log('shoot.mjs ' + VERSION); process.exit(0); }
-if (args.includes('--thai-words')) THAI_COMPOUNDS.push(...args[args.indexOf('--thai-words') + 1].split(',').filter(Boolean));
+// Phrases that must stay on one line (compounds, brand and product names): --keep-words "New York,Acme Pro"
+const KEEP_WORDS = args.includes('--keep-words') ? args[args.indexOf('--keep-words') + 1].split(',').map((w) => w.trim()).filter(Boolean) : [];
 const flag = (n) => args.includes(n);
 const opt = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
-const [url, outDir] = args.filter((a, i) => !a.startsWith('--') && !(i > 0 && args[i - 1].startsWith('--') && ['--widths', '--jobs', '--timeout', '--story', '--at', '--sheet', '--thai-words'].includes(args[i - 1])));
+const [url, outDir] = args.filter((a, i) => !a.startsWith('--') && !(i > 0 && args[i - 1].startsWith('--') && ['--widths', '--jobs', '--timeout', '--story', '--at', '--sheet', '--keep-words'].includes(args[i - 1])));
 if (!url || !outDir) {
-  console.error('usage: node shoot.mjs <url> <outDir> [--widths 320,390,768,1280] [--dark] [--reduced] [--viewport-only] [--jobs file.json]');
+  console.error('usage: node shoot.mjs <url> <outDir> [--widths 320,390,768,1280] [--dark] [--reduced] [--viewport-only] [--jobs file.json] [--keep-words a,b,c]');
   process.exit(2);
 }
 mkdirSync(outDir, { recursive: true });
@@ -202,37 +201,50 @@ try {
         if (![...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return false;
         return e.scrollHeight > e.clientHeight + 2 || e.scrollWidth > e.clientWidth + 2;
       }).slice(0, 6).map((e) => label(e) + ' ' + e.clientWidth + 'x' + e.clientHeight + ' (content ' + e.scrollWidth + 'x' + e.scrollHeight + ')');
-      const thaiSplit = [];
-      // Chrome's line breaker and Intl.Segmenter share ICU's Thai dictionary, so breaks inside a segmenter
-      // word only catch forced breaks; real-world bad breaks fall where that dictionary is wrong. Also check
-      // compounds seen split in Chrome (extend with --thai-words a,b,c).
-      const compounds = ${JSON.stringify(THAI_COMPOUNDS)};
-      const spansLines = (node, i, len) => { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + len);
-        const tops = [...new Set([...r.getClientRects()].filter((q) => q.width > 0).map((q) => Math.round(q.top)))];
+      // A word painted on two lines is a break the reader trips on. Three checks:
+      //  1. phrases from --keep-words (compounds, brand and product names), in any script;
+      //  2. scripts written without word spaces and broken by dictionary (Thai, Lao, Myanmar, Khmer): Intl.Segmenter
+      //     word boundaries vs the rendered line boxes. The browser's line breaker uses the same ICU dictionary, so
+      //     this only catches forced breaks; name the compounds a native reader flags in --keep-words;
+      //  3. space-separated scripts: a word broken with no hyphen (overflow-wrap: anywhere, word-break: break-all,
+      //     or a word wider than its column).
+      const wordSplits = [];
+      const keep = ${JSON.stringify(KEEP_WORDS)};
+      const NOSPACE = /[\u0E00-\u0EFF\u1000-\u109F\u1780-\u17FF]/;
+      const SPACED = /[A-Za-z\u00C0-\u024F\u0370-\u06FF\u0900-\u0D7F\u10A0-\u10FF\u1E00-\u1FFF][A-Za-z\u00C0-\u024F\u0300-\u036F\u0370-\u06FF\u0900-\u0D7F\u10A0-\u10FF\u1E00-\u1FFF'\u2019]+/g;
+      const lineTops = (node, i, len) => { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + len);
+        return [...new Set([...r.getClientRects()].filter((q) => q.width > 0).map((q) => Math.round(q.top)))]; };
+      const spansLines = (node, i, len) => { const tops = lineTops(node, i, len);
         return tops.length > 1 && Math.max(...tops) - Math.min(...tops) > 4; };
-      { const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n;
-        while ((n = walker.nextNode()) && thaiSplit.length < 12) {
-          if (!/[\u0E00-\u0E7F]/.test(n.data) || !n.parentElement || n.parentElement.closest('script,style,[aria-hidden="true"]')) continue;
-          for (const c of compounds) { let i = n.data.indexOf(c); while (i >= 0) { if (spansLines(n, i, c.length)) thaiSplit.push(c); i = n.data.indexOf(c, i + 1); } }
-        } }
-      if (typeof Intl.Segmenter === 'function') {
-        const seg = new Intl.Segmenter('th', { granularity: 'word' });
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        let n, budget = 6000;
-        while ((n = walker.nextNode()) && thaiSplit.length < 12 && budget > 0) {
+      const langOf = (e) => { const l = e.closest('[lang]'); return (l && l.lang) || document.documentElement.lang || undefined; };
+      const segmenters = {};
+      const segmenter = (lang) => { if (!(lang in segmenters)) { try { segmenters[lang] = new Intl.Segmenter(lang, { granularity: 'word' }); }
+        catch (e) { segmenters[lang] = new Intl.Segmenter(undefined, { granularity: 'word' }); } } return segmenters[lang]; };
+      { const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n, budget = 6000;
+        while ((n = walker.nextNode()) && wordSplits.length < 12 && budget > 0) {
           const p = n.parentElement;
-          if (!p || !/[\u0E00-\u0E7F]/.test(n.data) || p.closest('script,style,[aria-hidden="true"]')) continue;
-          for (const w of seg.segment(n.data)) {
-            if (--budget <= 0) break;
-            if (!w.isWordLike || w.segment.length < 2 || !/[\u0E00-\u0E7F]/.test(w.segment)) continue;
-            const r = document.createRange(); r.setStart(n, w.index); r.setEnd(n, w.index + w.segment.length);
-            const tops = [...new Set([...r.getClientRects()].filter((q) => q.width > 0).map((q) => Math.round(q.top)))];
-            if (tops.length > 1 && Math.max(...tops) - Math.min(...tops) > 4) thaiSplit.push(w.segment);
+          if (!p || !n.data.trim() || p.closest('script,style,noscript,template,[aria-hidden="true"]')) continue;
+          for (const c of keep) { let i = n.data.indexOf(c); while (i >= 0) { if (spansLines(n, i, c.length)) wordSplits.push(c); i = n.data.indexOf(c, i + 1); } }
+          if (!spansLines(n, 0, n.data.length)) continue;   // the whole node sits on one line: nothing to split
+          if (NOSPACE.test(n.data) && typeof Intl.Segmenter === 'function') {
+            for (const w of segmenter(langOf(p)).segment(n.data)) {
+              if (--budget <= 0) break;
+              if (!w.isWordLike || w.segment.length < 2 || !NOSPACE.test(w.segment)) continue;
+              if (spansLines(n, w.index, w.segment.length)) wordSplits.push(w.segment);
+            }
+          } else {
+            const st = getComputedStyle(p);
+            if (st.hyphens === 'auto' || /:\\/\\/|www\\.|@/.test(n.data) || p.closest('code,pre,kbd,samp')) continue;
+            SPACED.lastIndex = 0; let m;
+            while ((m = SPACED.exec(n.data)) && budget > 0) {
+              budget--;
+              if (m[0].includes('\u00AD')) continue;   // soft hyphen: the break was chosen by the author
+              if (spansLines(n, m.index, m[0].length)) wordSplits.push(m[0]);
+            }
           }
-        }
-      }
+        } }
       return {
-        clippedText: clipped, thaiWordSplits: thaiSplit,
+        clippedText: clipped, wordSplits: [...new Set(wordSplits)],
         overflowX: Math.max(document.documentElement.scrollWidth, innerWidth) - W, overflowOffenders: wide,
         invisibleAfterScroll: invisible, smallTargets: small,
         fonts: [...new Set([...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')))],
@@ -252,7 +264,7 @@ try {
     if (probe.overflowX > 0) problems.push(`horizontal overflow ${probe.overflowX}px`);
     if (probe.invisibleAfterScroll.length) problems.push('content still invisible after scrolling');
     if (probe.clippedText.length) problems.push('text clipped by an overflow box');
-    if (probe.thaiWordSplits.length) problems.push('Thai words split across lines (protect with .nw or <wbr>)');
+    if (probe.wordSplits.length) problems.push('words split across lines (keep the phrase in a nowrap span, add <wbr> or &shy; at the right break, or fix overflow-wrap/word-break)');
     if (probe.smallTargets.length) problems.push('targets under 24x24');
     if (!probe.lang) problems.push('<html> has no lang');
     if (probe.h1Count !== 1) problems.push(`${probe.h1Count} h1 elements`);

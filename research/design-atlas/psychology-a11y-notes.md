@@ -201,15 +201,6 @@ Detail pages read:
 - ADA Title II web rule: DOJ interim final rule published 2026-04-20 (91 FR 20902) extends compliance: ≥50,000 population 2026-04-24 → 2027-04-26; <50,000 and special districts 2027-04-26 → 2028-04-26. Standard unchanged WCAG 2.1 AA. Comments closed 2026-06-22. (https://www.federalregister.gov/documents/2026/04/20/2026-07663/extension-of-compliance-dates-for-nondiscrimination-on-the-basis-of-disability-accessibility-of-web seen in search results, page blocked to fetch; secondary: https://www.jdsupra.com/legalnews/doj-extends-title-ii-ada-web-2176958/ , https://www.levelaccess.com/blog/the-ada-title-ii-extension-what-it-doesnt-change/)
 - Section 508 (https://www.access-board.gov/ict/): Revised 508 Standards (final rule 2017-01-18) incorporate WCAG 2.0 A and AA (E205.4); applied to non-web documents and software with 4 SC excluded (2.4.1, 2.4.5, 3.2.3, 3.2.4); legacy ICT safe harbour for ICT unchanged since 2018-01-18.
 
-## 21. Thailand
-
-- TIS 2565-2555 = Thai Industrial Standard adopting WCAG 2.0 (adopted 2013). NSTDA is W3C Lead Translation Organization for WCAG 2.2 Thai (approved 2025-07-23); TISI update planned based on ISO/IEC 40500:2025 (https://lists.w3.org/Archives/Public/w3c-translators/2025JulSep/0017.html).
-- Thai WCAG 2.2 translation published at NECTEC, dated 28 Dec 2025 (https://www.nectec.or.th/standard/WCAG/REC-WCAG22-20241212-TH/); both versions ready for review 2026-01-08 (https://lists.w3.org/Archives/Public/w3c-translators/2026JanMar/0000.html).
-- TWCAG 2025 (Thai Web Content Accessibility Guidelines 2025), by Digital Council of Thailand (สภาดิจิทัลฯ) with Thai Internet Foundation (มูลนิธิอินเทอร์เน็ตร่วมพัฒนาไทย) and ThaiHealth (สสส.); updates TWCAG 2022; based on WCAG 2.2; for websites and mobile apps (PDF hosted at https://digital.hcu.ac.th/wp-content/uploads/2025/05/Accessibility-Guideline-2025-V.3.1-Final.pdf; official copy expected at www.dct.or.th — not verified).
-- สดช. (ONDE) WCAG award for government sites, May 2023: 121 agencies entered, 50 passed; judging = manual 13-item review + automated (achecker, W3C validator, zero errors) + testing by blind and deaf users (https://www.thaipbs.or.th/now/content/191). Judge: some sites embed their own reader → audio conflicts with users' screen readers.
-- NVDA translated into Thai (https://download.nvaccess.org/documentation/userGuide.html, Internationalization list). VoiceOver supports Thai.
-- Not verified: any Thai-built screen reader; quality of Thai word segmentation in each screen reader.
-
 ## 22. Tools
 
 - axe DevTools (https://www.deque.com/axe/devtools/): extension, Intelligent Guided Tests, linter, CI; axe-core open source; Lighthouse uses axe-core since 2017.

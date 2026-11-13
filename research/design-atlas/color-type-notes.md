@@ -82,12 +82,7 @@ Collected 2026-10-10. Provenance record for `skills/design-atlas/references/colo
 - NN/g visual hierarchy: color/contrast, scale, grouping; simple designs ≤ 2 primary + 2 secondary colors; ≤3 contrast variations; ≤3 sizes (web body ~14–16px, subheads 18–22, headers ≤32); ≤2 large elements; bright warm colors for warnings; squint/blur test (5–10px blur). — https://www.nngroup.com/articles/visual-hierarchy-ux-definition/
 - Elliot (2015) Frontiers in Psychology 6:368 mini review: color & psychological functioning research at "nascent stage", caution on conclusions and application. — https://www.frontiersin.org/articles/10.3389/fpsyg.2015.00368/full
 - Labrecque & Milne (2012) "Exciting red and competent blue", J. Academy of Marketing Science 40(5) 711–727: hue/saturation/value relate to brand personality perceptions (4 studies). (abstract-level only) — https://colab.ws/articles/10.1007%2Fs11747-010-0245-y
-- Thailand:
-  - Day colors: Sun red, Mon yellow, Tue pink, Wed green (night grey), Thu orange, Fri (light) blue, Sat purple; Monday yellow linked to Rama IX & Rama X (born Monday); yellow "most associated with royalty"; royal flags of Rama X and Rama IX are yellow; Queen Sirikit (Friday) blue, Queen Suthida (Saturday) purple. — https://www.thethailandlife.com/color-day-thailand ; also https://iamkohchang.com/blog/colors-of-the-day-thailand.html (search result)
-  - Flag (1917): "red for the land and people, white for religions and blue for the monarchy". — https://en.wikipedia.org/wiki/Flag_of_Thailand
-  - Red ink for names: bad luck / associated with the dead (Chinese-rooted, persists in Thai society). — Thairath (search result, page timed out): https://en.thairath.co.th/horoscope/belief/2947636 ; USC folklore archive https://folklore.usc.edu/chinese-red-ink-superstition/
-  - Mourning: black main, white also; 2016 national mourning: black/white for 30 days, civil servants a year; visitors advised muted (black, white, grey, dark blue), avoid loud colors. — https://www.thailandstarterkit.com/moving/what-to-do-during-the-mourning-period-in-thailand/ ; https://my.trip.com/guide/info/thailand-national-mourning.html (search results)
-  - Red-shirt/yellow-shirt political colors noted in culture-guide search results (not opened in detail; treat as background).
+
 - Color vision deficiency: "About 1 in 12 men"; red-green most common (NEI) — https://www.nei.nih.gov/learn-about-eye-health/eye-conditions-and-diseases/color-blindness ; Okabe & Ito: 8% Caucasian, 5% Asian, 4% African males red-green — https://jfly.uni-koeln.de/color/
 - Okabe–Ito palette hex (consistent across secondary sources; Wong 2011 Nature Methods 8:441): #E69F00 orange, #56B4E9 sky blue, #009E73 bluish green, #F0E442 yellow, #0072B2 blue, #D55E00 vermillion, #CC79A7 reddish purple, #000000. — https://rdrr.io/cran/factoextra/man/factoextra_palette.html (search result)
 
@@ -126,7 +121,7 @@ Thai families (subsets / axes / weights / designer / added):
 - IBM Plex Sans Thai Looped — static 100–700; looped ("formal", 2019-04-05)
 - Anuphan — wght100–700 variable; Cadson Demak; loopless; Thai drawn from IBM Plex Sans Latin by Mint Tantisuwanna; includes Latin + Vietnamese
 - Sarabun — 100–800 + italics; Suppakit Chalermlarp; = "TH Sarabun New" (national fonts), used in the Government Gazette
-- Prompt — 100–900 + italics; Cadson Demak; loopless Thai + geometric Latin; similar glyphs ก ถ ภ ฤ ฦ, ฎ ฏ, บ ป, ข ช may confuse in very short texts
+- Prompt — 100–900 + italics; Cadson Demak; loopless Thai + geometric Latin; similar glyphs may confuse in very short texts
 - Kanit — 100–900 + italics; Cadson Demak; formal loopless, humanist + capsulated geometric, flat terminals
 - Mitr — 200–700; Cadson Demak; loopless, rounded terminals, casual
 - Bai Jamjuree — 200–700 + italics; Cadson Demak; square sans (Eurostyle-inspired), headings & small passages
@@ -139,10 +134,10 @@ Thai families (subsets / axes / weights / designer / added):
 
 ## Thai typography research
 
-- Typotheque (Héctor Mangas), Bangkok early 2024, approved by Chulalongkorn University; 180 native readers; Exp1 distance reading N=41: looped easier overall, younger struggled more with looped / older with loopless; Exp2 continuous reading (300–350 chars) N=38: looped "small significant" speed advantage, no age effect, comprehension equal; Exp3 survey N=139 (ages 20–70): looped = "classical", "formal"; loopless = "modern", "unusual"; looped preferred for more text at all ages; loopless preferred only by younger participants for less text. Recommendation: looped for paragraph reading; for distance reading consider age. — https://www.typotheque.com/research/effects-of-loops-in-thai
+- Typotheque (Héctor Mangas), early 2024, approved by Chulalongkorn University; 180 native readers; Exp1 distance reading N=41: looped easier overall, younger struggled more with looped / older with loopless; Exp2 continuous reading (300–350 chars) N=38: looped "small significant" speed advantage, no age effect, comprehension equal; Exp3 survey N=139 (ages 20–70): looped = "classical", "formal"; loopless = "modern", "unusual"; looped preferred for more text at all ages; loopless preferred only by younger participants for less text. Recommendation: looped for paragraph reading; for distance reading consider age. — https://www.typotheque.com/research/effects-of-loops-in-thai
 - Loopless style introduced in the 1970s; looped/loopless ≠ serif/sans (Granshan article, search result) — https://granshan.com/insights/bridging-cultures-through-letters-typotheques-typographic-journey-in-thailand
 - IBM Plex Thai (Fontpad): looped familiar to older readers; loopless more relaxed; reduced stroke weight at junctions for even texture. — https://www.fontpad.co.uk/?p=1772 (search result)
-- r12a Thai orthography notes: Gecko/WebKit/Blink wrap on grapheme cluster boundaries; dictionary-based word lookup fails for compounds & proper names; spaces separate phrases; ZWSP U+200B adds break, WJ U+2060 prevents; wrong ZWSP insertion causes problems; opening punctuation not at line end, ๆ not at line start; Thai uses alphabetic baseline; marks stack; "Thai tends to adds more interline spacing than Latin text does"; justification adjusts spaces between phrases, inter-character in narrow columns; letter-spacing must split ำ (U+0E33). — https://r12a.github.io/scripts/thai/th
+- r12a Thai orthography notes: Gecko/WebKit/Blink wrap on grapheme cluster boundaries; dictionary-based word lookup fails for compounds & proper names; spaces separate phrases; ZWSP U+200B adds break, WJ U+2060 prevents; wrong ZWSP insertion causes problems; opening punctuation not at line end,  not at line start; Thai uses alphabetic baseline; marks stack; "Thai tends to adds more interline spacing than Latin text does"; justification adjusts spaces between phrases, inter-character in narrow columns; letter-spacing must split  (U+0E33). — https://r12a.github.io/scripts/thai/th
 - W3C Thai layout requirements (draft hub): "Spaces separate phrases, rather than words"; clusters surround base on up to 3 sides. — https://w3c.github.io/sealreq/thai/
 - MDN word-break: keep-all "Word breaks should not be used for CJK text. Non-CJK text behavior is the same as for normal"; auto-phrase experimental (Chrome 119). — https://developer.mozilla.org/en-US/docs/Web/CSS/word-break
 - Intl.Segmenter granularity grapheme/word/sentence, isWordLike; Baseline 2024 (April 2024). — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
@@ -162,5 +157,4 @@ Thai families (subsets / axes / weights / designer / added):
 - Inter dynamic-metrics tracking formula page is 404 (archived only) — not used.
 - Material 2 dark-theme numbers (#121212, overlay %) not fetchable (JS site); only the Android doc's qualitative statement used.
 - iOS dark systemBackground hex values not in fetched HIG text — not stated.
-- LINE Seed Sans TH loop style; whether Thailand's stock apps use red-up or green-up — not verified, omitted.
 - Thai line-height 1.6–1.8: practice guideline (r12a confirms Thai needs more interline space than Latin, gives no number).

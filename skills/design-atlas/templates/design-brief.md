@@ -27,9 +27,9 @@
 - *Why it matters:* ISO usability is only defined in a context of use. Frequency decides learnability vs efficiency; mobile-in-motion decides target size, contrast and offline handling.
 - *Default:* mobile, one-handed, interrupted sessions, variable connectivity; occasional use (optimize learnability over power features).
 
-**Q5. Abilities, language and literacy.** Age range, digital skill, languages (TH/EN/other), accessibility needs, domain expertise?
+**Q5. Abilities, language and literacy.** Age range, digital skill, languages and scripts, accessibility needs, domain expertise?
 - *Why it matters:* sets the copy level, type size, density and how much in-context help is needed.
-- *Default:* WCAG 2.2 AA; body text at least 16 px; plain language (sentences ≤ 25 words); Thai + English if the market is Thailand; no gesture-only actions.
+- *Default:* WCAG 2.2 AA; body text at least 16 px; plain language (sentences ≤ 25 words); the market's primary language(s); no gesture-only actions.
 
 **Q6. Platforms and devices.** Web (which browsers), iOS, Android, desktop app, tablet, kiosk? Smallest and largest screen? Native or cross-platform? Dark mode?
 - *Why it matters:* decides conventions (HIG vs Material vs web), navigation patterns and the layouts to produce (`platform-*.md`).
@@ -41,31 +41,35 @@
 
 **Q8. Brand assets.** Logo (SVG preferred; light/dark variants), brand colours (hex/OKLCH), fonts and licences, brand guidelines, imagery and illustration style, icon set, an existing design system or component library, Figma files? **Product, people and place photography** (or 3D/CAD for products)? If there is none: may we generate photoreal images, and with what budget?
 - *Why it matters:* reusing real assets avoids rework and off-brand output; licences decide which fonts you may ship. Without real photography a bold or cinematic page falls back to drawn placeholders that look fake — plan the imagery now (`ai-assets-higgsfield.md` "Photoreal stills pipeline": roughly 2–3 credits per 2K still).
-- *Default:* text wordmark placeholder; neutral palette with one accent (`color.md`); a free, Thai-capable font pairing if Thai is needed (`typography-layout.md`); an open-source icon set; for imagery, list every image slot with a prompt and quote the generation cost before spending. Mark everything "placeholder brand".
+- *Default:* text wordmark placeholder; neutral palette with one accent (`color.md`); a free font pairing that covers every needed script (`typography-layout.md`); an open-source icon set; for imagery, list every image slot with a prompt and quote the generation cost before spending. Mark everything "placeholder brand".
 
 **Q9. Competitors and references.** Which 2–4 products do users compare you with? 2–3 products or sites you love (and why)? Any you dislike (and why)?
 - *Why it matters:* competitors set users' expectations (shared conventions = mental model). References show taste faster than adjectives.
 - *Default:* pick the 2–3 category leaders from a search and tear them down (`user-research.md` §2, Step 2); use `inspiration.md` for references.
 
-**Q10. Tone and personality.** Three adjectives for the brand voice. Formal or casual? Humour allowed? In Thai: polite particles (ค่ะ/ครับ) or neutral? Visual mood (calm, bold, playful, premium, clinical)?
+**Q9b. Source material.** What real things belong to this subject and this brand: printed matter, packaging, signage, tools of the trade, the place, the archive, old versions of the product? Send photos or links (aim for ten).
+- *Why it matters:* a design whose decisions come from the subject's own material cannot be mistaken for a template or for machine-made work (`ai-tells.md`).
+- *Default:* collect ten artefacts of the trade yourself from public sources, list them in the spec with one line each, and mark the list ASSUMPTION until the client confirms it.
+
+**Q10. Tone and personality.** Three adjectives for the brand voice. Formal or casual? Humour allowed? Formality and honorific level per locale? Visual mood (calm, bold, playful, premium, clinical)?
 - *Why it matters:* drives copy, colour, type, motion and imagery (`styles-catalog.md`, `motion.md`).
-- *Default:* clear, warm, professional; no humour in errors or money flows; neutral Thai without gendered particles; visual intensity per Q10b.
+- *Default:* clear, warm, professional; no humour in errors or money flows; neutral register without gendered forms; visual intensity per Q10b.
 
 **Q10b. Creative ambition.** How far should this go: calm (polished, conventional), bold (one unmistakable look + a couple of scroll set pieces) or cinematic (a scroll story with an intro, a signature mechanic and a payoff, award-site level)? Any sites you love the feel of? Do people arrive worried or in a hurry?
 - *Why it matters:* sets the ambition dial and the context-of-use gate in `../references/creative-direction.md` §1; "make it beautiful" means different things at each level.
-- *Default:* marketing, brand, launch, storefront and portfolio pages → **bold**; the user says creative / wow / อลัง / names an award site → **cinematic**; product UI, checkout, and any surface where people arrive in distress (health symptoms, emergencies, money or legal trouble) → **calm or gentle bold**, with the primary action in the first viewport.
+- *Default:* marketing, brand, launch, storefront and portfolio pages → **bold**; the user says creative / wow / names an award site → **cinematic**; product UI, checkout, and any surface where people arrive in distress (health symptoms, emergencies, money or legal trouble) → **calm or gentle bold**, with the primary action in the first viewport.
 
 **Q11. Success metrics.** How will we know it worked? One business KPI (conversion, retention, tickets) and one UX metric (task success, time on task, SEQ/SUS/UMUX-Lite). Current baseline and target?
 - *Why it matters:* without a metric you can't prioritize or validate. HEART goals → signals → metrics (`ux-foundations.md` §11).
 - *Default:* task success ≥ 80% for the top task in a 5-user test; SEQ ≥ 5.5; for live products, completion rate of the core funnel step, compared before and after.
 
-**Q12. Constraints.** Tech stack and component library; deadline; budget; legal or regulatory requirements (PDPA consent, health/finance rules, accessibility law); content readiness; required integrations (LINE Login/OA, PromptPay/QR, payment gateway, maps, SSO).
+**Q12. Constraints.** Tech stack and component library; deadline; budget; legal or regulatory requirements (privacy and consent law, health/finance rules, accessibility law); content readiness; required integrations (local sign-in, messaging and payment providers, maps, SSO).
 - *Why it matters:* a design that can't be built, or that breaks the law, is waste. Integrations change flows (e.g. a QR payment needs a waiting/confirmation state).
 - *Default:* React + TypeScript with an accessible headless component library; standard consent for personal data; real content still to come, so design with realistic-length placeholder copy in every language.
 
-**Q13. Locale details.** Languages and the default language; date format (Buddhist Era years needed?), currency (฿), number, phone and address formats; right-to-left support needed?
-- *Why it matters:* locale bugs are UX bugs (wrong year, truncated Thai labels, phone validation rejecting local numbers).
-- *Default:* Thai and English UI with a language switch; DD/MM/YYYY in the Gregorian calendar unless the domain expects BE; ฿ with thousand separators; validation accepts spaces and dashes.
+**Q13. Locale details.** Languages and the default language; date format and calendar, currency, number, phone and address formats; right-to-left support needed?
+- *Why it matters:* locale bugs are UX bugs (wrong year, truncated labels in longer languages, phone validation rejecting local numbers).
+- *Default:* the user's locale via `Intl` for dates, numbers and currency, with ISO values in storage, and a language switch when more than one language ships; validation accepts spaces and dashes.
 
 **Q14. Scope and deliverable.** Which flows and screens are in scope? Which states (empty, loading, error, offline, permission)? Fidelity (wireframe, high-fidelity, coded)? Output format (code, Figma, HTML prototype, spec)? Who reviews it?
 - *Why it matters:* prevents both gold-plating and missing states.

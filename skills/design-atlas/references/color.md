@@ -1,6 +1,6 @@
 # Color
 
-> Read when: choosing or generating a palette, turning a logo or brand hex into UI colors, building tonal scales or design tokens, setting up dark mode, picking semantic/state colors, writing gradients, choosing chart colors, checking contrast, or when a color choice must respect culture (incl. Thailand).
+> Read when: choosing or generating a palette, turning a logo or brand hex into UI colors, building tonal scales or design tokens, setting up dark mode, picking semantic/state colors, writing gradients, choosing chart colors, checking contrast, or when a color choice must respect a local culture.
 
 **Contents:** Defaults · Why OKLCH · Tonal scales · Harmony & proportion · Logo → palette method · Logo special cases · Semantic & state colors · Dark mode · Gradients · Data-viz color · Meaning: industry & culture · Example palettes · Tools · Pitfalls · Sources
 
@@ -185,7 +185,7 @@ Dark mode is a second token set, not an inversion. Apple: dark colors "aren't ne
 
 ## Translucent and derived colours
 
-Scrims, glows, tinted shadows and hover tints are tokens too: derive them from a token instead of writing raw `rgb(… / a)`.
+Scrims, glows, tinted shadows and hover tints are tokens too: derive them from a token instead of writing raw `rgb(… / a)`. The starter ships the common ones in its expression layer (`--glow-primary`, `--gradient-aura`, `--shadow-ink`, `--edge`, `--highlight`); how to spend them: `visual-craft.md` §2 and §5.
 
 ```css
 :root {
@@ -255,13 +255,7 @@ Cross-cultural facts to respect:
 - Apple HIG: red signals danger in some cultures and positive things in others. In Chinese markets **red = up/gain**.
 - White and black both carry mourning connotations in parts of Asia. Use them as neutrals, but avoid monochrome "funeral" compositions for celebratory moments.
 
-**Thailand (ประเทศไทย)**:
-- **Day colors** are widely known: Sun red, Mon yellow, Tue pink, Wed green (night grey), Thu orange, Fri light blue, Sat purple. Birthday/merit-making and personal "lucky color" features can use them.
-- **Yellow** is strongly associated with the monarchy (Rama IX and Rama X were born on a Monday; their royal flags are yellow). Royal blue and purple flags follow other royals' birth days. Fine as a UI color, but treat royal-themed content with deference and never parody it.
-- **Flag**: red = land and people (nation), white = religion, blue = monarchy (adopted 1917).
-- **Mourning** = black, also white. During national mourning (e.g. 2016) brands switched to black/white/grey and muted palettes, so have a monochrome theme ready.
-- **Never render a person's name in red.** Writing names in red ink is associated with death and bad luck (Chinese-rooted belief, still widespread). Error states on name fields: red border and icon, but keep the entered name text neutral.
-- Red and yellow have also carried political connotations (red-shirt/yellow-shirt movements). Avoid pitting them against each other as "two sides" in civic or political UI.
+**Check the local meaning before launch.** Colour carries meanings no global table covers: colours tied to days, faiths, royal houses, political movements, mourning or luck, and local taboos (a widely reported one, general knowledge and not sourced here: in several East Asian cultures a person's name written in red is associated with death, so an error state on a name field keeps the entered text neutral and marks the field with a border and an icon). For each market: ask local users or a local reviewer what the brand, status and celebration colours mean there, look at how local competitors and public services use colour, and keep a muted monochrome theme ready for periods of public mourning.
 
 ## Example palettes
 
@@ -279,7 +273,7 @@ Light themes unless marked. All pairs computed: text/bg ≥ 13:1, muted/bg ≥ 4
 | Warm hospitality / café | `#FBF4EA` oklch(97% .015 77) | `#302017` oklch(26.1% .030 50) | `#776559` | `#AE5528` oklch(55.1% .130 45) (white 5.1) | `#677A44` oklch(55.1% .081 125) (white 4.7) |
 | Wellness / spa | `#F4F8F3` oklch(97.5% .008 139) | `#202C25` oklch(27.9% .021 159) | `#646F66` | `#476E54` oklch(50.1% .061 154) (white 5.8) | `#BCA2D0` oklch(75% .071 310) (dark 6.4) |
 | Enterprise / B2B | `#FBFCFD` oklch(99.1% .002 248) | `#15191D` oklch(21.1% .010 248) | `#666C75` | `#0E5CAF` oklch(48% .150 255) (white 6.6) | `#01BA87` oklch(69.9% .147 165) (dark 7.0) |
-| Thai heritage / craft (lacquer & gold) | `#FAF5EA` oklch(97.1% .015 86) | `#271512` oklch(22% .030 30) | `#735E56` | `#A9231E` oklch(48% .171 28) (white 7.1) | `#D4AB4F` oklch(76.1% .120 85) (dark 8.1) |
+| Heritage / craft (lacquer & gold) | `#FAF5EA` oklch(97.1% .015 86) | `#271512` oklch(22% .030 30) | `#735E56` | `#A9231E` oklch(48% .171 28) (white 7.1) | `#D4AB4F` oklch(76.1% .120 85) (dark 8.1) |
 | Dev tool (**dark**) | `#0D0F14` oklch(16.9% .011 268) | `#E4E8EF` oklch(93% .010 262) | `#989FAB` (7.2) | `#4ADD8C` oklch(80% .170 155) (bg-dark text 12.0) | `#2BBDF5` oklch(75% .140 230) (8.9 on bg) |
 | AI / futuristic (**dark**) | `#0A0917` oklch(15% .030 286) | `#EDEDF8` oklch(94.9% .015 286) | `#A1A2BD` (7.9) | `#A37AFE` oklch(67.9% .189 295) (dark text 6.8; white needs `#7E4ED7`, 5.3) | `#34DDE5` oklch(82% .130 200) (11.9 on bg) |
 
@@ -293,7 +287,7 @@ Generate the full scales, neutrals, semantic set and dark tokens from any of the
 | Radix custom palette (radix-ui.com/colors/custom) | 12-step light+dark scales from accent + gray + background |
 | uicolors.app | Tailwind 50–950 scales previewed on components |
 | Leonardo (leonardocolor.io) | Contrast-ratio-targeted scales and themes |
-| Realtime Colors | Preview text/bg/primary/secondary/accent + fonts on a real page, light/dark; export CSS/SCSS/Tailwind |
+| Realtime Colors | Preview text/bg/primary/secondary/accent + fonts on a real page, light/dark; export CSS/SCSS/Tailwind (the site answered HTTP 402 on 2026-11-13: check it is back before recommending) |
 | Huemint | ML palette generation for brand/website/graphics |
 | Coolors | Fast exploration, lock and shuffle |
 | Khroma | AI that learns your preferred combinations |
@@ -341,5 +335,4 @@ Generate the full scales, neutrals, semantic set and dark tokens from any of the
 - Elliot 2015, Frontiers in Psychology — https://www.frontiersin.org/articles/10.3389/fpsyg.2015.00368/full
 - Labrecque & Milne 2012 — https://colab.ws/articles/10.1007%2Fs11747-010-0245-y
 - NEI color blindness — https://www.nei.nih.gov/learn-about-eye-health/eye-conditions-and-diseases/color-blindness ; Okabe & Ito, Color Universal Design — https://jfly.uni-koeln.de/color/
-- Thai day colors — https://www.thethailandlife.com/color-day-thailand ; Flag of Thailand — https://en.wikipedia.org/wiki/Flag_of_Thailand ; red-ink belief (Thairath) — https://en.thairath.co.th/horoscope/belief/2947636 ; (USC Folklore Archive) — https://folklore.usc.edu/never-write-a-name-in-red-ink/ ; mourning guidance — https://www.thailandstarterkit.com/moving/what-to-do-during-the-mourning-period-in-thailand/
-- Tools: https://oklch.com · https://www.realtimecolors.com · https://huemint.com · https://coolors.co · https://leonardocolor.io · https://uicolors.app · https://www.khroma.co · https://color.adobe.com · https://huetone.ardov.me · https://apcacontrast.com · https://webaim.org/resources/contrastchecker/ · https://colorbrewer2.org
+- Tools: https://oklch.com · https://huemint.com · https://coolors.co · https://leonardocolor.io · https://uicolors.app · https://www.khroma.co · https://color.adobe.com · https://huetone.ardov.me · https://apcacontrast.com · https://webaim.org/resources/contrastchecker/ · https://colorbrewer2.org

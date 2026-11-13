@@ -94,7 +94,6 @@ Raw statuses from `https://api.webstatus.dev/v1/features/<id>`:
 - Text expansion (IBM): ≤10 chars 200–300%, 11–20 180–200%, 21–30 160–180%, 31–50 140–160%, 51–70 151–170%, >70 130%. Thai text consumes ~150% of the vertical space of Latin text. — https://www.w3.org/International/articles/article-text-size
 - CNIL: if "Accept all" exists, "Reject all" at same level and format; "Continue without accepting" link acceptable; "Accept all" + "Settings" alone insufficient; ~60 orders since May 2021; 2025 penalties €486,839,500 total (secondary summaries). EDPB cookie banner taskforce: majority of DPAs require reject on first layer; reject-only-as-link and colour/contrast highlighting of accept = deceptive; ideally same size/colour/font/contrast. EDPB Guidelines 03/2022 (final 24 Feb 2023) on deceptive design in social media. — https://www.cnil.fr/en/tag/Order+to+comply , https://hunton.com/privacy-and-information-security-law/edpb-publishes-report-of-outcome-of-the-cookie-banner-taskforce , https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-032022-deceptive-design-patterns-social-media_en
 - EU Digital Omnibus (COM(2025) 837, 19 Nov 2025): proposes moving cookie consent into GDPR Art. 88a (single-click refusal, 6-month no-reask) and browser signal Art. 88b; Council 5th compromise (June 2026) dropped 88b; not adopted as of late June 2026 (secondary: noyb, law firms). — https://noyb.eu/node/1654 , https://technologyquotient.freshfields.com/post/102m196/how-the-eu-commissions-digital-omnibus-could-reshape-cookie-compliance-in-europe
-- Thailand PDPA: PDPC consent and notification guidelines issued 7 Sep 2022; cookies not named in PDPA but cookie data is personal data; vendors describe prior explicit opt-in, granular purposes, easy withdrawal (vendor recommendations, not PDPC text). PDPC consultation on new guidelines March 2026 (outcome unknown). — https://www.tilleke.com/insights/thailand-issues-guidelines-on-pdpa-consent-and-notification-requirements/5/ , https://cookiechimp.com/guides/regulations/th_pdpa
 
 ## Mobile: iOS 26 / iOS 27 and Liquid Glass
 
@@ -154,11 +153,6 @@ Raw statuses from `https://api.webstatus.dev/v1/features/<id>`:
 - Centre most accurate: targets spaced as close as 7 mm on centre; top/bottom edges 10–12 mm; users shift grip to reach; thumb-sweep charts don't correlate with accuracy data. — http://www.uxmatters.com/mt/archives/2013/11/design-for-fingers-and-thumbs-instead-of-touch.php
 - People change grip by task; not tablets; Hoober calls it non-scientific (secondary). — https://mobiforge.com/design-development/designing-touch-thumb-and-finger-sized-design
 
-## Mobile: Thai market
-
-- LINE Login: OAuth 2.0 + OpenID Connect (v2.1); auto login for users logged in to LINE on device (no login screen); email/password, QR code, SSO "Continue as"; SDKs iOS, Android, Unity, Flutter. — https://developers.line.biz/en/docs/line-login/overview/
-- PromptPay (BOT): launched 2016; identifiers citizen ID, mobile number, bank account; one phone number → one account; Thai QR Payment scanned in mobile banking apps; fees free ≤5,000 THB; most banks waived digital fees since 2018. — https://www.bot.or.th/en/financial-innovation/digital-finance/digital-payment/promptpay.html
-
 ## Desktop: macOS
 
 - Menu bar order App, File, Edit, Format, View, app-specific, Window, Help; disable rather than hide unavailable items; App menu: About, Settings…, Services, Hide, Hide Others, Show All, Quit; Edit: Undo/Redo name the target ("Undo Paste"); View: Show/Hide Tab Bar, Toolbar, Sidebar, Enter Full Screen (title reflects state); Window menu even with one window; commands left out of menus can't have shortcuts and are less accessible; menu bar extras: menu bar height 24 pt, show a menu not popover, user opt-in, also Dock menu; iPadOS menu bar (added 2025-06-09). — https://developer.apple.com/design/human-interface-guidelines/the-menu-bar
@@ -195,5 +189,4 @@ Raw statuses from `https://api.webstatus.dev/v1/features/<id>`:
 - Official m3.material.io spring token values (only community packages).
 - Exact WinUI compact-density control heights (doc URL 404).
 - Linear / Notion specific shortcuts and sync architecture (docs fetch 404 / no mention).
-- Bank of Thailand anti-scam app rules (search budget exhausted).
 - Final adoption of EU Digital Omnibus cookie provisions.

@@ -27,7 +27,7 @@
 <title>Kāla Atelier — Find what the dark keeps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Trirong:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
 :root{
   --ease-standard:cubic-bezier(0.2,0,0,1);
@@ -36,13 +36,11 @@
   --night:#06070b; --brass:#d9b878; --cream:#efe6d3; --lume:#dff5d2; --paper:#ece4d5; --ink:#1a160f;
   --ambient:.9;            /* knob: 1 = pitch black outside the beam */
   --x:62%; --y:50%; --r:260px;
-  --serif:"Cormorant Garamond","Trirong",Georgia,serif;
-  --thai:"Trirong","Cormorant Garamond",serif;
+  --serif:"Cormorant Garamond",Georgia,serif;
 }
 *{box-sizing:border-box;margin:0}
 html{background:var(--night);color:var(--cream);font:400 18px/1.55 var(--serif);-webkit-font-smoothing:antialiased}
 body{overflow-x:clip}
-:lang(th){font-family:var(--thai);font-weight:300;line-height:1.75}
 a{color:inherit}
 .bar{position:fixed;inset:0 0 auto;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px clamp(16px,4vw,48px)}
 .mark{font-weight:600;letter-spacing:.32em;font-size:15px}
@@ -124,7 +122,7 @@ footer{margin-top:72px;font-size:14px;opacity:.55}
 </head>
 <body>
 <header class="bar">
-  <span class="mark">KĀLA<small>ATELIER · BANGKOK</small></span>
+  <span class="mark">KĀLA<small>ATELIER · GENEVA</small></span>
   <button class="lights" type="button" aria-pressed="false" title="Shortcut: L">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>
     <span class="lbl">Turn on the lights</span>
@@ -136,8 +134,7 @@ footer{margin-top:72px;font-size:14px;opacity:.55}
     <div class="copy">
       <p class="eyebrow">Nocturne · 100 pieces</p>
       <h1 id="h">Find what <em>the dark keeps.</em></h1>
-      <p class="lede">Hand-finished in Bangkok. Its finest details show only when you bring the light.</p>
-      <p class="lede" lang="th">นาฬิกาที่งดงามที่สุดในยามที่ทุกอย่างมืดมิด รายละเอียดจะปรากฏเมื่อคุณส่องแสงเข้าไป</p>
+      <p class="lede">Hand-finished in Geneva. Its finest details show only when you bring the light.</p>
       <a class="cta" href="#collection">Request a private viewing</a>
     </div>
     <div class="piece">
@@ -163,7 +160,7 @@ footer{margin-top:72px;font-size:14px;opacity:.55}
           <circle cx="200" cy="200" r="138" fill="none" stroke="url(#hd)" stroke-width="18" stroke-dasharray="4 68.26" stroke-dashoffset="2"/>
           <g fill="#e7cf9c" font-family="Cormorant Garamond,serif" text-anchor="middle">
             <text x="200" y="104" font-size="17" font-weight="600" letter-spacing="5">KĀLA</text>
-            <text x="200" y="118" font-size="7" letter-spacing="3" opacity=".75">BANGKOK · Nº 017</text>
+            <text x="200" y="118" font-size="7" letter-spacing="3" opacity=".75">GENEVA · Nº 017</text>
             <text x="200" y="312" font-size="7" letter-spacing="3" opacity=".75">NOCTURNE</text>
           </g>
           <path d="M163 286a37 37 0 0 1 74 0z" fill="#03060e" stroke="#d9b878" stroke-width="1.2"/>
@@ -178,26 +175,26 @@ footer{margin-top:72px;font-size:14px;opacity:.55}
         </svg>
       </div>
       <ul class="notes">
-        <li class="note n1">Hand-turned guilloché<span lang="th">ลายกิโยเช่แกะด้วยมือ 41 ชั่วโมง</span></li>
-        <li class="note n2">Calibre K-1 · 72 h<span lang="th">กลไกไขลาน สำรองพลังงาน 72 ชั่วโมง</span></li>
-        <li class="note n3">Moon phase · 122 yrs<span lang="th">ข้างขึ้นข้างแรม แม่นยำ 122 ปี</span></li>
-        <li class="note n4">Nº 017 of 100<span lang="th">หนึ่งในร้อยเรือนที่ผลิต</span></li>
+        <li class="note n1">Hand-turned guilloché<span>41 hours of hand engraving</span></li>
+        <li class="note n2">Calibre K-1 · 72 h<span>Wound by hand, 72-hour reserve</span></li>
+        <li class="note n3">Moon phase · 122 yrs<span>Off by one day in 122 years</span></li>
+        <li class="note n4">Nº 017 of 100<span>One of only a hundred made</span></li>
       </ul>
     </div>
   </div>
   <div class="dark" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
-  <p class="hint" aria-hidden="true"><i></i><span class="hint-t">Move the light · ขยับแสงเพื่อค้นหา</span></p>
+  <p class="hint" aria-hidden="true"><i></i><span class="hint-t">Move the light to search</span></p>
 </section>
 <section class="after" id="collection">
   <h2>Three pieces, one hundred of each.</h2>
-  <p lang="th">สามรุ่น รุ่นละหนึ่งร้อยเรือน ประกอบด้วยมือทีละเรือนในกรุงเทพฯ</p>
+  <p>Each one is assembled by hand, a single piece at a time, in our Geneva workshop.</p>
   <ul class="grid">
-    <li><b>Nocturne 38</b><p>Midnight guilloché, moon phase, brass case.</p><span class="price">฿ 286,000</span></li>
-    <li><b>Lumen 41</b><p>Grand-feu enamel dial with full lume track.</p><span class="price">฿ 312,000</span></li>
-    <li><b>Eclipse 39</b><p>Smoked sapphire, hand-engraved movement.</p><span class="price">฿ 348,000</span></li>
+    <li><b>Nocturne 38</b><p>Midnight guilloché, moon phase, brass case.</p><span class="price">$8,600</span></li>
+    <li><b>Lumen 41</b><p>Grand-feu enamel dial with full lume track.</p><span class="price">$9,400</span></li>
+    <li><b>Eclipse 39</b><p>Smoked sapphire, hand-engraved movement.</p><span class="price">$10,400</span></li>
   </ul>
-  <a class="cta" href="#stage">Book a viewing · นัดชมแบบส่วนตัว</a>
+  <a class="cta" href="#stage">Book a viewing</a>
   <footer>Kāla Atelier is a fictional brand made for a design-atlas recipe.</footer>
 </section>
 </main>
@@ -242,7 +239,7 @@ footer{margin-top:72px;font-size:14px;opacity:.55}
     dark.style.setProperty('--ambient', reduce.matches ? 0.55 : '');   // reduced: dimmer dark, nothing hidden
     if (reduce.matches) { cancelAnimationFrame(raf); raf = 0; put(x, y, R * 1.45); } else { put(x, y, R); wake(); }
   }
-  if (touch.matches) stage.querySelector('.hint-t').textContent = 'Tap to aim the light · แตะเพื่อส่องไฟ';
+  if (touch.matches) stage.querySelector('.hint-t').textContent = 'Tap to aim the light';
   new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; wake(); }).observe(stage);
   addEventListener('resize', () => { measure(); if (reduce.matches) reset(); });
   reduce.addEventListener('change', reset);

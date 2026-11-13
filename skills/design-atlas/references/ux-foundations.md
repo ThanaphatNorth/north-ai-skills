@@ -111,7 +111,7 @@ Navigation checks:
 **Readability defaults (GOV.UK practice):** split sentences over 25 words; paragraphs ≤ 5 sentences; front-load the key word in headings, links and buttons; active voice; plain words over jargon. Assume the user is reading on a phone, distracted, in a second language.
 
 **Buttons and CTAs**
-- Verb + object, 2–4 words, describing the result: "Pay ฿1,250", "Send invoice", "Continue to billing". Avoid "Submit", "OK", "Yes", "Click here".
+- Verb + object, 2–4 words, describing the result: "Pay $1,250", "Send invoice", "Continue to billing". Avoid "Submit", "OK", "Yes", "Click here".
 - Confirmations name the action on both buttons: "Discard draft" / "Keep editing", never "OK / Cancel".
 - One primary CTA per view. Secondary actions are visually quieter. Destructive actions are never the default.
 - Same command = same label everywhere. Add a noun when the verb alone is ambiguous ("Delete folder").
@@ -124,14 +124,14 @@ Navigation checks:
 | "Invalid input" | "Enter a date in the past, like 14/02/1990" |
 | "Error 500" | "We couldn't save your changes. Check your connection and try again. Your edits are kept." |
 | "Password incorrect format" | "Use at least 8 characters, including a number" (shown before typing) |
-| "Something went wrong" | "Payment didn't go through. Your card wasn't charged. Try another card or PromptPay." |
+| "Something went wrong" | "Payment didn't go through. Your card wasn't charged. Try another card or payment method." |
 | "Are you sure?" | "Delete 3 photos? You can restore them from Trash for 30 days." |
 
 **Empty-state formula:** what this area is for + why it is empty + one action to fill it (+ optional sample data). "No invoices yet. Invoices you send appear here. [Create invoice]". Never show "No results" while data is still loading.
 
 **Microcopy checks:** labels are visible (not placeholders); hints are above the field; units and formats are stated ("kg", "DD/MM/YYYY"); numbers, prices and dates use the user's locale; the same term is used for the same concept across product, emails and support.
 
-**Thai copy (ไทย).** Thai has no spaces between words, so long labels wrap unpredictably and truncation can cut mid-word. Keep labels short in both languages and test both. Decide in the brief whether UI copy uses polite particles (ค่ะ/ครับ). They are gendered, so pick one policy (none, or one persona voice) and apply it everywhere. For line height and fonts see `typography-layout.md`.
+**Multilingual copy.** Scripts without word spaces wrap unpredictably and truncation can cut mid-word. Keep labels short in every language and test each. Decide formality and honorific level per locale in the brief (some languages mark gender or politeness in every sentence): pick one policy and apply it everywhere. For line height and fonts see `typography-layout.md` (Multi-script typography).
 
 ## 7. Screen states: design every one
 
@@ -264,7 +264,7 @@ Flow rules: start at the real entry point (push notification, search result, dee
 ```mermaid
 flowchart TD
   A[Entry: 'Your order shipped' push] --> B{Signed in?}
-  B -- No --> C[Sign in with LINE / phone OTP] --> D
+  B -- No --> C[Sign in with local provider / phone OTP] --> D
   B -- Yes --> D[Order detail]
   C -- OTP fails 3x --> X[Help: resend / call support]
   D --> E{Tracking API ok?}
@@ -350,7 +350,7 @@ Mark each item pass / fail / n.a. Any fail in **A–C** blocks handoff.
 
 **E. Content**
 - [ ] CTAs are verb + object; one primary CTA per view; no "OK/Submit/Click here".
-- [ ] Sentences ≤ 25 words; units, formats, currency and dates are localized (TH/EN tested if bilingual).
+- [ ] Sentences ≤ 25 words; units, formats, currency and dates are localized (each shipped language tested).
 
 **F. Navigation and IA**
 - [ ] ≤ 2 levels of progressive disclosure; Back preserves state; deep links land correctly.
@@ -381,7 +381,7 @@ Mark each item pass / fail / n.a. Any fail in **A–C** blocks handoff.
 | SUS 70 reported as "70% satisfied" | SUS treated as a percentage | Report the percentile or grade (68 = average) |
 | Onboarding carousel skipped by everyone | Promotional/instructional deck at first launch | Remove it; teach via empty states and contextual tips |
 | Permission prompt denied at launch, feature dead forever | Asked out of context; second denial is permanent | Ask on first use with an explanation and "Not now"; build a no-permission path |
-| Thai label overflows or is cut mid-word | Copy length tested in English only | Test the longest locale; allow wrapping; shorten the source copy |
+| Label overflows or is cut mid-word in another language | Copy length tested in English only | Test the longest locale; allow wrapping; shorten the source copy |
 
 ## Sources
 
