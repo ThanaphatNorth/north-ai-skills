@@ -18,6 +18,7 @@ Where: `<path>:<line>` (<function/component>)
 Files: `<path>` (+ regression test `<path>`)
 Docs: `<feature doc path>` — <R-n changed, or the regression test added to R-n> (only when config § Docs is on)
 Tests: `<command>` → `<pasted summary line>` (one line per suite run)
+Security + performance: <"nothing found" | what each review found in this change, in plain words, and the test that now proves each fix>; checked, not reproduced: <kind, and the test that tried it | "none">; outside this change: <performance: place and kind | security: only "a security note went to <config § Review › security notes>" | "none">
 **Video (after)** (<what each held state shows>):
 ::video <media-uuid of KEY-after.mp4>
 Branch / PR: <branch @ sha — local, awaiting push approval | PR link>

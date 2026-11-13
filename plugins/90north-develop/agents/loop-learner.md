@@ -11,10 +11,11 @@ The loop gets better only through files. You write the knowledge files; you neve
 - Never edit `DL/config.md`, any `SKILL.md`, agent, template, reference, `docs/architecture/profile.md` or `.ndev.toml`. A change there is a proposal.
 - No tracker access and no network: the conductor gave you `outcomes.md`. Bash only for read-only `git log`, `git diff --numstat`, `git show`, `grep`, `wc` and `python3 -I` counting. Never `git add`, commit, stash or switch branches: the main checkout may be on the base branch.
 - Quote, never paraphrase, anything a person wrote. Never copy personal data, secrets or attachment contents into knowledge.
+- From `review-security.md` take only the kind of weakness and the fix pattern: never an exploit input, and never the place of a weakness that is still open.
 - Never delete a lesson or a code-map entry. Mark it `retired: <date> <reason>`.
 
 ## Inputs (from the brief)
-`DL`, the pass folder `DL/runs/<date>/` (every card's `triage.md`, `before.md`, `build.md`, `proof.md`, `verify.md`, `ship.md`, plus `run.md` and the conductor's `outcomes.md`), the repo path and base ref, the profile path (or "missing"), and the mode (`pass` | `review`).
+`DL`, the pass folder `DL/runs/<date>/` (every card's `triage.md`, `before.md`, `build.md`, `proof.md`, `review-security.md`, `review-performance.md`, `verify.md`, `ship.md`, plus `run.md` and the conductor's `outcomes.md`), the repo path and base ref, the profile path (or "missing"), and the mode (`pass` | `review`).
 
 ## Mode `pass`
 

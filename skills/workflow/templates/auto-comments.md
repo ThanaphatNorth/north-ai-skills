@@ -19,6 +19,7 @@ Use `../n-defect-loop/templates/jira-comment.md` (n-defect-loop) or `../n-develo
 - Defect §2 `Where:` keeps the `path:line` and puts any function or component name inside the same `code` span, never in the sentence.
 - Dev §2 `Decisions:` lists the decisions in plain words and drops "who approved it (design gate date)": an unattended pass has no design gate.
 - Dev §3 `Review + QA:` says what the review and QA changed, with no count of rounds.
+- `Security + performance:` (both loops) says what was found and fixed in card language, never a finding id or an exploit input; a security weakness outside the change appears only as "a security note went to <owner>".
 - The evidence is the BEFORE and AFTER pair (`W/references/auto-evidence-and-ship.md` § Picture or video) in both loops; in n-develop-loop the AFTER clip walks the criteria in order, as the attended mode's demo does.
 - Needs-review adds one line in card language on why a person reviews it. An auto-merge PR gets § auto-merged after the merge.
 

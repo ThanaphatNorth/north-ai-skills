@@ -1,6 +1,6 @@
 ---
 name: n-develop-loop
-description: Development loop of the 90north-develop plugin — takes a story, task, improvement, change request or spec (a Jira or local-board key, a spec file, a plain request, or --next) through 9 steps: read the board, triage (ready? how large?), check the spec, pin the goal with acceptance specs that go red, write the n-dev design note and work packages (Large or schema/interface changes stop for a person), build test-first through dev-builder subagents, verify and record (review + QA, specs green twice, a demo video), open the PR in the review lane. Only a low- or no-impact change inside a standing approval merges on its own; everything else waits for a person. Attended by default; --auto runs it unattended, where a gate parks the card with a question. Use when the user says "develop loop", "build <KEY>", "implement this story/spec", "new feature", "change requirement", "pick the next story", or a schedule fires it. Defects go to n-defect-loop.
+description: Development loop of the 90north-develop plugin — takes a story, task, improvement, change request or spec (a Jira or local-board key, a spec file, a plain request, or --next) through 9 steps: read the board, triage (ready? how large?), check the spec, pin the goal with acceptance specs that go red, write the n-dev design note and work packages (Large or schema/interface changes stop for a person), build test-first through dev-builder subagents, verify and record (code, security and performance review + QA, specs green twice, a demo video), open the PR in the review lane. Only a low- or no-impact change inside a standing approval merges on its own; everything else waits for a person. Attended by default; --auto runs it unattended, where a gate parks the card with a question. Use when the user says "develop loop", "build <KEY>", "implement this story/spec", "new feature", "change requirement", "pick the next story", or a schedule fires it. Defects go to n-defect-loop.
 argument-hint: "<KEY | spec path | request | --next> [--auto] [--dry-run]"
 ---
 
@@ -123,9 +123,10 @@ Attachments may hold personal data: describe them, never copy them.
    (if config § Docs is on and a rule changed) is committed.
 
 ## 7 · Verify and record
-1. S2 Verify (`stages.md`). The reviewer gets the diff, the ticket, the design note and the AC table. QA runs every
-   acceptance spec twice and n-dev's structure check (`../n-dev/scripts/structure_check.py --base <base>`). Fix
-   rounds go back to step 6 with all findings, with a budget of 2.
+1. S2 Verify (`stages.md`). The reviewer gets the diff, the ticket, the design note and the AC table. Two
+   `risk-reviewer` runs read the same diff for security and for performance. QA runs every acceptance spec twice
+   and n-dev's structure check (`../n-dev/scripts/structure_check.py --base <base>`). Fix rounds go back to step 6
+   with all findings, with a budget of 2.
 2. S3 Evidence: the `demo` clip walks AC-1 … AC-n in order. Add `before` when an existing screen changed.
 3. Auto mode adds A6 PROOF and the A7 verifier gate: nothing the verifier refutes is published.
 
@@ -143,7 +144,8 @@ S4 Ship with `templates/jira-comment.md`, whose §2 carries the `Docs:` line. In
 The ship class decides (`W/references/auto-evidence-and-ship.md` § Ship classes):
 - **Auto-merge** happens only in `--auto`, because it needs the verifier, and only for a low- or no-impact change.
   Every gate in § Ship classes must hold: size, safe kind and paths, blast radius, no forbidden area, a current
-  profile, a clean structure check, a confirmed verifier, green CI, the grace window, and a base that has not moved.
+  profile, a clean structure check, security and performance reviews that found nothing at blocker or
+  should-fix, a confirmed verifier, green CI, the grace window, and a base that has not moved.
   It also needs a standing approval in config § Push policy that names merge.
 - **Everything else** waits for a person. They review the PR and merge it, or tell you in chat to merge that one
   PR. Attended mode never auto-merges.

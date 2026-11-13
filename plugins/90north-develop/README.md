@@ -13,7 +13,7 @@ per-repo facts. They work with Jira, or with a local board of markdown cards whe
   6 Test-first fix  (defect-fixer)                6 Test-first build per WP  (dev-builder)
   7 Verify + record ── 8 Open the PR ── 9 Merge (low impact, standing approval) or a person approves
        └──────────── shared stages (workflow skill) ────────────┘
-         S1 Isolate · S2 Verify (review + QA) · S3 Evidence video
+         S1 Isolate · S2 Verify (review, security + performance review, QA) · S3 Evidence video
          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
 
    attended (default): a gate asks you in chat
@@ -24,7 +24,7 @@ per-repo facts. They work with Jira, or with a local board of markdown cards whe
 ```
 
 Both loops start with a red test that says what "done" means: the defect's red e2e, or the story's acceptance spec.
-They end with that test green in the same session, review + QA, an inline video and a tracker update. A defect needs
+They end with that test green in the same session, code, security and performance review plus QA, an inline video and a tracker update. A defect needs
 a cause; a feature needs a design. That is the only difference in the middle.
 
 With `--auto`, either loop runs with nobody in the chat:
@@ -44,6 +44,16 @@ Only a low- or no-impact change inside a standing approval merges on its own; ev
 The rules are in `skills/workflow/references/feature-docs.md`, the template in
 `skills/workflow/templates/feature-doc.md`. In `--auto`, verifier claim V10 checks the doc against the diff.
 
+**Security and performance review.** Every change with a non-test source line gets two more reviewers in S2, beside
+the code reviewer and QA: `risk-reviewer` once for security and once for performance. Each walks n-dev's checklist
+for its lens (`skills/n-dev/references/security.md`, `skills/n-dev/references/performance.md`) and reports each
+finding with `path:line`, the input or data size that breaks it, and the test that would prove it.
+- Findings inside the change are fixed in the fix round, each test-first.
+- Findings outside the change are reported, never fixed in that PR. A security weakness outside the change never
+  goes into the tracker, a PR or a commit: it goes to the security-notes owner in config § Review.
+- In `--auto`, verifier claim V11 checks that both reviews ran on the head and nothing is open, and a change that
+  needed a security or performance fix never auto-merges.
+
 | Skill | Role |
 |--|--|
 | `workflow` | the map: routes work to a loop, owns the shared stages, the auto mode, the dispatch safety block, core lessons and the tracker (Jira or a local board) |
@@ -58,7 +68,8 @@ The rules are in `skills/workflow/references/feature-docs.md`, the template in
 | `dev-builder` | n-develop-loop | WP-0 acceptance specs red, then one work package test-first, local commit |
 | `defect-repro` | n-defect-loop | an e2e that goes red on the reported symptom, plus the video |
 | `defect-fixer` | n-defect-loop | regression test red → fix at the root cause → green, local commit |
-| `loop-verifier` | both loops, `--auto` | tries to refute each claim (spec ↔ card, before reason, proof on the branch, forbidden areas, scope, structure check, evidence, comment, checks ran) before anything is published |
+| `risk-reviewer` | both loops, S2 | reads the diff for one lens, security or performance, against n-dev's checklist; findings with `path:line`, the breaking input or size, and the test; never fixes |
+| `loop-verifier` | both loops, `--auto` | tries to refute each claim (spec ↔ card, before reason, proof on the branch, forbidden areas, scope, structure check, evidence, comment, checks ran, feature doc, security and performance reviews) before anything is published |
 | `loop-learner` | both loops, `--auto` | turns a pass's files and outcomes into knowledge (code map, selectors, calibration, outcomes, lessons); rule changes become proposals |
 
 ### Moving from 0.6 or earlier
@@ -107,7 +118,7 @@ Re-register any `/loop` or scheduled task that names an old command.
 
 | File | Holds |
 |--|--|
-| `config.md` | Tracker, board ids, § Dev flow, § Defect flow and § Auto mode (queries, lock, lanes, fences, gates, ship classes), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks, team agents, spec sources, project rules |
+| `config.md` | Tracker, board ids, § Dev flow, § Defect flow and § Auto mode (queries, lock, lanes, fences, gates, ship classes), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks (with the repo's security and performance scanners), team agents, § Docs, § Review (data sizes), spec sources, project rules |
 | `tracker.env` | `TRACKER` (jira or local) and its settings: `JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES` — no secrets |
 | `board/` | Local tracker only: one markdown card per file, attachments in `board/<KEY>/`; committed by default, the loops edit it and a person commits |
 | `dev-ledger.md`, `defect-ledger.md` | One row per state change, per loop, both modes (a legacy `ai-ledger.md` stays as history) |
@@ -151,7 +162,7 @@ The skills live once, at the repo root in `skills/<name>/`; `plugins/90north-dev
 ```
 plugins/90north-develop/
   .claude-plugin/plugin.json
-  agents/dev-builder.md, defect-repro.md, defect-fixer.md, loop-verifier.md, loop-learner.md
+  agents/dev-builder.md, defect-repro.md, defect-fixer.md, risk-reviewer.md, loop-verifier.md, loop-learner.md
   skills/workflow      -> ../../../skills/workflow
   skills/develop-init  -> ../../../skills/develop-init
   skills/n-defect-loop   -> ../../../skills/n-defect-loop

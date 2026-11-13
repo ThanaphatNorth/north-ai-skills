@@ -18,7 +18,7 @@ keep code, identifiers and commit messages in the repo's language.
   6 Test-first fix  (defect-fixer)                6 Test-first build per WP  (dev-builder)
   7 Verify + record ── 8 Open the PR ── 9 Merge (low impact, standing approval) or a person approves
        └──────────── shared stages (references/stages.md) ────────────┘
-         S1 Isolate · S2 Verify (review + QA) · S3 Evidence video
+         S1 Isolate · S2 Verify (review, security + performance review, QA) · S3 Evidence video
          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
                                       │
    attended (default): a gate asks you in chat
@@ -30,7 +30,8 @@ keep code, identifiers and commit messages in the repo's language.
 ```
 
 Both loops start with a red test that states what "done" means: the defect's red e2e, or the story's acceptance
-spec. Both end with a green run of that same test in this session, review and QA, evidence, and a tracker update.
+spec. Both end with a green run of that same test in this session, review (code, security, performance) and QA,
+evidence, and a tracker update.
 What differs is the middle: a defect needs a cause, a feature needs a design. Both keep each area's **feature doc**
 true in the same PR: its rules with their sources, rule → test, and decisions with reasons
 (`references/feature-docs.md`).

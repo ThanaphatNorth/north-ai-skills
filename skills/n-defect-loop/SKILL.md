@@ -1,6 +1,6 @@
 ---
 name: n-defect-loop
-description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira, or the repo's local board when there is no Jira; one by key, or a sweep of the open-defect query) through 9 steps. Read the board, triage, check the spec, reproduce with a red e2e and a before video, find the root cause at path:line, fix test-first with n-dev, verify and record (review + QA, the spec green twice, after video), open the PR with the 3-part comment and move the ticket to the QA lane. It merges on its own only a low- or no-impact change inside a standing approval; everything else waits for a person. Attended by default; --auto runs it unattended on a schedule or /loop, where a gate parks the card with a question. Reads project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule fires it. New features and changed requirements go to n-develop-loop.
+description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira, or a local board when there is no Jira; one by key, or a sweep of the open-defect query) through 9 steps. Read the board, triage, check the spec, reproduce with a red e2e and a before video, find the root cause at path:line, fix test-first with n-dev, verify and record (code, security and performance review + QA, spec green twice, after video), open the PR with the 3-part comment and move the ticket to the QA lane. It merges on its own only a low- or no-impact change inside a standing approval; everything else waits for a person. Attended by default; --auto runs it unattended on a schedule or /loop, where a gate parks the card with a question. Reads project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule runs it. New features and changed requirements go to n-develop-loop.
 argument-hint: "[<KEY>] [--auto] [--dry-run]"
 ---
 
@@ -125,8 +125,9 @@ It writes a regression test red → fix → green, runs the checks and commits l
 Commit it locally as `docs(<area>): … (<KEY>)`.
 
 ## 7 · Verify and record
-1. S2 Verify (`stages.md`): the reviewer's spec is the ticket plus the root cause. QA runs the defect spec twice.
-   Fix rounds go back to step 6, with a budget of 2.
+1. S2 Verify (`stages.md`): the reviewer's spec is the ticket plus the root cause. Two `risk-reviewer` runs read
+   the same diff for security and for performance. QA runs the defect spec twice. Fix rounds go back to step 6,
+   with a budget of 2.
 2. S3 Evidence: `before` (red) and `after`.
 3. Auto mode adds A6 PROOF and the A7 verifier gate: nothing the verifier refutes is published.
 
@@ -147,7 +148,8 @@ adjust it as `W/templates/auto-comments.md` § Proof comment says.
 The ship class decides (`W/references/auto-evidence-and-ship.md` § Ship classes):
 - **Auto-merge** happens only in `--auto`, because it needs the verifier, and only for a low- or no-impact change.
   Every gate in § Ship classes must hold: size, safe kind and paths, blast radius, no forbidden area, a current
-  profile, a clean structure check, a confirmed verifier, green CI, the grace window, and a base that has not moved.
+  profile, a clean structure check, security and performance reviews that found nothing at blocker or
+  should-fix, a confirmed verifier, green CI, the grace window, and a base that has not moved.
   It also needs a standing approval in config § Push policy that names merge.
 - **Everything else** waits for a person. They review the PR and merge it, or tell you in chat to merge that one
   PR. Attended mode never auto-merges.

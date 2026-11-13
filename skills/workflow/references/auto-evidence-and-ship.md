@@ -1,6 +1,6 @@
 # Evidence and ship — one spec run twice, the verifier gate, and the ship classes
 
-> Read when: auto mode reaches A4 (BEFORE), A6 (PROOF), A7 (verifier outcome) or A8 (ship). The stage mechanics (isolate, review + QA, video conversion, comment posting) are in `W/references/stages.md`; this file adds what the unattended flow needs on top.
+> Read when: auto mode reaches A4 (BEFORE), A6 (PROOF), A7 (verifier outcome) or A8 (ship). The stage mechanics (isolate, review, security and performance review, QA, video conversion, comment posting) are in `W/references/stages.md`; this file adds what the unattended flow needs on top.
 
 Every `do-now` card is proven the same way, whatever its type. The card's **own** spec fails before the change and passes after it, both runs on evidence a QA person can watch, and that evidence goes in one comment on the card.
 
@@ -39,6 +39,7 @@ Recording style, so a QA or PO reader can follow without reading the spec: a vis
 | V7 AFTER frames | A6: re-record AFTER |
 | V8 comment ↔ diff, wording | you: rewrite the comment draft |
 | V10 feature doc ↔ diff | you: fix the feature doc (`feature-docs.md`), then re-run the verifier |
+| V11 security and performance reviews | A6: re-run the missing or stale review on the head with its previous file (`W/references/stages.md` § S2); open findings go to A5 as a fix round, counted in S2's budget of 2 |
 
 One retry per pass (config › verifier retries). A second `REFUTED` takes the stopped path: the card gets `W/templates/auto-comments.md` § stopped, with the refuted points written as card facts ("the after recording did not show the saved value"), never as claim numbers.
 
@@ -57,6 +58,7 @@ All must hold:
 | Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config's size excludes; feature docs and their index are excluded like tests), ≤ config max files (feature docs not counted), no new dependency, env var, route, state owner or API call |
 | Low blast radius | severity and environment in the auto-merge band, no person's force-review label, not reopened, not a feedback round |
 | Structure | the n-dev structure check has no finding on the branch (existing debt listed apart is fine) and the profile is current for the touched paths |
+| Security and performance | `review-security.md` and `review-performance.md` found nothing at blocker or should-fix in any round (`found in all rounds` reads 0 and 0). A change that needed a security or performance fix is not low-impact: a person reviews it |
 | Proven | `verify.md` all CONFIRMED, BEFORE red and PROOF green on evidence, repo checks green |
 | CI | `gh pr checks <n> --watch` all passing; in a repo with no PR workflow, only when config says local checks plus the commit hooks stand in, and the comment says so |
 | Base unchanged since PROOF | `git fetch`, then `git merge-base --is-ancestor origin/<base> <branch>` passes. A base that moved after PROOF means the head that would merge was never proven: fall back to needs-review, never merge the base in after the verifier |
@@ -101,6 +103,7 @@ Card: <tracker URL of KEY>
 - Spec `<path>`: red on <base sha> (before), green on <branch sha> twice (after); evidence in the card comment
 - <command> → <pasted summary line>   (one line per suite)
 - Structure check: <clean | findings with reasons>
+- Security + performance: <nothing found | what was found in this change and the test or line that now proves each fix>
 
 ## Code path
 <optional before/after mermaid>

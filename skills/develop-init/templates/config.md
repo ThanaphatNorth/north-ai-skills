@@ -79,15 +79,20 @@ Lines marked `TBD` are asked of the user before the first run that needs them.
 - Web: <typecheck>, <unit tests>.
 - e2e: <how to run one spec by file path>, browser: <bundled | channel: 'chrome' wrapper config>, output folder outside the repo: <yes/no + why>.
 - Structure check: n-dev's `scripts/structure_check.py --base origin/<base>` (bundled); extra: <command | none>.
+- Security and performance scanners (the repo's own; the loop adds none): <dependency audit, secret scan, SAST, bundle size, benchmark: the command for each | none>. A secret scanner runs with its redact option (gitleaks `--redact`), so no secret reaches a log or `qa.md`.
 
 ## Team (agents)
-- Plugin agents: `90north-develop:dev-builder` (dev) · `90north-develop:defect-repro` + `90north-develop:defect-fixer` (defects).
-- Repo agents to use as role files (dispatch general-purpose with "Read <worktree>/<path> and follow it as your role"): code review `<path>`, QA `<path>`, verifier `<path>`, house rules for devs `<paths>` (+ any rule known to be stale).
+- Plugin agents: `90north-develop:dev-builder` (dev) · `90north-develop:defect-repro` + `90north-develop:defect-fixer` (defects) · `90north-develop:risk-reviewer` (both, once per lens: security, performance).
+- Repo agents to use as role files (dispatch general-purpose with "Read <worktree>/<path> and follow it as your role"): code review `<path>`, security review `<path>`, performance review `<path>` (each goes into `risk-reviewer`'s brief for its lens as house rules), QA `<path>`, verifier `<path>`, house rules for devs `<paths>` (+ any rule known to be stale).
 - Development discipline: the bundled `n-dev` skill (always). Extra skills builders and fixers follow: <e.g. a TDD skill | none>.
 
 ## Docs (feature docs, kept true in every PR; rules: the workflow skill's `references/feature-docs.md`)
 - Feature docs: <on (default) | off> · path `<docs/features/ | the repo's docs system: Docusaurus folder, handbook …>` · index `<path>/README.md` · max <150> lines per doc.
 - Docs system conventions: <none — use the workflow skill's `templates/feature-doc.md` | front matter, sidebar, file naming the repo already uses>. The index file is the only list of areas.
+
+## Review (security and performance; rows: n-dev's `references/security.md` and `references/performance.md`; handling: the workflow skill's `references/stages.md` § S2)
+- Data sizes the performance review assumes: <table or collection → production size, e.g. `orders` ~5M rows · users per tenant ~2k · largest upload 20 MB | TBD>. A size-dependent finding with no size here is marked `size unknown` and is at most a should-fix.
+- Security notes: <who gets a security weakness found outside a change: the person running the loop (default) | a named person or private channel>. Never the tracker or a PR.
 
 ## Spec sources
 - Spec / decision log: `<path>` (check "Revised by / Reversed by" before calling something a bug or a requirement).

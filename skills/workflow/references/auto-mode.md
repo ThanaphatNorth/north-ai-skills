@@ -49,7 +49,8 @@ state with a question on the card, and the pass goes on to the next card. Auto m
 | Conductor (you) | every tracker read and write, the triage verdict and ship class, the n-dev steps 1–3 and 6–7, the run files, the ledger |
 | `90north-develop:defect-repro` / `90north-develop:dev-builder` (WP-0) | the BEFORE spec, red on the base |
 | `90north-develop:defect-fixer` / `90north-develop:dev-builder` | the change, test-first (n-dev steps 4–5), a local commit |
-| S2 reviewer + QA (`W/references/stages.md`) | review of the diff, the checks, the spec run twice |
+| S2 reviewer + QA (`W/references/stages.md`) | code review of the diff, the checks (scanners included), the spec run twice |
+| `90north-develop:risk-reviewer` (S2, once per lens) | security and performance findings on the diff; never fixes |
 | `90north-develop:loop-verifier` | tries to refute each claim before anything is published; never fixes |
 | `90north-develop:loop-learner` | turns this pass's files and outcomes into knowledge and proposals; never touches the tracker or git |
 
@@ -62,8 +63,8 @@ Subagents never talk to the tracker and never decide. Each brief:
 ## Run files
 
 Hand-off files live in `DL/runs/<date>/<KEY>/`. They are git-ignored, because scheduled runs do not share a
-scratchpad. Wherever the shared stages say `<scratchpad>/<KEY>/`, auto mode uses that folder, so S2's `review.md`
-and `qa.md` land there too.
+scratchpad. Wherever the shared stages say `<scratchpad>/<KEY>/`, auto mode uses that folder, so S2's `review.md`,
+`review-security.md`, `review-performance.md` and `qa.md` land there too.
 
 | File | Written by you, from | Must hold |
 |---|---|---|
@@ -159,8 +160,9 @@ No card → log `no cards`, go to A9.
 **A6 · PROOF and verify** (step 7).
 1. Fetch the base. If the branch is behind, merge the base into it (never rebase), so PROOF runs on the head that
    would ship.
-2. S2 runs review and QA in parallel. QA runs the **same** spec green on the fix branch twice, then the checks and
-   `structure_check.py --base <base>`, which reads `.ndev.toml`.
+2. S2 runs review, the security and performance reviews (`risk-reviewer`, once per lens) and QA in parallel. QA
+   runs the **same** spec green on the fix branch twice, then the checks and `structure_check.py --base <base>`,
+   which reads `.ndev.toml`.
 3. Run S3 Evidence.
 
 A failed proof goes back to A5 and counts as an attempt. The card takes the **stopped** path after config › build

@@ -18,7 +18,7 @@ Distilled from real runs. A project lesson that would help any repo in both flow
 - Data migrations: prove they apply on an **empty** DB (migration folders may sort as text: `19_` before `2_`), and run them on a QA **copy** of a shared DB, never the shared DB itself. No DELETE/TRUNCATE.
 
 ## Verifying
-- Run review and QA in parallel, but never edit a worktree while another agent is testing it — queue the fix round until both report.
+- Run the reviewers and QA in parallel, but never edit a worktree while another agent is testing it — queue the fix round until all report.
 - A 5 s unit-test timeout in a file the branch doesn't touch, while several agents run suites, is machine load → rerun that file alone and the suite once idle; report both runs.
 - When a claim looks too good, send it to an adversarial verifier.
 
