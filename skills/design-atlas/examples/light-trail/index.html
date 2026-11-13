@@ -5,7 +5,7 @@
   line through the night; it lights up neighbouring homes (stars), traces a house, switches on its window,
   and the window's light floods the screen like dawn, revealing the call to action.
   Use for: brand stories, launches and campaigns whose truth is dark → light, lost → home, off → on
-  (energy, mobility, hospitality, astronomy, sleep, a product reveal). Fictional brand: Baan Saeng (home solar).
+  (energy, mobility, hospitality, astronomy, sleep, a product reveal). Fictional brand: Sunkeep (home solar).
   Avoid for: surfaces where people arrive worried or in a hurry (health symptoms, emergencies, money trouble):
   they need the action in the first screen, light palettes and little motion — see creative-direction.md §1
   (context-of-use gate). Also avoid for dense task UIs and pages people revisit daily.
@@ -17,14 +17,14 @@
   with prefers-reduced-motion the page shows the finished composition and the copy as a normal page.
   Test hooks: ?capture → no smoothing, no rAF; window.__frame(dtMs) advances one frame (for video capture).
 -->
-<html lang="th" class="rm">
+<html lang="en" class="rm">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Baan Saeng — แสงที่อยู่กับบ้านคุณ</title>
+<title>Sunkeep — the light that stays with your home</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --night: #04050a;
@@ -34,8 +34,8 @@
   --dim-text: #9aa0ae;            /* 7.7:1 on --night: readable before the light arrives */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized-out: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --font-display: "Anuphan", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans Thai Looped", "Anuphan", system-ui, sans-serif;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
 html { background: var(--night); color: #e9ebf0; }
@@ -79,7 +79,7 @@ a { color: inherit; }
 .beat p { margin: 0; color: #b3b8c4; font-size: clamp(1rem, 1.3vw, 1.15rem); }
 .beat .en { display: block; margin-top: .35em; font: 300 .9rem/1.5 var(--font-body); letter-spacing: .04em; color: #7e8492; }
 .b0 { left: 50%; top: calc(45% + 64px); transform: translateX(-50%); text-align: center; }
-.b0 p { font: 400 .95rem/1.6 var(--font-display); color: #a3a8b5; }   /* no letter-spacing on Thai */
+.b0 p { font: 400 .95rem/1.6 var(--font-display); color: #a3a8b5; }
 .b0 .en { letter-spacing: .28em; text-transform: uppercase; font-size: .68rem; }
 .b0 .cue { display: block; width: 1px; height: 38px; margin: .9rem auto 0; background: linear-gradient(#7e8492, transparent); transform-origin: top;
   animation: cue 2.2s var(--ease-standard) infinite; }
@@ -90,7 +90,7 @@ a { color: inherit; }
 .final { left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; max-width: min(38rem, 88vw); }
 .final h2 { color: var(--ink); background: none; -webkit-text-fill-color: currentColor; font-size: clamp(2.4rem, 6vw, 4.6rem); }
 .final p { color: #3d4a66; }
-.cta { display: inline-flex; align-items: center; gap: .6rem; margin-top: 1.6rem; padding: 1rem 1.6rem; border-radius: 999px; border: 0;
+.cta { display: inline-flex; align-items: center; white-space: nowrap; gap: .6rem; margin-top: 1.6rem; padding: 1rem 1.6rem; border-radius: 999px; border: 0;
   background: var(--ink); color: #fff; font: 500 1.05rem/1 var(--font-display); text-decoration: none; min-height: 48px;
   box-shadow: 0 10px 30px -10px rgba(29, 44, 76, .55), 0 0 0 0 rgba(255, 180, 110, .0);
   transition: transform .3s var(--ease-emphasized-out), box-shadow .3s var(--ease-standard); }
@@ -128,11 +128,11 @@ footer { background: #fffaf3; color: #6b7590; padding: 2rem clamp(1.25rem, 7vw, 
 </style>
 </head>
 <body>
-<a class="skip" href="#after">ข้ามเรื่องราว ไปที่เนื้อหา</a>
-<h1 class="brand">Baan <b>Saeng</b><span class="sr"> — บ้านแสง โซลาร์และแบตเตอรี่สำรองไฟสำหรับบ้าน</span></h1>
+<a class="skip" href="#after">Skip the story, go to the content</a>
+<h1 class="brand">Sun<b>keep</b><span class="sr"> — home solar and battery backup</span></h1>
 
 <main>
-  <section class="story" id="story" data-story aria-label="เรื่องราว: แสงที่หาทางกลับบ้าน">
+  <section class="story" id="story" data-story aria-label="Story: the light that finds its way home">
     <div class="stage" id="stage">
       <div class="art" aria-hidden="true">
         <svg class="line-glow" id="glow"><path id="gFresh"/><path id="gHouse"/><path id="gWin"/></svg>
@@ -146,24 +146,24 @@ footer { background: #fffaf3; color: #6b7590; padding: 2rem clamp(1.25rem, 7vw, 
         <div class="grain"></div>
       </div>
 
-      <div class="beat b0" id="b0"><p>เลื่อนลงช้า ๆ<span class="en">scroll slowly</span></p><span class="cue" aria-hidden="true"></span></div>
-      <div class="beat b1" id="b1"><h2>ไฟดับทั้งซอย</h2><p>คืนพายุเข้า ถนนมืดสนิท ตู้เย็นเงียบ พัดลมหยุดหมุน<span class="en">A storm night. The whole street goes dark.</span></p></div>
-      <div class="beat b2" id="b2"><h2>แต่บางบ้านยังสว่าง</h2><p>บ้านที่เก็บแสงแดดของกลางวันไว้ใช้ตอนกลางคืน<span class="en">Some homes keep their own light.</span></p></div>
-      <div class="beat b3" id="b3"><h2>แดดของวันนี้ คือไฟของคืนนี้</h2><p>แผงโซลาร์บนหลังคา กับแบตเตอรี่ที่สลับไฟให้เองใน<span class="nw">เสี้ยววินาที</span><span class="en">Today's sun is tonight's light.</span></p></div>
-      <div class="beat final" id="b4"><h2>บ้านคุณ <span class="nw">ไม่ต้องรอไฟมา</span></h2><p>ประเมินหลังคาฟรี รู้ผล<span class="nw">ค่าไฟที่ประหยัด</span>ใน <span class="nw">2 นาที</span></p><a class="cta" href="#after">ประเมินบ้านของฉัน <span aria-hidden="true">→</span></a></div>
+      <div class="beat b0" id="b0"><p><span class="en">Scroll slowly</span></p><span class="cue" aria-hidden="true"></span></div>
+      <div class="beat b1" id="b1"><h2>The whole street goes dark</h2><p>A storm night. The road is black, the fridge falls quiet, the fan stops turning.</p></div>
+      <div class="beat b2" id="b2"><h2>Yet some homes still glow</h2><p>Homes that saved the day's sunshine to use after dark.</p></div>
+      <div class="beat b3" id="b3"><h2>Today's sun is tonight's light</h2><p>Rooftop solar and a battery that switches over by itself in <span class="nw">milliseconds</span>.</p></div>
+      <div class="beat final" id="b4"><h2>Your home <span class="nw">won't wait.</span></h2><p>Free roof assessment. Know your <span class="nw">energy savings</span> in <span class="nw">2 minutes</span>.</p><a class="cta" href="#after">Assess my home <span aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
   <section class="after" id="after" tabindex="-1">
-    <h2>พลังงานที่อยู่กับบ้านคุณ ทั้งวันและทั้งคืน</h2>
+    <h2>Energy that stays with your home, day and night</h2>
     <ul>
-      <li><b>สำรวจหลังคาฟรี</b><span>ช่างเข้าวัดพื้นที่และเงาแดด ก่อนเสนอราคา</span></li>
-      <li><b>สลับไฟอัตโนมัติ</b><span>ไฟดับเมื่อไร แบตเตอรี่จ่ายไฟต่อทันที</span></li>
-      <li><b>ดูการใช้ไฟในแอป</b><span>รู้ว่าวันนี้ผลิตเท่าไร ใช้เท่าไร เหลือเก็บเท่าไร</span></li>
+      <li><b>Free roof survey</b><span>An installer measures the roof area and sun shading before quoting a price.</span></li>
+      <li><b>Automatic switchover</b><span>The moment the grid drops, the battery keeps your lights on.</span></li>
+      <li><b>See usage in the app</b><span>Know how much you made, used and stored today.</span></li>
     </ul>
   </section>
 </main>
-<footer>ตัวอย่างงานออกแบบ · Baan Saeng (บ้านแสง) เป็นแบรนด์สมมติ</footer>
+<footer>A design sample · Sunkeep is a fictional brand</footer>
 
 <script>
 (() => {

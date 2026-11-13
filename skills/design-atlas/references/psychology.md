@@ -185,7 +185,7 @@ Finance: regulator/licence identifiers where applicable; fee tables in plain num
 Evidence is weak and context-bound. Reviews (Elliot & Maier 2014; Elliot 2015) describe an early-stage field with methodological weaknesses; many findings ("blue calms", "red lowers test scores") were tested on one or two hues (Holcombe 2019), and at least one high-profile colour-perception paper was retracted (2015). Rules:
 - Choose colour for **contrast, consistency and convention**, not claimed emotional effects. A/B test any "colour boosts conversion" claim in your own product; the winning button usually won by contrast and isolation, not hue.
 - Learned conventions are stronger than innate effects: red = error/destructive, green = success, amber = warning in most software; keep them, and pair with icons and text (colour-blind users; see `accessibility.md`).
-- Culture changes meaning (general knowledge, not sourced this session): white is associated with mourning in parts of East and South Asia, red with luck and celebration in Chinese contexts; in Thailand colours carry day-of-week and political associations. Check locale meanings with local users before brand decisions.
+- Culture changes meaning (general knowledge, not sourced this session): white is associated with mourning in parts of East and South Asia, red with luck and celebration in Chinese contexts; many cultures attach calendar, religious or political associations to colours. Check locale meanings with local users before brand decisions.
 - Finance/stock UIs: the red = down / green = up convention is reversed in some East Asian markets (e.g. mainland China, South Korea show red = up; unverified this session) — confirm for the target market and always add arrows/signs.
 - Brand fit beats "psychology": pick the hue that differentiates in the category, then build the palette in `color.md`.
 
@@ -282,7 +282,7 @@ Use game elements to make **real progress visible**, not to manufacture compulsi
 - Tiny Habits examples — https://themeaningmovement.com/tiny-habits
 - Hooked summary — https://www.supersummary.com/hooked/background/ · critique, Per Axbom — https://axbom.com/nir-eyal-habit-danger/
 - Self-Determination Theory — https://selfdeterminationtheory.org/theory/
-- Cialdini unity and ethics (ASU, 2025) — https://blogs.wpcarey.asu.edu/20250422-gentle-science-persuasion-part-seven-unity · CXL on unity — https://conversionxl.com/cialdini-unity/
+- Cialdini unity and ethics (ASU, 2025) — https://blogs.wpcarey.asu.edu/20250422-gentle-science-persuasion-part-seven-unity
 - Scheibehenne et al. 2010, choice overload meta-analysis — https://ideas.repec.org/a/oup/jconrs/v37y2010i3p409-425.html
 - Chernev et al. 2015, choice overload moderators — https://www.kellogg.northwestern.edu/faculty/research/detail/2015/when-product-assortment-leads-to-choice-overload-a-conceptual
 - Nunes & Drèze (2006), The Endowed Progress Effect, J. Consumer Research 32(4) 504–512, doi:10.1086/500480 — https://ideas.repec.org/a/oup/jconrs/v32y2006i4p504-512.html

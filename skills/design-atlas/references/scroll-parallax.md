@@ -2,7 +2,7 @@
 
 > Read when: building or reviewing anything that moves with scroll: reveal-on-scroll, parallax, pinned/sticky scrollytelling, horizontal scroll sections, scroll-scrubbed video or image sequences (Apple-style), text reveal, progress bars, scroll-snap carousels, zoom-through or clip-path hero reveals, stacking cards, marquees, smooth scrolling (Lenis), a scroll-driven 3D camera; choosing between CSS scroll-driven animations, GSAP ScrollTrigger and Motion `useScroll`; fixing scroll jank, iOS address-bar jumps or elements that drift after resize. General timing, easing and reduced-motion policy live in `motion.md`; WebGL scenes in `3d-webgl.md`.
 
-**Contents:** 1 When scroll effects earn their place · 2 Choosing the tech · 3 Browser support and `@supports` fallback · 4 Mobile viewport and scroll mechanics · 5 Recipe catalog (5.1–5.15) · 6 Example sites · 7 Verifying scroll work · Pitfalls · Sources
+**Contents:** 1 When scroll effects earn their place · 2 Choosing the tech · 3 Browser support and `@supports` fallback · 4 Mobile viewport and scroll mechanics · 5 Recipe catalog (5.1–5.16) · 6 Example sites · 7 Verifying scroll work · Pitfalls · Sources
 
 ## 1. When scroll effects earn their place
 
@@ -13,7 +13,7 @@
 | Docs, blog, e-commerce listing, checkout | Progress bar, sticky TOC, snap carousels only | People scan and act; motion competes with reading |
 | App UI, dashboards, forms, settings | None beyond native scroll and sticky headers | Scroll-linked motion slows task completion |
 
-Rules: each effect must pace or explain content (feature reveal, sequence, cause → effect), else cut it. The final state is the default state: readable with JS off, before animations run and under `prefers-reduced-motion`. Never change scroll speed/direction on content pages; a pinned section stays ≤ ~3 viewports of scroll. At most one heavy effect (video scrub, image sequence, WebGL) above the fold; lazy-init the rest as they approach.
+Rules: each effect must pace or explain content (feature reveal, sequence, cause → effect), else cut it. Take the movement from what the subject physically does (paper pulled from under paper, a door opening, a pour, a stamp coming down) and give it one of five jobs: reveal, depth, wayfinding, pacing, payoff (`ai-tells.md` §6). An effect chosen from this catalog with no such source reads as decoration. The final state is the default state: readable with JS off, before animations run and under `prefers-reduced-motion`. Never change scroll speed/direction on content pages; a pinned section stays ≤ ~3 viewports of scroll. At most one heavy effect (video scrub, image sequence, WebGL) above the fold; lazy-init the rest as they approach.
 
 ## 2. Choosing the tech
 
@@ -30,18 +30,18 @@ Do not mix two engines on the same element (e.g. CSS scroll-driven + GSAP on one
 
 ## 3. Browser support and `@supports` fallback
 
-CSS scroll-driven animations, as of 2026-10:
+CSS scroll-driven animations, as of 2026-11-13 (MDN browser-compat-data 8.1.9, webstatus.dev): **Baseline newly available since 2026-10-27**.
 
 | Browser | Status |
 |---|---|
 | Chrome / Edge | 115+ (July 2023) |
 | Safari (macOS, iOS) | 26.0+ (Sept 2025). 26.5 (May 2026) fixed the `scroll` range name and dynamic `animation-play-state: paused` |
-| Firefox | Release builds: behind `layout.css.scroll-driven-animations.enabled` (on by default only in Nightly). caniuse lists support from Firefox 160 (a future release at time of writing). Interop 2026 focus area |
+| Firefox | 159+ (October 2026). Earlier releases kept it behind `layout.css.scroll-driven-animations.enabled` |
 
-So every scroll-driven animation needs a fallback that still shows the final state. Pattern:
+Older browsers stay in use for years, so every scroll-driven animation still needs a fallback that shows the final state. Pattern:
 
 ```css
-.reveal { opacity: 1; transform: none; }   /* 1. final state is the default (no JS, Firefox, reduced motion) */
+.reveal { opacity: 1; transform: none; }   /* 1. final state is the default (no JS, older browsers, reduced motion) */
 @supports (animation-timeline: view()) {    /* 2. enhance only where supported and allowed */
   @media (prefers-reduced-motion: no-preference) {
     .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 10% cover 30%; }
@@ -50,7 +50,7 @@ So every scroll-driven animation needs a fallback that still shows the final sta
 @keyframes reveal { from { opacity: 0; transform: translateY(32px); } }
 ```
 
-Need it in Firefox too: either accept the static fallback, add a JS path (IntersectionObserver/GSAP) inside `@supports not (animation-timeline: view())` logic (`CSS.supports('animation-timeline: view()')`), or load the flackr polyfill (`https://flackr.github.io/scroll-timeline/dist/scroll-timeline.js`; CSS must be same-origin or inline).
+Need it in browsers without support too: either accept the static fallback, add a JS path (IntersectionObserver/GSAP) inside `@supports not (animation-timeline: view())` logic (`CSS.supports('animation-timeline: view()')`), or load the flackr polyfill (`https://flackr.github.io/scroll-timeline/dist/scroll-timeline.js`; CSS must be same-origin or inline).
 
 Cheat sheet:
 - `scroll(root block)` = page scroll progress (`nearest`, `self` for other scrollers); `view()` = this element crossing its scrollport (`view(block 20%)` adds an inset).
@@ -344,7 +344,7 @@ mm.add('(prefers-reduced-motion: no-preference)', () => {
 });
 ```
 
-Rules: dimmed words fail contrast, so the reveal must complete before the text reaches the middle of the viewport (`end` ≤ `center 45%`) and only on display-size statements, never body copy. Thai and other scripts with combining marks: split by words (use `Intl.Segmenter`), never by characters (see `motion.md` §10).
+Rules: dimmed words fail contrast, so the reveal must complete before the text reaches the middle of the viewport (`end` ≤ `center 45%`) and only on display-size statements, never body copy. Scripts with combining marks or no word spaces: split by words (use `Intl.Segmenter`), never by characters (see `motion.md` §10).
 
 ### 5.8 Scroll progress indicators
 
@@ -537,6 +537,32 @@ export function ParallaxFigure({ src, alt }: { src: string; alt: string }) {
 Reading progress: `const { scrollYProgress } = useScroll();` then `<motion.div aria-hidden style={{ scaleX: scrollYProgress, transformOrigin: '0 50%' }} />` on a fixed 3 px bar.
 
 `useScroll` can hand opacity/transform animations to the browser's ScrollTimeline (hardware-accelerated); wrapping progress in `useSpring` adds lag-smoothing but moves the work back to JS. `offset` pairs read "target edge, container edge": `['start end', 'end start']` = from target top meeting viewport bottom to target bottom meeting viewport top. For `whileInView` reveals, put the observer on an unclipped wrapper.
+
+### 5.16 Tucked layers pulled out, with blotter depth (CSS only)
+
+A stack of sheets, cards or panels where each one starts tucked under the one above and slides out, settling from a slight angle, as it enters. Use when the subject really is a stack (a book of forms, a deck, files, layers of a product) and the job is *reveal*. Tested in `examples/craft-finish/` (Chrome, 390 and 1280 px).
+
+```css
+.sheet { position: relative; z-index: 4; }                       /* earlier sheets lie on top */
+.sheet:nth-of-type(2) { z-index: 3; --pull-x: -4rem; --pull-r: -2deg; }
+.sheet:nth-of-type(3) { z-index: 2; --pull-x: 3rem;  --pull-r: 1.6deg; }
+.stack { overflow-x: clip; }                                      /* a sheet mid-slide must not widen the page */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    html:not(.static) .sheet + .sheet { animation: pull linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    html:not(.static) .far { animation: drift linear both; animation-timeline: scroll(root block); }   /* depth: further = moves less */
+  }
+}
+@keyframes pull  { from { translate: var(--pull-x, 0) -9rem; rotate: var(--pull-r, 0deg); } }
+@keyframes drift { to { translate: 0 var(--drift, 8rem); } }
+```
+
+- The resting layout is the plain document flow, so no support, reduced motion and `?static` all show the finished page.
+- `animation-range` ends at `cover 40%`: the sheet is square and still before its text reaches the reading zone. Never let body copy be read while it rotates.
+- Phones: no sideways pull and under 1° of rotation (`--pull-x: 0`), or the corners leave the viewport.
+- Full-page screenshots are taken at scroll 0, where every later sheet is still tucked: shoot with `?static` for the overview and with viewport `scrollTo` jobs for the motion (§7).
+- Depth layers (`.far`) sit on a lower `z-index` than the content and carry `aria-hidden`. Two depths (8 rem and 18 rem of drift over the page) are enough; hide them where the background is barely visible (narrow screens).
+- A transform that starts larger than its resting size (a stamp landing from `scale: 1.7`) also counts as overflow for a moment: the same `overflow-x: clip` covers it.
 
 ## 6. Example sites (verified live 2026-10-10)
 

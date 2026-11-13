@@ -1,17 +1,17 @@
 # Typography & Layout
 
-> Read when: choosing fonts or a font pairing, setting a type scale or fluid type, defining type tokens, setting Thai (or Thai + Latin) text, fixing font loading/CLS, choosing spacing or grid systems and breakpoints, writing CSS Grid / container-query layouts, or fixing weak visual hierarchy, density, alignment or image cropping.
+> Read when: choosing fonts or a font pairing, setting a type scale or fluid type, defining type tokens, setting text in more than one script or language (CJK, Arabic, Indic and Southeast Asian scripts, RTL, translated UI), fixing font loading/CLS, choosing spacing or grid systems and breakpoints, writing CSS Grid / container-query layouts, or fixing weak visual hierarchy, density, alignment or image cropping.
 
-**Contents:** Defaults · Type scales · Fluid type · Hierarchy tokens · Line-height, measure, tracking · Font pairing · Pairings catalog · Thai typography (incl. Thai + Latin luxury serifs, font budget) · Font loading · Spacing system · Grids & breakpoints · Layout recipes · Visual hierarchy & composition · Responsive images · Pitfalls · Sources
+**Contents:** Defaults · Type scales · Fluid type · Hierarchy tokens · Line-height, measure, tracking · Font pairing · Pairings catalog · Multi-script typography (script groups, pairing across scripts, vertical space, line breaking, text expansion) · Font loading · Spacing system · Grids & breakpoints · Layout recipes · Visual hierarchy & composition · Responsive images · Pitfalls · Sources
 
 ## Defaults
 
-- **Body**: 16–18px on web (≥16px for form inputs, because iOS Safari zooms into focused inputs below 16px). Line-height 1.5–1.7 for Latin and **1.6–1.8 for Thai**. Measure **45–75ch**: Baymard recommends 50–75 characters, Butterick 45–90, and WCAG 1.4.8 (AAA) caps lines at 80 characters (40 for CJK).
-- **Families**: one workhorse family for UI and body, plus at most one display family and one mono. 3–4 weights in total. Check the **script coverage first** (Thai!) before falling in love with a face. Thai + Latin pages count families per script (see "Font budget for Thai + Latin").
+- **Body**: 16–18px on web (≥16px for form inputs, because iOS Safari zooms into focused inputs below 16px). Line-height 1.5–1.7 for Latin, Greek and Cyrillic and **1.6–1.8 for scripts with stacked marks or dense glyphs** (Multi-script typography). Measure **45–75ch**: Baymard recommends 50–75 characters, Butterick 45–90, and WCAG 1.4.8 (AAA) caps lines at 80 characters (40 for CJK).
+- **Families**: one workhorse family for UI and body, plus at most one display family and one mono. 3–4 weights in total. Check the **script coverage first**, before falling in love with a face. Pages in two scripts count families per script (see "Font budget across scripts").
 - **Sizes in `rem`**. Fluid sizes use `clamp(min-rem, rem + vw, max-rem)` with **max ≤ 2.5 × min** so text still reaches 200% under browser zoom (WCAG 1.4.4; the rule is Barvian's, published in Smashing).
 - **Hierarchy**: ≤3 distinct sizes per view on simple pages (NN/g), and ≥1.2× between adjacent levels so they read as different.
 - **Space** on a 4px base with 8px rhythm; layout via CSS Grid + container queries; breakpoints where the content breaks.
-- **Never fix heights on text containers.** WCAG 1.4.12 requires layouts to survive line-height 1.5, paragraph spacing 2×, letter-spacing 0.12em and word-spacing 0.16em without clipping, and Thai stacked marks need the room anyway.
+- **Never fix heights on text containers.** WCAG 1.4.12 requires layouts to survive line-height 1.5, paragraph spacing 2×, letter-spacing 0.12em and word-spacing 0.16em without clipping, and scripts with stacked marks need the room anyway.
 
 ## Type scales
 
@@ -88,19 +88,19 @@ Web token set built on it (map these to the fluid steps above):
 }
 h1 { font: var(--text-h1); letter-spacing: -0.02em; text-wrap: balance; }
 p  { font: var(--text-body); max-width: 68ch; text-wrap: pretty; }
-:lang(th) { --text-body: 400 var(--step-0)/1.75 var(--font-sans); } /* Thai needs taller lines */
+:lang(hi), :lang(ar), :lang(ja) { --text-body: 400 var(--step-0)/1.75 var(--font-sans); } /* tall and dense scripts: list the languages you ship */
 ```
 
-Body text in an app is usually 14–16px; marketing and reading pages use 16–20px. Keep labels and captions ≥12px. M3's smallest token (label-small, 11px) is for non-essential metadata only, and Thai text should not go below 14px.
+Body text in an app is usually 14–16px; marketing and reading pages use 16–20px. Keep labels and captions ≥12px. M3's smallest token (label-small, 11px) is for non-essential metadata only; scripts with stacked marks or dense strokes should not go below 14px.
 
 ## Line-height, measure, tracking
 
-| Text | Line-height (Latin) | Line-height (Thai) | Measure | Tracking |
+| Text | Line-height (Latin, Greek, Cyrillic) | Line-height (tall or dense scripts) | Measure | Tracking |
 |---|---|---|---|---|
 | Body / long-form | 1.5–1.7 | 1.6–1.8 | 45–75ch (target ~65) | 0 |
 | UI text, labels (single line) | 1.2–1.4 | ≥1.5 | n/a | 0 to +0.01em; ALL CAPS +0.05–0.12em |
-| Headings 24–40px | 1.15–1.3 | 1.3–1.45 | ≤ 20–35ch, `text-wrap: balance` | −0.01 to −0.02em (Latin only) |
-| Display ≥48px | 1.0–1.1 | 1.2–1.35 | short | −0.02 to −0.04em (Latin only) |
+| Headings 24–40px | 1.15–1.3 | 1.3–1.45 | ≤ 20–35ch, `text-wrap: balance` | −0.01 to −0.02em (Latin, Greek, Cyrillic only) |
+| Display ≥48px | 1.0–1.1 | 1.2–1.35 | short | −0.02 to −0.04em (Latin, Greek, Cyrillic only) |
 | Small text ≤12px | 1.4–1.5 | ≥1.6 | n/a | +0.01–0.03em |
 
 - Positive tracking for small sizes and negative for large display matches Material's tokens (body +0.5px, display-large −0.25px). Variable fonts with an `opsz` axis (Inter, Fraunces, Newsreader, Bricolage Grotesque, Source Serif 4, Literata, Bodoni Moda) do part of this automatically with `font-optical-sizing: auto`.
@@ -115,7 +115,7 @@ Body text in an app is usually 14–16px; marketing and reading pages use 16–2
 Principles:
 1. **Start from the workhorse.** It must be legible at 14–16px, have 4+ weights (ideally variable), and cover every script you ship. Many brands need only this one family.
 2. **Add a second family only for contrast on one axis**: serif vs sans, geometric vs humanist, wide vs condensed, or soft vs sharp. Keep **x-height, proportions and mood** compatible. Two similar sans faces look like a mistake.
-3. **Superfamilies are the safe shortcut**: IBM Plex (Sans/Serif/Mono/Thai), Noto (Sans/Serif/Thai), Source (Serif 4/Sans 3), Red Hat (Display/Text), Instrument (Sans/Serif), Geist (Sans/Mono), Roboto Flex/Serif, Funnel (Display/Sans), Mona/Hubot Sans.
+3. **Superfamilies are the safe shortcut**: IBM Plex (Sans/Serif/Mono, with Arabic, Devanagari, Hebrew, Thai, JP, KR and Chinese siblings), Noto (Sans/Serif for nearly every script), Source (Serif 4/Sans 3), Red Hat (Display/Text), Instrument (Sans/Serif), Geist (Sans/Mono), Roboto Flex/Serif, Funnel (Display/Sans), Mona/Hubot Sans.
 4. **Roles**: display face for headings and hero only; workhorse for body, UI and labels; mono for code and data.
 5. **Overused defaults**: Google Fonts' popularity ranks (metadata, Oct 2026) put Roboto at 2, Open Sans 3, Inter 5, Montserrat 7, Poppins 8, Lato 9 and Playfair Display 24. They're fine for neutral product UI, but they read as "template" for a brand. Use a fresher face from the table, or keep Inter for UI and give the brand a distinctive display face.
 
@@ -127,7 +127,7 @@ All families verified on Google Fonts (2026-10). "var" = variable axes.
 |---|---|---|---|---|
 | Neutral product UI (fresh) | Geist | Geist | Geist Mono | var wght 100–900; Inter alternative without the ubiquity |
 | Neutral product UI (classic) | Inter Tight | Inter | JetBrains Mono | Inter var opsz 14–32 |
-| Technical / enterprise | IBM Plex Sans | IBM Plex Sans | IBM Plex Mono | Plex Sans var wdth/wght; has Thai siblings |
+| Technical / enterprise | IBM Plex Sans | IBM Plex Sans | IBM Plex Mono | Plex Sans var wdth/wght; siblings for many scripts |
 | Corporate, approachable | Red Hat Display | Red Hat Text | — | Display/Text optical pair |
 | Friendly consumer app | Plus Jakarta Sans | Figtree | — | Both warm geometric; Jakarta for headings only |
 | Fintech, trust | Schibsted Grotesk | Public Sans | — | Sturdy grotesk + neutral, highly legible body |
@@ -152,146 +152,92 @@ All families verified on Google Fonts (2026-10). "var" = variable axes.
 | Expressive variable system | Roboto Flex | Roboto Serif | — | 13 axes; tune width/grade per role |
 | Modern design-led startup | Funnel Display | Funnel Sans | — | 2024 superfamily |
 
-Thai + Latin pairings, including luxury/editorial serifs: see next section.
+Pairing a Latin face with another script: see next section.
 
-## Thai typography
+## Multi-script typography
 
-**Thai fonts (Google Fonts unless noted)**
+A type system tuned on English breaks quietly in other scripts: marks get clipped, words split in the wrong place, all-caps labels lose their meaning, translated labels overflow. Decide the languages in the brief (`templates/design-brief.md`), then apply the group's rules.
 
-| Family | Style | Weights / axes | Best for | Notes |
+**Script groups and what changes**
+
+| Group | Examples | Line-height | Case, italics, tracking | Line breaking |
 |---|---|---|---|---|
-| Noto Sans Thai Looped | Looped | var wdth 62.5–100, wght 100–900 | Body, forms, long UI text | "Suitable for all texts"; pairs with Noto Sans |
-| Noto Sans Thai | **Loopless** | var wdth/wght | Headlines, packaging, ads | Google: "mainly suitable for headlines, packaging and advertising" |
-| Noto Serif Thai | Modulated (serif) | var wdth/wght | Editorial, long reading | Pair with a Latin serif |
-| IBM Plex Sans Thai Looped | Looped (formal) | 100–700 static | Body in Plex-based systems | Same family as IBM Plex Sans/Serif/Mono |
-| IBM Plex Sans Thai | Loopless (informal) | 100–700 static | UI headings, labels | |
-| Anuphan | Loopless | **var wght 100–700**, own Latin | Modern UI, startup, dashboards | Cadson Demak; Thai drawn from IBM Plex Sans Latin |
-| Sarabun | Looped | 100–800 + italics | Government, formal documents, long text | = TH Sarabun New (national font); used in the Government Gazette |
-| Kanit | Loopless (formal) | 100–900 + italics | Headlines, modern brands | Flat terminals; tight spacing |
-| Prompt | Loopless | 100–900 + italics | Marketing, posters, headlines | Wide; similar glyphs (ก ถ ภ, บ ป, ข ช) confusable in very short texts |
-| Mitr | Loopless, rounded | 200–700 | Casual, friendly, cards | |
-| Bai Jamjuree | Square sans | 200–700 + italics | Headings, short passages, tech | Eurostyle-inspired |
-| Chakra Petch | **Looped**, square | 300–700 + italics | Gaming, tech, automotive | Tapered corners |
-| Google Sans | Includes Thai | var wght 400–700 | Android/Google-style UI | Added to Google Fonts Dec 2025 |
-| Playpen Sans Thai | Handwriting-style | var wght 100–800 | Kids, education | 2025 |
-| LINE Seed Sans TH (seed.line.me, **not** on Google Fonts) | Rounded, simplified | Thin–Heavy | Friendly consumer brands | OFL 1.1, self-host; check loop style before body use |
+| English-like | Latin (except Vietnamese), Greek, Cyrillic | Body 1.5–1.7 | Case and italics exist; negative tracking on display | At spaces; `hyphens: auto` with `lang` |
+| Tall: stacked or deep marks | Arabic, Persian, Urdu, Devanagari and other Indic scripts, Thai, Lao, Khmer, Burmese, Tibetan, Vietnamese | Body 1.6–1.8; UI ≥ 1.5 | Mostly no case; no negative tracking; no letter-spacing at all on joined scripts (Arabic, Devanagari) | Arabic and Indic scripts at spaces; Thai, Lao, Khmer, Burmese have **no word spaces** and break by dictionary |
+| Dense | Chinese, Japanese, Korean | Body 1.7–1.8; display 1.2–1.35 | No case; no true italics (use weight, colour or `text-emphasis`) | Between almost any two characters (Chinese, Japanese); Korean at spaces with `word-break: keep-all` |
+| Right-to-left | Arabic, Hebrew, Persian, Urdu | Per the group above | — | `dir` in the markup; logical properties (`platform-web.md`, i18n) |
 
-More Cadson Demak Thai+Latin families on Google Fonts: Athiti, K2D, Krub, Niramit, Mali, Taviraj, Trirong, Pridi, Maitree, Chonburi, Charm, Itim, Sriracha, Thasadith, Pattaya.
+Material's language support uses the same three categories (English-like, tall, dense) and says tall and dense scripts need extra line height; W3C measured Thai at about 150% of the vertical space of Latin, and lists Arabic (especially Nastaliq), Devanagari, Tibetan and CJK among the scripts that need more height. The line-heights above are this file's working values: confirm them on real copy with a native reader.
 
-**Looped vs loopless: when to use which.** The 2024 Typotheque study (180 native readers, run at Chulalongkorn University) found:
-- Looped text gave a small but significant **speed advantage for paragraph reading**, at all ages.
-- Looped was rated more readable and "formal/classical"; loopless read as "modern".
-- Younger readers preferred loopless only for short text.
-- At a distance, older readers struggled with loopless and younger readers with looped.
-
-Rules:
-- **Body, forms, long UI copy, older or general audiences, government/health/finance → looped.**
-- **Headlines, short labels, branding, youth-oriented marketing → loopless is fine.**
-- A common, defensible system: loopless headings + looped body, e.g. Noto Sans Thai + Noto Sans Thai Looped, or IBM Plex Sans Thai + IBM Plex Sans Thai Looped.
-
-**Thai + Latin pairings**
-
-| Use | Latin | Thai | Why |
-|---|---|---|---|
-| Product UI (one system) | IBM Plex Sans (+ Mono) | IBM Plex Sans Thai Looped (body) / IBM Plex Sans Thai (headings) | Designed together |
-| Modern startup UI | Anuphan's own Latin, or Inter | Anuphan | Variable; Plex-like proportions |
-| Google-ecosystem / max coverage | Noto Sans | Noto Sans Thai Looped / Noto Sans Thai | Coordinated with Noto Latin designs |
-| Government, documents | Sarabun (Latin incl.) | Sarabun | Official look; looped |
-| Marketing site | Kanit or Prompt (headings) | + Sarabun or Noto Sans Thai Looped (body) | Loopless voice, looped reading |
-| Editorial | Newsreader / Source Serif 4 | Noto Serif Thai | Modulated pair |
-| Tech / gaming | Chakra Petch (Latin incl.) | Chakra Petch | Square, looped |
-
-**Matching Latin + Thai.** Thai consonant height should visually match the Latin **x-height**, and stroke weight and terminals (round vs flat) should agree. Wide Thai faces (Prompt, Kanit) want wide geometric Latin. Fix size mismatch with `size-adjust` on the Thai `@font-face` (Chrome 92, Firefox 92, Safari 17) or with `font-size-adjust` (Chrome 127, Firefox 3, Safari 16.4); tune by eye on a mixed sentence.
+**Choosing and pairing fonts across scripts**
+- **Coverage before character.** List every script the product ships, then shortlist families that cover them or have a sibling for each (Noto, IBM Plex, Source Han / Noto CJK). A face with no sibling needs a partner per script.
+- **Match the partner on three things:** apparent size (the second script's main body height against the Latin x-height), stroke contrast (a high-contrast Latin serif with a modulated partner, a monoline sans with a monoline partner) and terminals (round with round, flat with flat). A mismatched partner looks like a font that failed to load.
+- **Stack order: brand face first, script face second.** Font selection runs one character at a time, so Latin glyphs come from the first family and the other script falls through to the second. Subset with `unicode-range` so each visitor downloads only the scripts on the page.
+- **Fix size mismatch on the `@font-face`** with `size-adjust` (Chrome 92, Firefox 92, Safari 17), or with `font-size-adjust` on the text (Baseline since 2024-07). `size-adjust` only works on an `@font-face` you write yourself; with a hosted CSS API, wrap the second script in a `:lang()` rule and tune `font-size` there.
 
 ```css
-/* One family name, two files split by unicode-range (Google's Thai subset range) */
-@font-face { font-family: "App Sans"; src: url(/fonts/inter-var.woff2) format("woff2");
-  font-weight: 100 900; font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "App Sans"; src: url(/fonts/anuphan-var.woff2) format("woff2");
-  font-weight: 100 700; font-display: swap; size-adjust: 104%;   /* tune by eye */
-  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC; }
-html { font-family: "App Sans", "Noto Sans Thai Looped", system-ui, sans-serif; }
-:lang(th) { line-height: 1.75; }
+/* One family name, two files split by unicode-range: the browser fetches only what the page uses */
+@font-face { font-family: "App Sans"; src: url(/fonts/brand-latin-var.woff2) format("woff2");
+  font-weight: 100 900; font-display: swap; unicode-range: U+0000-024F, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "App Sans"; src: url(/fonts/partner-script-var.woff2) format("woff2");
+  font-weight: 100 900; font-display: swap; size-adjust: 104%;  /* tune by eye on a mixed sentence */
+  unicode-range: U+0900-097F; }                                 /* the partner script's block (here Devanagari) */
+html { font-family: "App Sans", system-ui, sans-serif; }
 ```
 
-With next/font use `Anuphan({ subsets: ['thai', 'latin'], display: 'swap' })` so both subsets preload.
+**Font budget across scripts.** Count families per script: ≤ 2 per script (one display, one text). Prefer a text family that ships both scripts, so one family carries body and UI everywhere. Keep the WOFF2 files the first viewport fetches to ≤ 4 (each family × weight range × script subset is a file) and preload ≤ 2 (Font loading). CJK fonts are large: use the system stack or a service that slices them into many `unicode-range` subsets.
 
-**Thai + Latin luxury / editorial serif pairings** (fashion, fragrance, beauty, hospitality, magazines). Every family returned HTTP 200 from `https://fonts.googleapis.com/css2?family=<Family+Name>` on 2026-10-10; the Thai faces listed a Thai `unicode-range` (`U+0E01-0E5B`), the Latin faces did not. Weights and axes from Google Fonts metadata; style notes from Google's family descriptions.
+**Vertical space and clipping**
+- Tall scripts stack marks above and below the base letter. Body and UI text never below line-height 1.5; headings follow the table in "Line-height, measure, tracking". Check that marks on a wrapped second line do not touch the line above.
+- No fixed `height` on buttons, inputs, chips, tabs or table rows: padding plus `min-height`.
+- `overflow: hidden`, `-webkit-line-clamp` and `text-overflow: ellipsis` clip marks when line-height is tight. Give clamped text line-height ≥ 1.6 plus 2–4 px **`padding-top` only**. Bottom padding sits inside the clip box, so the upper marks of the next, clamped-away line show through as stray marks along the bottom edge (reproduced in headless Chrome, 2026-10-10).
+- `background-clip: text` paints nothing outside the element box: give lines padding with an equal negative margin so ascenders, descenders and marks survive.
 
-| Mood | Latin display | Thai display | Body / UI (both scripts) | Why it works | Watch |
-|---|---|---|---|---|---|
-| Fashion, fragrance (didone) | Bodoni Moda (var opsz 6–96, wght 400–900) | Trirong (100–900 + italics; looped, thick–thin, narrow and tall) | Noto Sans Thai Looped or Sarabun | High stroke contrast in both; Trirong's tall, narrow build echoes the didone's verticals | Google warns ก ถ ภ ฤ ฦ and ฎ ฏ look alike in very short texts; Bodoni Moda ≥ 28 px |
-| Classic luxury, hotels | Playfair Display (var wght 400–900) | Taviraj (100–900 + italics; wide, looped, thick–thin, formal) | IBM Plex Sans Thai Looped or Sarabun | Formal transitional contrast, airy loops | Taviraj is wide: set Thai a little smaller (start at 0.9em) or give it a wider measure |
-| Delicate beauty, spa | Cormorant Garamond (var wght 300–700) | Taviraj or Trirong at 300–400 | Noto Sans Thai Looped | Light, high-contrast, quiet | Cormorant is fragile below 20 px; light Thai weights lose loop detail, so Thai display ≥ 24 px |
-| Editorial magazine, long reads | Fraunces (var opsz 9–144, wght 100–900, SOFT, WONK) | Noto Serif Thai (var wdth 62.5–100, wght 100–900; modulated) | Noto Serif Thai (reading) + Noto Sans Thai Looped (UI) | Two variable families: match Thai width and weight to Fraunces' optical size | Google lists Noto Serif Thai at 140 glyphs, a Thai-focused design: keep the Latin face first in the stack |
-| Bold editorial display, campaigns | DM Serif Display (400 + italic) | Chonburi (400 only; formal looped + serif, display) | Sarabun | Both are single-weight, heavy display serifs | One weight each: build hierarchy with size, set `font-synthesis: none` |
-| Warm, approachable (wellness, food) | Pridi's own Latin, or Fraunces with SOFT 100 | Pridi (200–700; slab-serif Latin + looped Thai, body and display) | Pridi | One family covers both scripts and both roles | Slab Latin: pair only with soft, sturdy display faces |
-| Script accent (one word, signature line) | — | Charmonman (400/700; Thai + Latin, Zapfino-inspired; a Handwriting face, not a serif) | — | Adds a signed, ceremonial note to a luxury layout | Never for body, UI or buttons; tall ascenders need line-height ≥ 1.6 |
+**Line breaking**
+- **Set `lang`** on `<html>` and on every run in another language. Segmentation, hyphenation, font fallback, `:lang()` rules and screen-reader voices depend on it.
+- **Scripts without word spaces** (Thai, Lao, Khmer, Burmese): spaces separate phrases, and browsers find word boundaries by dictionary. Dictionaries miss names, brand terms, compounds and transliterations, which then break mid-word. Look at every heading, lead and button label at 320, 390 and 768 px with a native reader, and pass the phrases they flag to `scripts/shoot.mjs --keep-words`.
+- **Chinese and Japanese** break between most characters; `line-break: strict` keeps small kana and punctuation off line starts. `word-break: auto-phrase` breaks Japanese at phrase boundaries (Chrome 119 only: enhancement for headings). `text-autospace` adds the small gap between CJK and Latin runs (Limited). **Korean** reads better with `word-break: keep-all` (breaks at spaces).
+- `word-break: keep-all` affects CJK only. `word-break: break-all` breaks every script anywhere: remove it (it often comes from a global reset). Keep `overflow-wrap: anywhere` only as a safety net for URLs and long codes.
+- **Protect short phrases, hint long ones.** `<span style="white-space:nowrap">` is for a word or two (a compound, a brand name, "New York"). A long protected phrase cannot wrap and will overflow at tablet width: there, add `<wbr>` at the real boundaries instead (it adds a break opportunity and no character to copied text; `&shy;` adds a hyphen when the break is used).
+- **Inside a flex container** (a `display: flex` list item with an icon, a chip row) every bare text run and every span becomes its own flex item, so a nowrap span is pulled out of the sentence and the words wrap out of order. Wrap the whole label in one element so only that wrapper is the flex item.
+- `text-wrap: balance` balances with the browser's break opportunities; in space-less scripts combine it with `<wbr>` hints.
+- **Justification:** left-align (start-align) body text in UI. Justified text needs hyphenation or script-specific stretching (kashida, inter-character spacing) that browsers do unevenly.
+- **Truncate and split by grapheme or word with `Intl.Segmenter`** (Baseline April 2024), never `str.slice()` or per character: a slice can separate a base letter from its mark, an emoji from its modifier or a flag from its second half.
 
-Bai Jamjuree (square sans, 200–700 + italics, Thai + Latin) is the label/UI companion when a didone headline needs a technical counterpoint (watches, automotive). It is not a serif.
-
-**Matching a Latin didone and a Thai serif in one headline.**
-1. **x-height to consonant height:** Thai consonants should sit at the Latin x-height. Didones have small x-heights, so the Thai usually needs to come *down* in size, not up.
-2. **Stroke contrast:** high-contrast Latin (Bodoni Moda, Playfair Display, DM Serif Display) → thick–thin looped Thai (Trirong, Taviraj, Chonburi); slab Latin → Pridi; modulated text serif → Noto Serif Thai. A loopless sans Thai next to a didone looks like a font that failed to load.
-3. **Weight:** start the Thai one step lighter than the Latin (Bodoni Moda 500 + Trirong 400) and compare stem thickness at the final size; stacked marks add ink to Thai lines.
-4. **Size: `size-adjust` only works on an `@font-face` you write yourself** (self-hosted files, recipe above). The Google Fonts CSS API writes the `@font-face` rules for you, so use a stack with the **Latin face first and the Thai face second**: font selection runs one character at a time (MDN), so Latin glyphs come from the Latin face and Thai glyphs fall through to the Thai face. Because Google splits each family into `unicode-range` subsets, the Thai face's Latin file is never downloaded (headless Chrome, 2026-10-10: only Bodoni Moda Latin and Trirong Thai loaded for the headline below). Then tune the Thai with a Thai-scoped wrapper class.
-
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Trirong:wght@300;400;600&family=Noto+Sans+Thai+Looped:wght@400;600&display=swap">
-<h1 class="display">Rituals of Light <span lang="th" class="th">พิธีกรรมแห่งแสง</span></h1>
-```
-
-```css
-.display { font: 500 var(--step-5)/1.3 "Bodoni Moda", "Trirong", serif; letter-spacing: -0.02em; }
-.display .th { font-weight: 400; font-size: 0.9em; letter-spacing: 0; } /* Thai-only tuning; negative tracking collides marks */
-body { font-family: "Noto Sans Thai Looped", sans-serif; }               /* one body family for both scripts */
-```
-
-The 0.9em and the weight step were tuned by eye in that render; re-tune on your real words at the final size, and give a headline that contains Thai the Thai display line-height (1.2–1.35) on the heading itself.
-
-**Font budget for Thai + Latin.**
-- **Count families per script.** `platform-web.md`'s "≤2 families" means ≤ 2 per script (one display + one text). A Thai + Latin page may load **3 families in total when one of them is a Thai body face that also covers Latin**, e.g. Bodoni Moda (Latin display) + Trirong (Thai display) + Noto Sans Thai Looped (Thai and Latin body/UI): Latin uses 2, Thai uses 2. A fourth family (a script accent counts) means dropping one.
-- **Prefer a Thai family that ships Latin** for body and UI. Anuphan, IBM Plex Sans Thai (Looped), Noto Sans Thai (Looped), Sarabun, Pridi and Trirong all include Latin subsets on Google Fonts, so one family can carry body text in both scripts.
-- **Keep critical font files ≤ 4.** Count the WOFF2 files the first viewport fetches: each family × weight (one file per variable range) × script subset is a file. The stack above fetched four (Bodoni Moda Latin, Trirong Thai 400, Noto Sans Thai Looped Thai and Latin). Preload ≤ 2 of them (Font loading).
-
-**Vertical space and clipping.** Thai stacks vowels and tone marks above the consonant and vowels below it, so a cluster can surround its base on three sides. Thai needs more interline space than Latin (r12a).
-- Body line-height 1.6–1.8; body and UI text (labels, buttons, chips) never below 1.5. Headings follow the table above (24–40px: 1.3–1.45; display ≥48px: 1.2–1.35) because the absolute gap is already large; check that tone marks on a wrapped second line don't touch the line above.
-- No fixed `height` on buttons, inputs, chips or table rows; use padding plus `min-height`.
-- `overflow: hidden`, `-webkit-line-clamp` and `text-overflow: ellipsis` clip marks when line-height is tight. Give clamped Thai text line-height ≥1.6 plus 2–4px **`padding-top` only**. Not `padding-block`: bottom padding sits inside the clip box, so the upper vowels and tone marks of the next, clamped-away line show through as stray marks along the bottom edge (reproduced in headless Chrome, 2026-10-10).
-- Test string: `ปั้น ที่ กุ้ง ญี่ปุ่น ฎีกา ฤๅษี ผู้ใหญ่ น้ำ`.
-
-**Line breaking: Thai has no spaces between words.** Spaces separate phrases and sentences. Browsers find word breaks with dictionary heuristics and wrap on grapheme-cluster boundaries. Dictionaries miss proper names, brand terms, compounds and transliterations, which then break mid-word.
-- Set `lang="th"` on `<html>` (or on Thai islands in mixed pages). Segmentation, font fallback and `:lang()` rules depend on it.
-- `word-break: keep-all` does **not** help: it only affects CJK, and Thai behaves as `normal`. `word-break: break-all` breaks Thai anywhere (bad). Keep `overflow-wrap: anywhere` only as a safety net for URLs and long codes. `hyphens` doesn't apply to Thai.
-- Chrome's dictionary also splits **common** compounds, not only names. Seen in Chrome (Oct 2026) at 320–390px: วิดีโอ|คอล, มือ|ถือ, โรง|พยาบาล, ตัว|เอง, ใบ|อนุญาต, วัน|เดียวกัน, ส่วน|บุคคล, รอ|คิว. Look at every heading, lead and button label at **320, 390 and 768px** and protect the ones that split.
-- `<span style="white-space:nowrap">` is for **short compounds and names only** (a word or two: มือถือ, a brand name). A longer protected phrase can't wrap at all, and in testing it overflowed its column at 768px. For longer phrases add `<wbr>` hints at the real word boundaries instead (they add break opportunities, they don't remove the dictionary's), and wrap only the short compound that actually splits in a nowrap span. **Inside a flex container** (a `display:flex` `li` with an icon, a chip row) each bare text run and each span becomes its own flex item, so a nowrap span gets pulled out of the sentence and the words wrap out of order ("ท้อง อาหารเป็นพิษ / เสีย"). Wrap the whole label in one element (`<li><svg/><span>ท้องเสีย <span class=nowrap>อาหารเป็นพิษ</span></span></li>`) so only that wrapper is the flex item. Add break hints in headlines with `<wbr>` (it adds no character to copied text). U+200B ZWSP also adds a break and U+2060 WJ prevents one; misplaced ZWSPs pollute search and copy, so prefer `<wbr>` in HTML.
-- `text-wrap: balance` balances using the browser's break opportunities. For Thai headings, combine it with `<wbr>` hints.
-- Left-align Thai body text. Thai justification stretches the spaces between phrases (and characters in narrow columns), which browsers do poorly; avoid `text-align: justify`.
-- Truncate and segment with `Intl.Segmenter` (Baseline April 2024), never `str.slice()`, which can split a consonant from its tone mark:
-
-```tsx
-import { Fragment } from "react"; // React 18/19
-const graphemes = new Intl.Segmenter("th", { granularity: "grapheme" });
-const words = new Intl.Segmenter("th", { granularity: "word" });
-export const truncateTh = (s: string, n: number) => {
-  const g = Array.from(graphemes.segment(s), x => x.segment);
+```ts
+const locale = document.documentElement.lang || "en";
+const graphemes = new Intl.Segmenter(locale, { granularity: "grapheme" });
+const words = new Intl.Segmenter(locale, { granularity: "word" });
+export const truncate = (s: string, n: number) => {
+  const g = Array.from(graphemes.segment(s), (x) => x.segment);
   return g.length > n ? g.slice(0, n).join("") + "…" : s;
 };
-// Word-break hints for headings, SVG/canvas text or PDF layout
-export const ThaiBreaks = ({ text }: { text: string }) => (
-  <>{Array.from(words.segment(text), (w, i) => <Fragment key={i}>{i > 0 && <wbr />}{w.segment}</Fragment>)}</>
-);
+// Word-level units for kinetic type, SVG/canvas text or <wbr> hints in space-less scripts
+export const wordUnits = (s: string) => Array.from(words.segment(s), (w) => w.segment);
 ```
 
-- **Tracking**: don't letter-space Thai body. Negative tracking collides stacked marks. If you track Thai display text, check ำ (U+0E33), which must split from its ring when spaced (r12a).
-- Use Arabic numerals in UI; Thai digits (๐–๙) only where the document convention requires them.
+**Case, emphasis and tracking**
+- **Most scripts have no case.** A style whose signature is UPPERCASE with wide tracking needs a substitute device (weight, size, colour, a rule) in those scripts; `text-transform: uppercase` silently does nothing there.
+- **No synthetic italics or bold.** Scripts without an italic tradition get slanted fakes: set `font-synthesis: none` and emphasise with weight or colour (`text-emphasis` marks in CJK).
+- **Tracking:** none on joined scripts (letter-spacing breaks Arabic joining and disables optional ligatures; reset with `:lang(ar) { letter-spacing: normal }`), none negative on scripts with stacked marks. Positive tracking on CJK display text is conventional and safe.
+- **Numerals:** show the numerals the locale expects through `Intl.NumberFormat`; keep `tabular-nums` for columns.
+
+**Text expansion.** Translated UI is longer than English, and short strings grow the most (W3C, from IBM's table):
+
+| English length | Room to allow |
+|---|---|
+| up to 10 characters | 200–300% |
+| 11–20 | 180–200% |
+| 21–30 | 160–180% |
+| 31–50 | 140–160% |
+| 51–70 | about 150–170% |
+| over 70 | 130% |
+
+Design every label, tab and button to hold twice its English length: let controls grow, wrap to two lines or shorten the source copy. Never fix the width of a text container. Test with the longest locale you ship, or a pseudo-locale, before translations arrive.
 
 ## Font loading
 
-- **Format and size**: WOFF2 only (about 30% smaller than WOFF). Use variable fonts when you need 3+ weights. Subset with `unicode-range` (Latin fonts carry 100–1,000 glyphs; a Thai subset is small, so it's cheap to preload).
+- **Format and size**: WOFF2 only (about 30% smaller than WOFF). Use variable fonts when you need 3+ weights. Subset with `unicode-range` (Latin fonts carry 100–1,000 glyphs; most alphabetic scripts are small subsets and cheap to preload, CJK is not).
 - **Hosting**: self-host on a CDN with HTTP/2, or let the framework do it (next/font downloads Google Fonts at build time and the browser never calls Google). If you use the Google CDN: `preconnect` to `fonts.googleapis.com` and `fonts.gstatic.com` (`crossorigin`).
 - **Preload** only the 1–2 files used above the fold (body regular, plus the hero display face) with `<link rel="preload" as="font" type="font/woff2" crossorigin>`. Preload ignores `unicode-range` and competes with the LCP image.
 - **font-display**:
@@ -419,15 +365,17 @@ Bento rules: one hero tile (2×2) per grid, 1–2 wide tiles, the rest 1×1. Use
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Thai tone marks or top vowels cut off in buttons, chips, clamped text | Tight line-height plus `overflow:hidden` / line-clamp / fixed height | line-height ≥1.6, `min-height` + padding, 2–4px `padding-top` on clamped blocks |
-| Stray tone marks along the bottom edge of clamped Thai text | `padding-block` (bottom padding) reveals the top of the clamped-away next line | `padding-top` only on clamped blocks |
-| Thai names or brand words split across lines | Dictionary doesn't know the word | `white-space:nowrap` span for short compounds/names; `<wbr>` at real boundaries for longer phrases; check 320, 390 and 768px |
+| Marks above or below letters are cut off in buttons, chips, clamped text | Tight line-height plus `overflow:hidden` / line-clamp / fixed height | line-height ≥1.6, `min-height` + padding, 2–4px `padding-top` on clamped blocks |
+| Stray marks along the bottom edge of clamped text | `padding-block` (bottom padding) reveals the top of the clamped-away next line | `padding-top` only on clamped blocks |
+| Names, brand words or compounds split across lines | The line breaker's dictionary doesn't know the word, or the phrase should stay together | `white-space:nowrap` span for short phrases; `<wbr>` at real boundaries for longer ones; check 320, 390 and 768px; `shoot.mjs --keep-words` |
 | Heading overflows its column at tablet width (768px) | A long phrase wrapped in a `nowrap` span can't break | Replace the span with `<wbr>` hints at word boundaries |
 | Words in a flex list item wrap out of order | A nowrap span (or bare text next to a span) inside `display:flex` becomes a separate flex item | Put the whole label in one wrapper element; style children with `.x > span`, not `.x span` |
-| Thai breaks at random characters | `word-break: break-all` (often from a global reset) | Remove it; `overflow-wrap:anywhere` only for URLs/codes |
-| "keep-all" added for Thai has no effect | `keep-all` only changes CJK; non-CJK behaves as normal | Use `nowrap` spans or `<wbr>` |
-| Truncated Thai shows a floating tone mark or dotted circle | `slice()` split a grapheme cluster | `Intl.Segmenter` grapheme truncation |
-| Thai renders in a different font than designed | Missing `lang="th"` or the Thai subset wasn't loaded | `lang`, include the `thai` subset, composite `@font-face` |
+| Text breaks at random characters | `word-break: break-all` (often from a global reset) | Remove it; `overflow-wrap:anywhere` only for URLs/codes |
+| "keep-all" has no effect outside CJK | `keep-all` only changes CJK; other scripts behave as normal | Use `nowrap` spans or `<wbr>` |
+| Truncated text shows a floating mark, a dotted circle or half an emoji | `slice()` split a grapheme cluster | `Intl.Segmenter` grapheme truncation |
+| A script renders in a different font than designed | Missing `lang`, or that script's subset wasn't loaded | `lang`, load the subset, composite `@font-face` |
+| Uppercase, tracked labels look unstyled in another language | The script has no case; tracking was reset for it | A second device for emphasis: weight, colour, size or a rule |
+| Translated button text overflows or is cut | Width fixed for the English label | Let the control grow or wrap; allow 200% for short labels |
 | Text can't reach 200% zoom | `vw`-only sizes or clamp max > 2.5× min | rem-based clamp, max ≤ 2.5 × min |
 | Layout jumps when the web font loads (CLS) | Fallback metrics differ | Metric-matched fallback `@font-face` (size-adjust plus overrides); `font-display: optional` for body |
 | Invisible text for seconds on slow networks (Safari) | No `font-display`; Safari blocks indefinitely | Set `font-display` on every `@font-face` |
@@ -449,12 +397,10 @@ Bento rules: one hero tile (2×2) per grid, 1–2 wide tiles, the rest 1×1. Use
 - MDN text-wrap — https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap ; word-break — https://developer.mozilla.org/en-US/docs/Web/CSS/word-break ; Intl.Segmenter — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
 - MDN browser-compat-data (versions) — https://github.com/mdn/browser-compat-data
 - Google Fonts metadata (families, axes, subsets, popularity) — https://fonts.google.com/metadata/fonts ; Google Fonts family descriptions (google/fonts repo) — https://github.com/google/fonts
-- Thai serif descriptions (google/fonts) — Trirong https://raw.githubusercontent.com/google/fonts/main/ofl/trirong/DESCRIPTION.en_us.html ; Taviraj https://raw.githubusercontent.com/google/fonts/main/ofl/taviraj/DESCRIPTION.en_us.html ; Pridi https://raw.githubusercontent.com/google/fonts/main/ofl/pridi/DESCRIPTION.en_us.html ; Chonburi https://raw.githubusercontent.com/google/fonts/main/ofl/chonburi/DESCRIPTION.en_us.html ; Charmonman https://raw.githubusercontent.com/google/fonts/main/ofl/charmonman/DESCRIPTION.en_us.html ; Noto Serif Thai https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifthai/DESCRIPTION.en_us.html
-- Google Fonts CSS API v2 (each pairing family checked for HTTP 200 + Thai `unicode-range`, 2026-10-10), e.g. https://fonts.googleapis.com/css2?family=Trirong
-- MDN font-family (font selection is per character) — https://developer.mozilla.org/en-US/docs/Web/CSS/font-family
-- Typotheque, effects of loops in Thai — https://www.typotheque.com/research/effects-of-loops-in-thai
-- r12a Thai orthography notes — https://r12a.github.io/scripts/thai/th ; W3C Thai layout resources — https://w3c.github.io/sealreq/thai/
-- LINE Seed TH — https://seed.line.me/index_th.html
+- MDN font-family (font selection is per character) — https://developer.mozilla.org/en-US/docs/Web/CSS/font-family ; letter-spacing — https://developer.mozilla.org/en-US/docs/Web/CSS/letter-spacing ; text-autospace — https://developer.mozilla.org/en-US/docs/Web/CSS/text-autospace
+- W3C Internationalization: text size in translation (expansion table, vertical space) — https://www.w3.org/International/articles/article-text-size ; approaches to line breaking — https://www.w3.org/International/articles/typography/linebreak ; structural markup and right-to-left text — https://www.w3.org/International/questions/qa-html-dir ; personal names around the world — https://www.w3.org/International/questions/qa-personal-names
+- W3C layout requirements: Japanese — https://www.w3.org/TR/jlreq/ ; Chinese — https://www.w3.org/TR/clreq/ ; Arabic script — https://www.w3.org/TR/alreq/
+- Material Design typography, language support (English-like, tall, dense; mirror of the M2 page) — https://zavoloklom.dev/material-design-typography/
 - web.dev font best practices — https://web.dev/articles/font-best-practices ; CSS size-adjust — https://web.dev/articles/css-size-adjust ; fetchpriority — https://web.dev/articles/fetch-priority ; container queries stable — https://web.dev/blog/cq-stable
 - Next.js font module — https://nextjs.org/docs/app/api-reference/components/font ; Capsize — https://seek-oss.github.io/capsize/ ; fontaine — https://github.com/unjs/fontaine
 - 8-point grid (spec.fm) — https://spec.fm/specifics/8-pt-grid

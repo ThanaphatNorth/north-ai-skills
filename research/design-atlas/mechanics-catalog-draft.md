@@ -178,7 +178,7 @@ Method used in every example: **brand truth** (one sentence the brand can prove)
    - **Truth:** tiny daily deposits become something real.
    - **Metaphor:** "grains of light gathering into a shape".
    - **Mechanics:** #23 assemble from fragments + #34 a big number.
-   - **Acts:** a single glowing dot (฿20) → dots accumulate per scroll step into a house/bike outline → "฿7,300 in a year" fills the screen.
+   - **Acts:** a single glowing dot ($20) → dots accumulate per scroll step into a house/bike outline → "$7,300 in a year" fills the screen.
    - **Anchor:** "Open an account in 5 minutes" sticky pill.
    - **Budget:** SVG circles placed with `getPointAtLength` (#20); WebGL only as an enhancement.
 6. **Specialty coffee roaster**

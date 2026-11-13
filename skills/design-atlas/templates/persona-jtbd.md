@@ -60,7 +60,7 @@ Job → design mapping (fill in for each job):
 ```markdown
 | Job | Design response (screen/flow/feature) | Success signal | Metric |
 |---|---|---|---|
-| J1 | Full-screen "Paid ฿___" confirmation with sound + haptic, visible from 1 m | Merchant hands over goods without checking the bank app | Time from scan to confirmation; % of payments with a manual check |
+| J1 | Full-screen "Paid $___" confirmation with sound + haptic, visible from 1 m | Merchant hands over goods without checking the bank app | Time from scan to confirmation; % of payments with a manual check |
 ```
 
 ## 3. Forces of progress worksheet (per job, from switch interviews or reviews)

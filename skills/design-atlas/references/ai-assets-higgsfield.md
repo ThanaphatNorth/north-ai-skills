@@ -48,7 +48,7 @@ Higgsfield (higgsfield.ai, founded 2023) is a creator platform that wraps third-
 - Logos and wordmarks. Use the vector original, and use `brand-asset-creation` only to mock up around it.
 - Charts, UI screenshots, or anything that claims to be factual.
 
-**Never bake headlines, CTAs or Thai/any copy into pixels.** Keep text in HTML: it stays accessible, translatable, crisp, and in real fonts (see `typography-layout.md`). Generated Thai glyphs are unreliable.
+**Never bake headlines, CTAs or any copy into pixels.** Keep text in HTML: it stays accessible, translatable, crisp, and in real fonts (see `typography-layout.md`). Generated non-Latin glyphs are unreliable.
 
 **Cheaper alternatives first:**
 
@@ -298,7 +298,7 @@ Always ship H.264 last as the safety net. MDN: `playsinline` is "required for au
 - Watermarks are embedded on plans that include them; "Paid plans include watermark-free downloads". Never ship free-tier output in a client deliverable.
 - Higgsfield gets a licence to host and process content and to train models (Enterprise excluded).
 - §5.1(ii)(b): you are responsible for third-party rights in your inputs.
-- §5.3: no images of other people without permission. Identifiable faces also count as personal data under Thailand's PDPA (verify with counsel).
+- §5.3: no images of other people without permission. Identifiable faces also count as personal data under most privacy laws (verify with counsel).
 
 **Hosted models.** Each model's provider (Google, Kling, ByteDance, BFL, OpenAI…) has its own policies. Re-check the current terms for high-stakes campaigns (unverified per model).
 

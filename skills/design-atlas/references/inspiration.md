@@ -18,7 +18,7 @@ All access results below were tested on **2026-10-10** with `curl` (desktop Chro
 | Shaders | three.js `webgl / tsl` + `webgpu` examples | Shadertoy (browser only) |
 | Animated assets (icons, illustrations, state machines) | LottieFiles, Rive Marketplace | Spline community (3D) |
 | Typefaces in real use / pairings | Fonts In Use, Typewolf | — |
-| Palette tried on a real layout + token export | Realtime Colors | `color.md` |
+| Palette tried on a real layout + token export | `scripts/palette.py build` (open its `preview.html`) | `color.md` |
 | Component & design-system references | Component Gallery, Design Systems Repo | designsystems.surf, Adele |
 | Regulated or commerce-heavy UX (telehealth, drops, beauty) — rare in award galleries | Live product references in this file (health; commerce, streetwear and beauty) | Mobbin flows (account) |
 
@@ -83,7 +83,6 @@ Access legend: **open** = server-rendered HTML, WebFetch/curl work · **SPA** = 
 |---|---|---|---|
 | Fonts In Use | https://fontsinuse.com/ | Archive of real typography by typeface, format, topic | open (some index pages 500'd at test) |
 | Typewolf | https://www.typewolf.com/ | Trending web fonts, pairings in the wild | open |
-| Realtime Colors | https://www.realtimecolors.com/ | 5-role palette (text, background, primary, secondary, accent) on a live mock site; AA/AAA indicator; heading/body fonts; type scale 1.067–1.618; export CSS/Tailwind/SCSS + shadcn/DaisyUI/MUI presets; copy as OKLCH | open (interactive app) |
 | Component Gallery | https://component.gallery/ | One component across many design systems | open |
 | Design Systems Repo | https://designsystemsrepo.com/ | Curated list of design systems, tools, articles | open |
 | designsystems.surf | https://designsystems.surf/ | Browse real design systems & components | open |
@@ -191,8 +190,7 @@ Award galleries rarely cover regulated categories, so study live products instea
 
 | Product | URL | Look at |
 |---|---|---|
-| Doctor Anywhere Thailand (incl. former Doctor Raksa) | https://www.doctoranywhere.co.th/ | Thai-language telehealth: service menu, pricing display, app-download vs web flow |
-| Doctor Anywhere (regional) | https://www.doctoranywhere.com/ | How one brand presents teleconsult, house calls, clinics and screenings across SG/TH/MY/PH/ID |
+| Doctor Anywhere | https://www.doctoranywhere.com/ | How one brand presents teleconsult, house calls, clinics and screenings across several Southeast Asian markets |
 | Halodoc (Indonesia) | https://www.halodoc.com/ | Southeast-Asian consult + pharmacy delivery flows |
 | NHS App | https://www.nhs.uk/nhs-app/ | Plain-language public-health UX, accessibility-first content |
 | One Medical | https://www.onemedical.com/ | Membership + booking presentation, clinician credibility |
@@ -211,16 +209,15 @@ Award galleries show drop campaigns and beauty brand films, rarely the launch me
 | END. Launches | https://www.endclothing.com/gb/launches/all-launches | Launch calendar; each product carries a Unix release time and a countdown mode in its page data, the model for server-time countdowns |
 | Limited Edt (Singapore) | https://limitededt.com/ | Southeast-Asian sneaker retail: launches and raffles announced by newsletter, "Sold out" kept visible on product cards |
 | Aimé Leon Dore | https://www.aimeleondore.com/ | Photography-led streetwear store with seasonal "Delivery 1 / Delivery 2" drops, saved "My Sizes" and a "Hide sold out products" filter |
-| The Ordinary (Thailand locale) | https://theordinary.com/en-th | Actives and % in product names; Shop by Concern; Regimen Builder, Layering Guide and Ingredient Glossary; shop by routine step; "Join the Waitlist" for coming-soon products |
+| The Ordinary | https://theordinary.com/ | Actives and % in product names; Shop by Concern; Regimen Builder, Layering Guide and Ingredient Glossary; shop by routine step; "Join the Waitlist" for coming-soon products |
 | Paula's Choice Ingredient Dictionary | https://www.paulaschoice.com/ingredient-dictionary | Ingredient-level reference pages (benefits and safety) that a PDP's INCI list can link to |
 | Fenty Beauty | https://fentybeauty.com/ | Selfie-based foundation shade finder with an undertone guide (https://fentybeauty.com/pages/fenty-face-shade-finder); shade count on product cards; "Refillables" category; "Shade Feedback" link |
 | Rare Beauty | https://www.rarebeauty.com/ | Foundation Shade Finder in 4 steps; "Choose 2" free samples inside the cart; a dated launch teaser ("Coming soon \| 10.12") on the hero; berry brand colour + serif display |
 | Le Labo | https://www.lelabofragrances.com/ | Fragrance discovery sets, refills, 50 ml / 100 ml size browsing, personalised label that defaults to "For: You." |
-| Oriental Princess (Thailand) | https://www.orientalprincess.com/ | Thai-language navigation by skin problem (ปัญหาผิว) and product type; skin quiz with age bands 20s+ to 50s+; member promo with its dates and limits printed under the offer |
-| PAÑPURI (Thailand) | https://panpuri.com/ | Spa and fragrance luxury: moody, earthy photography; skincare by skin type ("For Dry & Dehydrated Skin"); 10 ml / 50 ml sizes; refills; engraving service |
+| PAÑPURI | https://panpuri.com/ | Spa and fragrance luxury: moody, earthy photography; skincare by skin type ("For Dry & Dehydrated Skin"); 10 ml / 50 ml sizes; refills; engraving service |
 | Sunnies Face (Philippines) | https://sunniesface.com/ | "Find your shade"; shade descriptions with undertone ("light with cool undertones"); per-shade sold-out states |
 
-Excluded on 2026-10-10: Aesop, Sephora Thailand, Carnival Bangkok and atmos Tokyo returned 403 (bot-blocked); erbasia.com redirected to an unrelated domain.
+Excluded on 2026-10-10: Aesop, a regional Sephora site, a regional Carnival store and atmos Tokyo returned 403 (bot-blocked); erbasia.com redirected to an unrelated domain.
 
 ## How to study a reference site
 
@@ -304,7 +301,7 @@ Slow everything down to read timing: `document.getAnimations().forEach((a) => (a
 - Awwwards — Sites of the Year — https://www.awwwards.com/websites/sites_of_the_year/
 - Awwwards — Annual Awards hall of fame — https://www.awwwards.com/annual-awards/hall-of-fame
 - Awwwards — robots.txt — https://www.awwwards.com/robots.txt
-- The FWA — https://thefwa.com/ (timeline JSON: https://thefwa.com/api/timeline/)
+- The FWA — https://thefwa.com/ (timeline JSON endpoint: `https://thefwa.com/api/timeline/?limit=20&offset=0`)
 - CSS Design Awards — WOTD winners — https://www.cssdesignawards.com/wotd-award-winners
 - CSS Design Awards — about the awards — https://www.cssdesignawards.com/awards/
 - Recent (formerly Godly) — https://recent.design/
@@ -331,7 +328,6 @@ Slow everything down to read timing: `document.getAnimations().forEach((a) => (a
 - LottieFiles — https://lottiefiles.com/
 - Fonts In Use — https://fontsinuse.com/
 - Typewolf — https://www.typewolf.com/
-- Realtime Colors — https://www.realtimecolors.com/
 - Component Gallery — https://component.gallery/
 - Design Systems Repo — https://designsystemsrepo.com/
 - designsystems.surf — https://designsystems.surf/

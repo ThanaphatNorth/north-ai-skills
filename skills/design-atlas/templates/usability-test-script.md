@@ -32,7 +32,7 @@ Task table (one row per task, ordered easy → hard; 5–8 tasks per 60 min):
 
 ## Task-writing rules
 
-1. **Realistic:** something this participant would actually do, with a plausible motivation ("buy shoes under ฿1,500 for running", not "buy the orange Nike runners").
+1. **Realistic:** something this participant would actually do, with a plausible motivation ("buy shoes under $50 for running", not "buy the orange Nike runners").
 2. **Actionable:** ask them to *do* it, not to describe what they would do.
 3. **No clues:** never use the UI's labels, menu names or steps. Describe the goal in the user's words ("get news about upcoming events by email", not "sign up for the newsletter").
 4. **Specific enough:** give every detail they need (name, date, amount, account) so they don't have to invent or ask.

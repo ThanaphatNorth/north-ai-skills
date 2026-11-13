@@ -38,7 +38,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans+Thai:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 @property --iris{syntax:'<length>';inherits:false;initial-value:0px}
 :root{
@@ -47,7 +47,7 @@
   --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
   --bone:#efe8dc; --stone:#d8ccb8; --clay:#b4532d; --ink:#1d1a16; --sun:#fff3dc;
   --arch-top:15vh; --arch-bot:22vh; --arch-w:min(22vw,38vh);
-  --serif:"Instrument Serif",Georgia,serif; --sans:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --serif:"Instrument Serif",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box;margin:0}
 html{scrollbar-gutter:stable}
@@ -152,7 +152,7 @@ footer{padding:40px clamp(16px,4vw,56px) 56px;font-size:14px;opacity:.65}
 <div class="curtain" aria-label="Intro">
   <div class="rim" aria-hidden="true"></div>
   <div class="dot" aria-hidden="true"></div>
-  <button class="skip" type="button">Skip intro · ข้ามอินโทร</button>
+  <button class="skip" type="button">Skip intro</button>
 </div>
 <div class="page" id="page">
   <header class="bar" data-in style="--i:0">
@@ -167,29 +167,29 @@ footer{padding:40px clamp(16px,4vw,56px) 56px;font-size:14px;opacity:.65}
           <svg class="hills" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 18C18 8 30 14 44 10s30-6 56 6V30H0z" fill="#dba184" opacity=".7"/><path d="M0 24c20-8 36-2 52-6s32-4 48 2v10H0z" fill="#c98a6c" opacity=".75"/></svg>
         </div>
         <div class="shaft"></div><div class="shade"></div><div class="grain"></div>
-        <p class="anno">06:12 · first light<span>ห้องรับแสงแรกของวัน · 21 มิ.ย.</span></p>
+        <p class="anno">06:12 · first light<span>The room that wakes first · Jun 21</span></p>
       </div>
       <div class="hero-l">
-        <p class="eyebrow" data-in style="--i:1">Architecture of light · Chiang Mai</p>
+        <p class="eyebrow" data-in style="--i:1">Architecture of light · Lisbon</p>
         <h1 id="h"><span data-in style="--i:2">Rooms shaped</span><span data-in style="--i:3">by <em>light.</em></span></h1>
       </div>
       <div class="hero-r">
-        <p lang="th" data-in style="--i:4">เราออกแบบบ้าน รีสอร์ต และพื้นที่สาธารณะ โดยเริ่มจากเส้นทางของแสงธรรมชาติ ตลอดทั้งวัน</p>
+        <p data-in style="--i:4">We design homes, resorts and public spaces by starting from the path natural light takes through the day.</p>
         <a class="cta" href="#work" data-in style="--i:5">See selected work →</a>
       </div>
     </section>
     <section class="block" id="work">
       <h2>Selected work, 2019–2026</h2>
-      <p>Twelve buildings, one brief: let the day write the interior. <span lang="th">สิบสองอาคาร โจทย์เดียว ให้แสงของวันเป็นผู้ออกแบบภายใน</span></p>
+      <p>Twelve buildings, one brief: let the day write the interior.</p>
       <ul class="works">
-        <li><div class="thumb" style="--c1:#d9c6a8;--c2:#f3d7b0;--c3:#b9a283" aria-hidden="true"></div><h3>Courtyard House, Mae Rim</h3><p>Rammed earth, one oculus, 2024</p></li>
+        <li><div class="thumb" style="--c1:#d9c6a8;--c2:#f3d7b0;--c3:#b9a283" aria-hidden="true"></div><h3>Courtyard House, Alentejo</h3><p>Rammed earth, one oculus, 2024</p></li>
         <li><div class="thumb" style="--c1:#b8b3a6;--c2:#e9e3d2;--c3:#8f8a7d" aria-hidden="true"></div><h3>Library of Shade</h3><p>Public reading rooms, 2022</p></li>
-        <li><div class="thumb" style="--c1:#c8a58d;--c2:#f6c79a;--c3:#a07a63" aria-hidden="true"></div><h3>Dusk Pavilion, Krabi</h3><p>Resort spa, 2026</p></li>
+        <li><div class="thumb" style="--c1:#c8a58d;--c2:#f6c79a;--c3:#a07a63" aria-hidden="true"></div><h3>Dusk Pavilion, Algarve</h3><p>Resort spa, 2026</p></li>
       </ul>
     </section>
     <section class="block quiet" id="studio">
       <h2>We draw the sun before the walls.</h2>
-      <p lang="th">ทุกโครงการเริ่มจากการศึกษาทิศทางแสงตลอดสี่ฤดู ก่อนจะลากเส้นแรกของผนัง</p>
+      <p>Every project begins with a study of how light moves through all four seasons, long before the first wall is drawn.</p>
     </section>
   </main>
   <footer id="contact">Atelier Lumen is a fictional studio made for a design-atlas recipe · hello@example.com</footer>

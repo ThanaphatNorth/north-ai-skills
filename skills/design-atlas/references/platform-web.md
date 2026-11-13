@@ -1,8 +1,8 @@
 # Platform: Web (sites, landing pages, web apps)
 
-> Read when: building or reviewing anything that ships in a browser — responsive layout, site navigation, a landing/marketing page, CTAs, web forms, Core Web Vitals, PWA install, cookie banners, theme toggles, Thai/English or RTL pages, or deciding which modern CSS is safe to use in 2026.
+> Read when: building or reviewing anything that ships in a browser — responsive layout, site navigation, a landing/marketing page, CTAs, web forms, Core Web Vitals, PWA install, cookie banners, theme toggles, multi-script or RTL pages, or deciding which modern CSS is safe to use in 2026.
 
-**Contents:** Responsive strategy · Navigation patterns · Landing-page anatomy · CTA design · Web forms · Performance as UX · Perceived performance · PWA & installability · Cookie consent · Theme toggle · i18n (Thai, RTL) · Baseline CSS in 2026 · SEO-relevant UX · Pitfalls · Sources
+**Contents:** Responsive strategy · Navigation patterns · Landing-page anatomy · CTA design · Web forms · Performance as UX · Perceived performance · PWA & installability · Cookie consent · Theme toggle · i18n (multi-script, RTL) · Baseline CSS in 2026 · SEO-relevant UX · Pitfalls · Sources
 
 Facts are as of 2026-10-10. Sibling files: `typography-layout.md` (type scale, grids), `accessibility.md` (WCAG), `motion.md` / `scroll-parallax.md` (animation), `3d-webgl.md`, `product-patterns.md` (onboarding, empty states, pricing tables), `platform-mobile.md` (native apps), `platform-desktop.md` (desktop-class web apps).
 
@@ -65,7 +65,7 @@ Order sections by the visitor's questions: *What is it? Is it for me? Can I trus
 | 2 | Social proof | Real customer logos (5–8), named testimonials with photo + role + specific result | CXL: specific testimonials beat generic praise; photos aid recall; place proof right after the value prop and next to CTAs. NN/g: users discount curated on-site quotes and cross-check third-party reviews → link to G2/Trustpilot/App Store ratings |
 | 3 | Problem → outcome | 3–6 features written as outcomes ("Close the books in 2 days"), each with a visual | Feature names alone fail the "so what" test |
 | 4 | How it works | 3 numbered steps, ≤15 words each | Reduces perceived effort |
-| 5 | Deeper proof | Case study numbers, security/compliance badges (SOC 2, ISO, PDPA/GDPR) for B2B | Proof only helps when uncertainty is high; irrelevant proof can hurt (CXL) |
+| 5 | Deeper proof | Case study numbers, security/compliance badges (SOC 2, ISO, GDPR/local privacy law) for B2B | Proof only helps when uncertainty is high; irrelevant proof can hurt (CXL) |
 | 6 | Pricing | 2–4 tiers, recommended tier highlighted, annual/monthly toggle, total cost visible | Baymard: 12% abandon when they can't see total cost up front; 40% over extra costs |
 | 7 | FAQ | 5–8 real objections (cancel, data, migration, support), `<details>` accordions | Answers objections that block the CTA |
 | 8 | Final CTA | Repeat headline promise + same primary CTA | Don't introduce a new offer here |
@@ -77,7 +77,7 @@ Order sections by the visitor's questions: *What is it? Is it for me? Can I trus
 ## CTA design
 
 - **One primary CTA per viewport**, same label everywhere on the page; secondary actions as outline/text buttons.
-- **Label = verb + outcome:** "Start free trial", "Get my quote", "ดูราคา" — never "Submit"/"Click here". Add risk-reducing microcopy beneath ("No credit card · Cancel anytime").
+- **Label = verb + outcome:** "Start free trial", "Get my quote", "See pricing" — never "Submit"/"Click here". Add risk-reducing microcopy beneath ("No credit card · Cancel anytime").
 - **Size:** ≥44×44px (WCAG 2.5.8 AA floor is 24×24px; 44×44px is the comfortable touch target); full-width on compact screens; 48–56px tall for hero CTAs.
 - **Contrast:** button fill vs background ≥3:1 (non-text contrast), label ≥4.5:1. See `color.md`.
 - **Sticky mobile CTA bar** only on long product/pricing pages; 56–64px tall, respects `env(safe-area-inset-bottom)`, hides when the in-page CTA is visible.
@@ -103,7 +103,7 @@ Order sections by the visitor's questions: *What is it? Is it for me? Can I trus
 - OTP via SMS: end the message with `@your.domain #123456` (origin-bound, ≤140 chars) so iOS/Android autofill and WebOTP pick it up.
 
 ```html
-<label for="otp">รหัส OTP 6 หลัก / 6-digit code</label>
+<label for="otp">6-digit code</label>
 <input id="otp" name="otp" type="text" inputmode="numeric"
        autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required>
 ```
@@ -161,12 +161,12 @@ LCP budget split (web.dev): TTFB ~40%, resource load delay <10%, resource load d
 | "Reject all" on the **first layer**, same size, colour, font and position weight as "Accept all" | CNIL; EDPB Cookie Banner Taskforce (most EU DPAs) |
 | Reject must not be a text link while Accept is a button; no colour/contrast emphasis on Accept | EDPB taskforce |
 | "Accept all" + "Settings" without reject = non-compliant (CNIL) | CNIL |
-| No pre-ticked purposes; granular toggles on the second layer | GDPR consent; PDPA consent guidance (2022) |
+| No pre-ticked purposes; granular toggles on the second layer | GDPR consent; local consent guidance |
 | No cookie wall implying consent is required to use the site | EDPB |
-| Withdrawal as easy as consent: persistent "Cookie settings" link in footer | GDPR / PDPA |
-| Load no non-essential tags before consent | ePrivacy 5(3); PDPA prior consent (vendor guidance) |
+| Withdrawal as easy as consent: persistent "Cookie settings" link in footer | GDPR / local privacy law |
+| Load no non-essential tags before consent | ePrivacy 5(3); local prior-consent rules |
 
-UX shape: bottom-anchored overlay (`position: fixed`, max ~30% of viewport on mobile, no layout shift), plain-language purposes, buttons "Accept all" / "Reject all" / "Customize" in one row (stack equally on mobile). Do not re-ask after a refusal for ≥6 months (proposed in the EU Digital Omnibus; status as of mid-2026: under negotiation, browser-signal provision dropped by the Council — do not build on it yet). Thailand: PDPA requires explicit opt-in; use the same equal-weight pattern and Thai copy.
+UX shape: bottom-anchored overlay (`position: fixed`, max ~30% of viewport on mobile, no layout shift), plain-language purposes, buttons "Accept all" / "Reject all" / "Customize" in one row (stack equally on mobile). Do not re-ask after a refusal for ≥6 months (proposed in the EU Digital Omnibus; status as of mid-2026: under negotiation, browser-signal provision dropped by the Council — do not build on it yet). Check the target market's consent rules; where explicit opt-in applies, use the same equal-weight pattern.
 
 ```html
 <!-- Gate non-essential scripts until consent -->
@@ -208,14 +208,14 @@ UX shape: bottom-anchored overlay (`position: fixed`, max ~30% of viewport on mo
 </head>
 ```
 
-## i18n: Thai + English, RTL basics
+## i18n: multi-script, RTL basics
 
-- **`lang` everywhere:** `<html lang="th">` (or `en`), and `lang` on inline runs in the other language. It drives fonts, line breaking, hyphenation and screen-reader voice.
+- **`lang` and `dir` everywhere:** `<html lang="…">`, and `lang` on inline runs in another language. It drives fonts, line breaking, hyphenation and screen-reader voice.
 - **Text expansion (IBM, English source):** ≤10 chars 200–300%, 11–20 180–200%, 21–30 160–180%, 31–50 140–160%, >70 ~130%. Buttons and tabs must grow (no fixed widths), labels may wrap to 2 lines.
-- **Thai vertical space:** Thai needs ~150% of the vertical space of Latin text (W3C) because of stacked vowels and tone marks above and below. Use line-height ≥1.6 (1.7–1.8 for body), never clip with fixed heights or `overflow: hidden` on single-line labels; test with "ญี่ปุ่น", "ฎีกา", "ฤๅษี".
-- **Thai line breaking:** no spaces between words; browsers break with a dictionary. Don't use `word-break: break-all`; insert `<wbr>` in long product names; `text-wrap: balance` (Newly available) helps headings.
-- **Fonts:** pair a Thai face with matching x-height (e.g. Noto Sans Thai, IBM Plex Sans Thai, Sarabun, Anuphan) after the Latin face; subset Thai with `unicode-range: U+0E00-0E7F`. No letter-spacing or fake italics on Thai. Test looped (มีหัว) and loopless (ไม่มีหัว) styles with Thai readers; loopless faces read as modern UI, looped as formal/body.
-- **Dates and numbers:** `Intl.DateTimeFormat('th-TH')` renders Buddhist Era years by default (2569 = 2026 CE); show BE to Thai users, store ISO. Currency `Intl.NumberFormat('th-TH', {style:'currency', currency:'THB'})` → ฿.
+- **Vertical space:** scripts with stacked vowels and tone marks (Thai, Lao, Khmer, Devanagari and others) need more line-height than Latin (W3C text-size article: Thai ~150% of Latin vertical space). Use line-height ≥1.6 for such body text, never clip with fixed heights or `overflow: hidden` on single-line labels; test with the script's tallest stacked sequences.
+- **Line breaking:** scripts without word spaces (Chinese, Japanese, Thai, Lao, Khmer) break by dictionary. Never use `word-break: break-all`; insert `<wbr>` in long names; `text-wrap: balance` (Newly available) helps headings.
+- **Fonts:** a fallback per script, with matching x-height after the Latin face; subset each with `unicode-range`. No letter-spacing or synthetic italics on scripts that lack them. Test with native readers.
+- **Dates and numbers:** `Intl.DateTimeFormat`, `Intl.NumberFormat` with the user's locale and calendar (some locales default to non-Gregorian years); store ISO dates and ISO currency codes.
 - **RTL:** `dir="rtl"` on `<html>`; use logical properties (`margin-inline-start`, `padding-inline`, `inset-inline-end`, `text-align: start`); mirror directional icons (back/forward arrows, progress) but not media-play icons, logos, or checkmarks.
 
 ## Baseline CSS in 2026 (what is safe)
@@ -268,7 +268,7 @@ Rule: **Widely available → use freely. Newly available → use if your audienc
 - Navigation and pagination as real `<a href>` links (crawlable, middle-click-able); avoid JS-only click handlers on links.
 - Server-render or pre-render primary content; it also fixes LCP.
 - Core Web Vitals are part of Google's page-experience assessment; treat them as UX targets first.
-- Bilingual sites: separate URLs per language (`/th/`, `/en/`), `hreflang` alternates, a visible language switcher using language names in their own script ("ไทย", "English"), never flags alone.
+- Multilingual sites: separate URLs per language (`/xx/`, `/en/`), `hreflang` alternates, a visible language switcher using each language's name in its own script, never flags alone.
 - Don't block content behind interstitials on landing from search; banners must be dismissible and not cover the main content on mobile.
 
 ## Pitfalls
@@ -279,7 +279,7 @@ Rule: **Widely available → use freely. Newly available → use if your audienc
 | Theme flashes light then dark | Theme applied in a deferred bundle | Inline `<head>` script + `color-scheme` (recipe above) |
 | LCP fine in lab, poor in field | Hero image discovered late (CSS background, JS-inserted) | `<img>` in HTML with `fetchpriority="high"` or `<link rel="preload">` |
 | CLS from fonts | `font-display: swap` with mismatched fallback metrics | `size-adjust`/`ascent-override` on the fallback `@font-face`, or `optional` |
-| Thai tone marks cut off in buttons/tabs | Fixed `height` + `overflow: hidden`, line-height ~1.2 | `min-height`, line-height ≥1.5 for UI labels, padding-block ≥0.5em |
+| Stacked marks cut off in buttons/tabs | Fixed `height` + `overflow: hidden`, line-height ~1.2 | `min-height`, line-height ≥1.5 for UI labels, padding-block ≥0.5em |
 | Mobile nav ignored | Hamburger hides everything | Combo nav: top 3–4 visible |
 | Cookie banner pushes content down | Banner inserted in flow at top | `position: fixed` overlay, bottom-anchored |
 | Scroll-linked effects missing in Firefox | Scroll-driven animations not shipped there | `@supports` guard; never hide content in the initial state |
@@ -323,4 +323,3 @@ Rule: **Widely available → use freely. Newly available → use if your audienc
 - EDPB Guidelines 03/2022 deceptive design patterns — https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-032022-deceptive-design-patterns-social-media_en
 - CNIL orders to comply (cookies) — https://www.cnil.fr/en/tag/Order+to+comply
 - noyb on Digital Omnibus cookie provisions — https://noyb.eu/node/1654
-- Tilleke & Gibbins: Thai PDPA consent guidelines — https://www.tilleke.com/insights/thailand-issues-guidelines-on-pdpa-consent-and-notification-requirements/5/

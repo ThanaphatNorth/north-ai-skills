@@ -21,14 +21,14 @@
         clip-path, triggered once per wipe with hysteresis. Measured main thread ≈ 0.7–0.9 ms/frame while
         scrubbing (headless Chrome, M3). Unrevealed acts stay focusable (clip, never visibility:hidden).
 -->
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>โรงละครแสงจันทร์ · Moonlight Playhouse — mask transitions</title>
+<title>Moonlight Playhouse — mask transitions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chonburi&family=Sarabun:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --velvet: #5a0d1b; --velvet-deep: #2a050c; --ivory: #f1e6cf; --ink: #22070d; --saffron: #f2b134; --night: #0d0b0a;
@@ -36,8 +36,8 @@
   --ease-standard: cubic-bezier(0.2,0,0,1);
   --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
   --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
-  --display: "Chonburi", "Sarabun", serif;
-  --body: "Sarabun", system-ui, sans-serif;
+  --display: "Playfair Display", Georgia, serif;
+  --body: "Source Sans 3", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
 html { background: var(--velvet-deep); color: var(--ivory); }
@@ -76,7 +76,7 @@ a { color: inherit; }
   justify-items: center; text-align: center; }
 .a0 h1 { font-size: clamp(40px, 7vw, 104px); line-height: 1.35; text-shadow: 0 4px 40px #000a; }
 .a0 .num { color: var(--saffron); }
-.nw { white-space: nowrap; } /* keep Thai phrases whole: Chrome splits compounds at narrow widths */
+.nw { white-space: nowrap; } /* keep a short phrase whole so it never breaks mid-phrase at narrow widths */
 .a0 .hint { margin-top: 40px; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; opacity: .75; }
 .a0 .hint::after { content: ""; display: block; width: 1px; height: 46px; margin: 14px auto 0; background: linear-gradient(var(--saffron), transparent); }
 .fringe { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: radial-gradient(circle at 50% 0, var(--brass) 0 4px, transparent 5px) 0 0 / 18px 22px repeat-x; opacity: .7; }
@@ -123,45 +123,45 @@ footer { padding: 28px clamp(16px, 6vw, 96px); font-size: 14px; opacity: .7; bor
 </style>
 </head>
 <body>
-<header class="top"><a href="#acts">แสงจันทร์</a><span lang="en">Season 2026</span></header>
+<header class="top"><a href="#acts">Moonlight</a><span>Season 2026</span></header>
 <main>
   <div class="acts" id="acts">
     <div class="stage">
       <div class="blade" aria-hidden="true"></div>
       <section class="act a0 is-in" aria-labelledby="t0">
-        <p class="num rv" style="--i:0"><span lang="en">Moonlight Playhouse · Bangkok</span></p>
-        <h1 id="t0" class="rv" style="--i:1"><span><span class="nw">สามองก์</span> <span class="nw">ในคืนเดียว</span> <span class="en" lang="en">Three acts. One night.</span></span></h1>
-        <p class="hint rv" style="--i:2"><span>เลื่อนเพื่อเปิดม่าน · <span lang="en">scroll to open</span></span></p>
+        <p class="num rv" style="--i:0"><span>Moonlight Playhouse · Edinburgh</span></p>
+        <h1 id="t0" class="rv" style="--i:1"><span><span class="nw">Three acts.</span> <span class="nw">One night.</span></span></h1>
+        <p class="hint rv" style="--i:2"><span>Scroll to open the curtain</span></p>
         <div class="fringe" aria-hidden="true"></div>
       </section>
       <section class="act a1" data-wipe="curtain" aria-labelledby="t1">
         <div class="moon" aria-hidden="true"></div>
-        <p class="num rv" style="--i:0"><span>องก์ที่ ๑ · <span lang="en">Act I</span></span></p>
-        <h2 id="t1" class="rv" style="--i:1"><span>จันทร์ขึ้น <span class="en" lang="en">Moonrise</span></span></h2>
-        <p class="rv" style="--i:2"><span>หญิงสาวคนหนึ่งรอเรือข้ามฟากที่ไม่เคยมา จนพระจันทร์ขึ้นเต็มดวงเหนือแม่น้ำ</span></p>
-        <div class="meta rv" style="--i:3"><span lang="en">19:00 · Main hall · 40 min</span></div>
+        <p class="num rv" style="--i:0"><span>Act I</span></p>
+        <h2 id="t1" class="rv" style="--i:1"><span>Moonrise</span></h2>
+        <p class="rv" style="--i:2"><span>A woman waits for a ferry that never comes, until the full moon rises over the river.</span></p>
+        <div class="meta rv" style="--i:3"><span>19:00 · Main hall · 40 min</span></div>
       </section>
       <section class="act a2" data-wipe="circle" data-origin=".moon" aria-labelledby="t2">
-        <p class="num rv" style="--i:0"><span>องก์ที่ ๒ · <span lang="en">Act II</span></span></p>
-        <h2 id="t2" class="rv" style="--i:1"><span>แสงเดียว <span class="en" lang="en">A single light</span></span></h2>
-        <p class="rv" style="--i:2"><span>เวทีมืดทั้งหมด เหลือเพียงสปอตไลต์ดวงเดียว กับคำสารภาพที่เก็บไว้ยี่สิบปี</span></p>
-        <div class="meta rv" style="--i:3"><span lang="en">20:00 · Black box · 35 min</span></div>
+        <p class="num rv" style="--i:0"><span>Act II</span></p>
+        <h2 id="t2" class="rv" style="--i:1"><span>A single light</span></h2>
+        <p class="rv" style="--i:2"><span>The stage goes fully dark. One spotlight remains, and a confession kept for twenty years.</span></p>
+        <div class="meta rv" style="--i:3"><span>20:00 · Black box · 35 min</span></div>
       </section>
       <section class="act a3" data-wipe="diagonal" aria-labelledby="t3">
-        <p class="num rv" style="--i:0"><span>องก์ที่ ๓ · <span lang="en">Act III</span></span></p>
-        <h2 id="t3" class="rv" style="--i:1"><span>เงาสะท้อน <span class="en" lang="en">Reflections</span></span></h2>
-        <p class="rv" style="--i:2"><span>ทุกตัวละครกลับมาพบกันริมน้ำ และเงาของพวกเขาเล่าเรื่องที่ต่างออกไป</span></p>
-        <div class="meta rv" style="--i:3"><span lang="en">21:00 · River terrace · 45 min</span></div>
-        <div class="rv" style="--i:4"><span><a class="btn" href="#book">จองบัตร <span lang="en">· Book seats</span></a></span></div>
+        <p class="num rv" style="--i:0"><span>Act III</span></p>
+        <h2 id="t3" class="rv" style="--i:1"><span>Reflections</span></h2>
+        <p class="rv" style="--i:2"><span>Every character returns to the water's edge, and their reflections tell a different story.</span></p>
+        <div class="meta rv" style="--i:3"><span>21:00 · River terrace · 45 min</span></div>
+        <div class="rv" style="--i:4"><span><a class="btn" href="#book">Book seats</a></span></div>
       </section>
     </div>
   </div>
   <section class="after" id="book">
-    <h2>รอบแสดง 14–30 พฤศจิกายน</h2>
-    <p>บัตรหนึ่งใบดูได้ทั้งสามองก์ ระหว่างองก์มีชาและขนมไทยบริการที่ระเบียงริมน้ำ</p>
+    <h2>Now playing 14–30 November</h2>
+    <p>One ticket covers all three acts. Tea and pastries are served between acts on the river terrace.</p>
   </section>
 </main>
-<footer><span lang="en">Moonlight Playhouse</span> · โรงละครสมมติสำหรับสาธิต <span lang="en">— a fictional theatre for this demo.</span></footer>
+<footer>Moonlight Playhouse · A fictional theatre for this demo.</footer>
 <script>
 (() => {
   const CONFIG = {

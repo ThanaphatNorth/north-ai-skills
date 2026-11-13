@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   LIGHT TEXT · design-atlas signature recipe (vanilla, no library)
-  What: a huge Thai + English headline that stays dark until a moving light passes over it. Each line
+  What: a huge four-line headline that stays dark until a moving light passes over it. Each line
     is painted with background-clip:text; its radial-gradient centre follows one shared light point.
     Scroll sweeps the light across the lines one by one like a lighthouse beam (a rotating beam wedge
     from the lamp + a blurred bloom copy of the text); lines keep a warm afterglow once lit, and the
@@ -18,19 +18,19 @@
   Perf: per frame while the light moves: one gradient repaint per line (+ the bloom copy, blurred on the
     GPU) and two transform-only layers (beam, halo). Loop sleeps when settled or offscreen.
     Budget: <= 6 ms per frame on a mid laptop; turn bloom off first if you need headroom.
-  A11y: the h1 is real text in reading order (Thai lines carry lang="th"); beam, halo, bloom copy and
+  A11y: the h1 is real text in reading order ; beam, halo, bloom copy and
     lighthouse are aria-hidden. Reduced motion = no pin, no sweep: the headline is shown fully lit with
-    a static beam. Thai glyph marks are kept inside each line box with padding (background-clip:text
-    clips anything outside the box).
+    a static beam. Ascenders and descenders are kept inside each line box with padding and an equal
+    negative margin (background-clip:text paints nothing outside the box).
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Phare Lanta — Light finds its way home</title>
+<title>Phare Verra — Light finds its way home</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,800&family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{
   --ease-standard:cubic-bezier(0.2,0,0,1);
@@ -38,16 +38,15 @@
   --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
   --night:#06080d; --sea:#0a1420; --unlit:#191c24; --ember:#b07440; --gold:#ffcf7d; --fog:#8fa3b8; --paper:#f3ead9;
   --lines:4;
-  --en:"Bricolage Grotesque",system-ui,sans-serif; --th:"Kanit","Bricolage Grotesque",sans-serif;
+  --en:"Bricolage Grotesque",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0}
 html{background:var(--night);color:#e9e2d4;font:300 18px/1.6 var(--en)}
 body{overflow-x:clip}
-:lang(th){font-family:var(--th)}
 a{color:inherit}
 .bar{position:fixed;inset:0 0 auto;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px clamp(16px,4vw,56px)}
 .brand{font-weight:800;letter-spacing:.24em;font-size:15px}
-.brand span{display:block;font:300 12px/1.3 var(--th);letter-spacing:.06em;opacity:.65}
+.brand span{display:block;font:300 12px/1.3 var(--en);letter-spacing:.06em;opacity:.65}
 .btn{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,207,125,.5);text-decoration:none;font-weight:500;font-size:15px;transition:background .3s var(--ease-standard),color .3s var(--ease-standard)}
 .btn:hover{background:var(--gold);color:var(--night)}
 .btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
@@ -74,7 +73,6 @@ a{color:inherit}
 .ln{--rad:240px;--x:-9999px;--y:50%;--base:var(--unlit);display:block;width:fit-content;max-width:100%;padding:.1em .06em .12em;margin:-.1em -.06em -.12em;
   --light:radial-gradient(circle var(--rad) at var(--x) var(--y),#fff8e8 0,#ffd88f calc(var(--rad)*.16),#f39a3c calc(var(--rad)*.42),rgba(190,90,30,0) var(--rad));
   color:transparent;background:var(--light) no-repeat,var(--base);-webkit-background-clip:text;background-clip:text}
-.ln:lang(th){font-weight:700;letter-spacing:0;line-height:1.08;padding-top:.16em;padding-bottom:.14em}
 .bloom{position:absolute;inset:0;pointer-events:none;filter:blur(16px);opacity:.8;mix-blend-mode:screen}
 .bloom .ln{background:var(--light) no-repeat;-webkit-background-clip:text;background-clip:text}
 .kicker{position:absolute;left:clamp(16px,7vw,120px);bottom:clamp(18px,5vh,44px);right:40%;font-size:15px;color:var(--fog);display:flex;gap:14px;align-items:center}
@@ -105,7 +103,7 @@ footer{margin-top:72px;font-size:14px;color:var(--fog);opacity:.7}
 </head>
 <body>
 <header class="bar">
-  <span class="brand">PHARE<span lang="th">ประภาคารลันตา · เกาะลันตา</span></span>
+  <span class="brand">PHARE<span>The Verra Lighthouse · Atlantic coast</span></span>
   <a class="btn" href="#stay">Reserve</a>
 </header>
 <main>
@@ -131,23 +129,23 @@ footer{margin-top:72px;font-size:14px;color:var(--fog);opacity:.7}
       <h1 class="head" id="h">
         <span class="ln">Light finds</span>
         <span class="ln">its way home.</span>
-        <span class="ln" lang="th">แสงนำทางคุณ</span>
-        <span class="ln" lang="th">กลับบ้านเสมอ</span>
+        <span class="ln">Let it</span>
+        <span class="ln">guide you.</span>
       </h1>
     </div>
-    <p class="kicker"><span class="cue" aria-hidden="true"></span><span><b>Phare Lanta</b> — six rooms in a working lighthouse, Koh Lanta. Scroll to sweep the light.</span></p>
+    <p class="kicker"><span class="cue" aria-hidden="true"></span><span><b>Phare Verra</b> — six rooms in a working lighthouse on the Atlantic coast. Scroll to sweep the light.</span></p>
   </div>
 </section>
 <section class="stay" id="stay">
   <h2>Six rooms. One light that never goes out.</h2>
-  <p lang="th">หกห้องพักในประภาคารที่ยังส่องแสงจริงทุกคืน เหนือทะเลอันดามัน</p>
+  <p>Six rooms in a lighthouse that still shines every night, high above the Atlantic.</p>
   <ul class="facts">
-    <li><b>1908</b>First lit by the harbour master of Lanta.</li>
-    <li><b>46 m</b>Above the Andaman at high tide.</li>
+    <li><b>1908</b>First lit by the harbour master of Verra.</li>
+    <li><b>46 m</b>Above the Atlantic at high tide.</li>
     <li><b>22 nm</b>The distance its beam still reaches.</li>
   </ul>
-  <a class="btn" href="#sweep">Reserve a night · จองห้องพัก</a>
-  <footer>Phare Lanta is a fictional brand made for a design-atlas recipe.</footer>
+  <a class="btn" href="#sweep">Reserve a night</a>
+  <footer>Phare Verra is a fictional brand made for a design-atlas recipe.</footer>
 </section>
 </main>
 <script>

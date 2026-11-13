@@ -1,0 +1,398 @@
+<!--
+  craft-finish — a page whose every visual decision has a source in its subject.
+  Subject: invoicing for small studios. Concept: the page IS the invoice book lying on a desk blotter.
+  White original (the offer, written as an invoice to the visitor), pink duplicate (what the client
+  receives, with the one thing the visitor can do: pay it, and the stamp lands), the carbon between
+  the sheets (what was recorded: a scoped dark section), yellow triplicate (the conditions: how this
+  page is made). A competitor in another trade could not reuse this page; that is the test.
+  Sources used: carbonless copy paper (white, pink, yellow), blotter green, printed form rules and
+  boxed fields, Franklin Gothic for the printed parts, a typewriter face for what is typed in, carbon
+  blue for copies, numbering-machine red for the serial and the rubber stamp, a perforated slip.
+  Deliberately absent, because each is a default of machine-made pages (references/ai-tells.md):
+  cream background with a serif headline and one accented word, pills, gradient aura, grain, glow,
+  card grid, eyebrow labels, stat blocks, a dark call-to-action band, an entrance animation on every block.
+  Scroll and parallax, each with a job in the concept (all CSS scroll-driven animations, so the page
+  is the same static composition without support, with reduced motion, or with ?static):
+    - pulling the copies out: each sheet starts tucked under the one above and slides out, settling
+      from a slight angle, as it enters the viewport (animation-timeline: view());
+    - depth: old stamp impressions on the blotter drift more slowly than the paper, in two depths
+      (animation-timeline: scroll());
+    - wayfinding: index tabs on the edge of the book follow the sheet in view.
+  Nothing is pinned and scroll distance is never changed.
+  What it demonstrates technically: the token starter's expression layer set from that source,
+  light-dark() theming ("lamp on / lamp off") with a scoped dark sheet, layered tinted shadows,
+  tabular figures, a spring press, a menu opening from its trigger, a field cut into the sheet.
+  Themed values come from ../../templates/tokens-starter.css. Recipes: references/visual-craft.md.
+  Folio is fictional. Serve the skill folder over http and open /examples/craft-finish/ ;
+  ?theme=dark or ?theme=light pins a theme, ?paid shows the stamped copy, ?static turns scroll motion off.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Folio — invoices for small studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Franklin:wght@400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../templates/tokens-starter.css">
+<script>
+  // pin a theme before first paint (screenshots, or the saved choice)
+  (() => { const q = new URLSearchParams(location.search).get('theme');
+    let t = q; try { t = q || localStorage.getItem('folio-theme'); } catch (e) {}
+    if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+    if (new URLSearchParams(location.search).has('static')) document.documentElement.classList.add('static'); })();
+</script>
+<style>
+/* ---- EXPRESSION: each value names its source in the invoice book ----------------------------- */
+:root {
+  --brand-h: 262; --brand-c: 0.17;        /* carbon blue: what a copy is written in */
+  --accent-h: 27; --accent-c: 0.19;       /* numbering-machine red: serial and stamp, nothing else */
+  --neutral-h: 262; --neutral-c: 0.003;   /* bond paper: white, barely cool */
+  --font-sans: "Libre Franklin", "Franklin Gothic Medium", Arial, sans-serif;   /* the printed form */
+  --font-display: var(--font-sans);
+  --font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;         /* what is typed in */
+  --font-size-display: clamp(2.5rem, 1.3261rem + 5.2174vw, 5.5rem);             /* 40-88 */
+  --font-weight-display: 800;
+  --tracking-display: -0.045em;
+  --line-height-display: 0.94;
+  --shape-control: var(--radius-xs);      /* rubber stamps and buttons: a hair of give */
+  --shape-container: var(--radius-none);  /* paper has corners */
+  --blotter: light-dark(oklch(0.4 0.055 158), oklch(0.19 0.025 158));     /* the desk */
+  --on-blotter: light-dark(oklch(0.95 0.02 158), oklch(0.82 0.02 158));
+  --stock-pink: light-dark(oklch(0.9 0.045 5), oklch(0.29 0.035 5));      /* duplicate */
+  --stock-yellow: light-dark(oklch(0.95 0.075 100), oklch(0.31 0.045 100)); /* triplicate */
+  --rule: var(--border-width) solid var(--text);                           /* form rules are ink */
+  --typed: var(--link);                   /* carbon-blue for typed entries */
+}
+
+/* ---- base ------------------------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+:root { background-color: var(--blotter); }
+body { margin: 0; font: var(--font-weight-normal) var(--font-size-base)/var(--line-height-normal) var(--font-sans); }
+h1, h2, p, ol, dl, dd, table { margin: 0; }
+h1, h2 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+a { color: inherit; text-underline-offset: 0.2em; }
+:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: var(--focus-ring-offset); }
+.sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.typed { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--typed); }
+.printed { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }   /* a form's own small print */
+
+/* ---- the desk: lamp switch on the blotter, sheets laid by hand --------------------------------- */
+.desk { position: relative; max-inline-size: var(--layout-max); margin-inline: auto; padding: var(--space-4) var(--space-gutter) var(--space-24);
+  overflow-x: clip; }   /* a sheet mid-slide or a landing stamp must never widen the page */
+.lamp { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); min-block-size: var(--target-min);
+  color: var(--on-blotter); font-size: var(--font-size-sm); }
+.lamp button { min-block-size: var(--target-min); min-inline-size: var(--space-8); padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; opacity: 0.7; }
+.lamp button[aria-pressed="true"] { opacity: 1; text-decoration: underline; text-underline-offset: 0.3em; text-decoration-thickness: var(--border-width-strong); }
+.sheet { position: relative; z-index: 4; max-inline-size: 58rem; padding: var(--space-10); color: var(--text); scroll-margin-block-start: var(--space-4);
+  background: var(--surface-raised); border-radius: var(--shape-container); box-shadow: var(--shadow-xl); }
+.sheet + .sheet { margin-block-start: var(--space-10); }
+/* each copy lies under the sheet above it (z-index), offset by hand */
+.sheet.pink { z-index: 3; background: var(--stock-pink); margin-inline-start: var(--space-20); --pull-x: -4rem; --pull-r: -2deg; }
+.sheet.carbon { z-index: 2; background: var(--bg); margin-inline-start: var(--space-8); --pull-x: 3rem; --pull-r: 1.6deg; }
+.sheet.yellow { z-index: 1; background: var(--stock-yellow); margin-inline-start: var(--space-32); --pull-x: -2.5rem; --pull-r: -1.4deg; }
+.copyline { display: flex; justify-content: space-between; gap: var(--space-4); padding-block-end: var(--space-3); margin-block-end: var(--space-6);
+  border-block-end: var(--rule); }
+
+/* ---- the printed form -------------------------------------------------------------------------- */
+.letterhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-4);
+  padding-block-end: var(--space-4); border-block-end: var(--border-width-strong) solid var(--text); }
+.brand { font: 900 var(--font-size-4xl)/0.9 var(--font-sans); letter-spacing: -0.05em; text-decoration: none; }
+.letterhead nav { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-5); margin-block-start: var(--space-3); font-size: var(--font-size-sm); }
+.letterhead nav a { display: inline-flex; align-items: center; min-block-size: var(--target-min); }
+.serial { text-align: end; }
+.serial b { display: block; font: 600 var(--font-size-3xl)/1 var(--font-mono); color: var(--accent); }   /* red, as the machine prints it */
+.fields { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; border-block-end: var(--rule); }
+.fields > div { padding: var(--space-2) var(--space-3) var(--space-3) 0; }
+.fields > div + div { padding-inline-start: var(--space-3); border-inline-start: var(--rule); }
+.offer { padding-block: var(--space-10) var(--space-8); }
+h1 { font: var(--font-weight-display) var(--font-size-display)/var(--line-height-display) var(--font-display);
+  letter-spacing: var(--tracking-display); }
+.offer p { margin-block-start: var(--space-6); max-inline-size: 44ch; font-size: var(--font-size-lg); }   /* leaves the stamp its own ground */
+table { inline-size: 100%; border-collapse: collapse; }
+th { padding: var(--space-2) 0; text-align: start; border-block: var(--rule); }
+td { padding: var(--space-2) 0; border-block-end: var(--border-width) solid var(--border); vertical-align: baseline; }
+.n { text-align: end; padding-inline-start: var(--space-4); white-space: nowrap; }
+td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--typed); }
+tfoot td { padding-block: var(--space-3); border-block-end: var(--border-width-strong) solid var(--text); font-weight: var(--font-weight-bold); }
+tfoot td.n { font-size: var(--font-size-xl); font-weight: 600; }
+.note { margin-block-start: var(--space-2); font-size: var(--font-size-xs); color: var(--text-muted); }
+
+/* the perforated slip: the offer's call to action is the part you tear off */
+.slip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-8);
+  margin: var(--space-10) calc(var(--space-10) * -1) calc(var(--space-10) * -1); padding: var(--space-6) var(--space-10);
+  border-block-start: var(--border-width-strong) dashed var(--text); }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-block-size: var(--control-height-lg);
+  padding-inline: var(--control-padding-x-lg); border: 0; border-radius: var(--control-radius); background: var(--primary);
+  color: var(--primary-foreground); font: inherit; font-weight: var(--font-weight-semibold); text-decoration: none; cursor: pointer;
+  touch-action: manipulation;
+  transition: scale var(--duration-spring-fast) var(--ease-spring-bouncy), background-color var(--duration-fast) var(--ease-standard); }
+.btn:active { scale: var(--press-scale); }
+@media (hover: hover) { .btn:hover { background: var(--primary-hover); } }
+.link { display: inline-flex; align-items: center; min-block-size: var(--target-min); font-weight: var(--font-weight-medium); }
+
+/* ---- the stamp: the one moving part. Off until .is-paid lands it. ------------------------------- */
+.stamp { position: absolute; padding: var(--space-2) var(--space-4); border: var(--space-1) double currentColor; border-radius: var(--radius-sm);
+  color: var(--accent); rotate: -8deg; opacity: 0; pointer-events: none; text-align: center; text-transform: uppercase;
+  font: 600 var(--font-size-2xl)/var(--line-height-tight) var(--font-mono); letter-spacing: 0.08em; }
+.stamp small { display: block; font-size: var(--font-size-xs); letter-spacing: 0.02em; }
+.is-paid .stamp { opacity: 0.86; animation: thud var(--duration-spring-fast) var(--ease-spring-bouncy) var(--stamp-delay, 0ms) backwards; }
+@keyframes thud { from { opacity: 0; scale: 1.7; rotate: -2deg; } }
+.offer, .bill { position: relative; }
+.offer .stamp { inset-block-end: var(--space-8); inset-inline-end: 0; }            /* beside the letter, clear of the serial */
+.bill .stamp { inset-block-end: calc(var(--space-8) * -1); inset-inline-start: 34%; }   /* across the total line, clear of every figure */
+
+/* ---- duplicate: the client's side, and the one thing the visitor can do -------------------------- */
+h2 { font: 800 var(--font-size-3xl)/var(--line-height-tight) var(--font-sans); letter-spacing: -0.035em; }
+.from { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-4); padding-block: var(--space-6) var(--space-3); border-block-end: var(--rule); }
+.from b { font-weight: 800; letter-spacing: -0.02em; }
+.pay { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-4); margin-block-start: var(--space-8); }
+.field { display: grid; gap: var(--space-1); flex: 1 1 14rem; }
+.field input { min-block-size: var(--control-height-lg); padding-inline: var(--space-3); border: 0; border-radius: var(--control-radius);
+  background: var(--surface-sunken); color: var(--text); font: var(--font-weight-normal) var(--control-font-size)/1 var(--font-mono);
+  box-shadow: inset 0 1px 2px var(--shadow-ink), 0 0 0 var(--border-width) var(--text); }                     /* a field is cut into the sheet */
+.icon-btn { position: relative; display: inline-grid; place-items: center; inline-size: var(--control-height-sm); block-size: var(--control-height-lg);
+  border: 0; border-radius: var(--control-radius); background: transparent; color: var(--text); cursor: pointer;
+  transition: scale var(--duration-spring-fast) var(--ease-spring-bouncy); }
+.icon-btn::after { content: ""; position: absolute; inset: 50% auto auto 50%; translate: -50% -50%;           /* 44px target, 32px drawing */
+  inline-size: max(100%, var(--target-min)); block-size: max(100%, var(--target-min)); }
+.icon-btn:active { scale: var(--press-scale); }
+.icon-btn svg { inline-size: var(--icon-md); block-size: var(--icon-md); }
+.menu { inset: auto; margin: 0; min-inline-size: 12rem; padding: var(--space-1); border: 0; border-radius: var(--control-radius);
+  background: var(--surface-raised); color: var(--text); box-shadow: var(--elevation-popover);
+  transform-origin: top right; opacity: 0; scale: 0.94;
+  transition: opacity var(--duration-moderate) var(--ease-out), scale var(--duration-spring) var(--ease-spring),
+              display var(--duration-moderate) allow-discrete, overlay var(--duration-moderate) allow-discrete; }
+.menu:popover-open { opacity: 1; scale: 1; }
+@starting-style { .menu:popover-open { opacity: 0; scale: 0.94; } }
+.menu button { display: block; inline-size: 100%; min-block-size: var(--control-height-sm); padding-inline: var(--space-3); border: 0;
+  background: transparent; color: inherit; font: inherit; font-size: var(--font-size-sm); text-align: start; cursor: pointer; }
+@media (hover: hover) { .menu button:hover, .icon-btn:hover { background: var(--surface-sunken); } }
+
+/* ---- the carbon: a scoped dark sheet. One attribute; roles, rules and shadows follow. ----------- */
+.log { list-style: none; padding: 0; margin-block-start: var(--space-6); font: var(--font-weight-normal) var(--font-size-sm)/var(--line-height-relaxed) var(--font-mono); font-variant-numeric: tabular-nums; }
+.log li { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--space-4); padding-block: var(--space-2); border-block-start: var(--border-width) solid var(--border-strong); }
+.log s { color: var(--text-muted); } .log ins { text-decoration: none; color: var(--typed); }
+
+/* ---- triplicate: the conditions, as the back of a form sets them --------------------------------- */
+.clauses { columns: 2 18rem; column-gap: var(--space-10); padding: 0; margin-block-start: var(--space-6); list-style: none; counter-reset: c; font-size: var(--font-size-sm); }
+.clauses li { counter-increment: c; break-inside: avoid; margin-block-end: var(--space-4); padding-inline-start: var(--space-8); position: relative; }
+.clauses li::before { content: counter(c) "."; position: absolute; inset-inline-start: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.clauses b { font-weight: 700; }
+.colophon { margin-block-start: var(--space-6); padding-block-start: var(--space-3); border-block-start: var(--rule); font-size: var(--font-size-xs); }
+
+/* ---- scroll: pulling the copies out, and the blotter's depth ------------------------------------ */
+/* old impressions left on the blotter: the far layers */
+.ghosts { position: absolute; inset: 0; z-index: 0; pointer-events: none; display: none; }
+.ghosts span { position: absolute; inset-block-start: var(--y); inset-inline-start: var(--x); rotate: var(--r); padding: var(--space-1) var(--space-3);
+  border: var(--space-1) double currentColor; border-radius: var(--radius-sm); color: var(--on-blotter); opacity: 0.12;
+  font: 600 var(--font-size-lg)/var(--line-height-tight) var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+.ghosts small { display: block; font-size: var(--font-size-xs); letter-spacing: 0.02em; }
+@media (width >= 72rem) { .ghosts { display: block; } }
+
+/* index tabs on the edge of the book: where you are, and a way to jump */
+.tabs { position: fixed; inset-block-start: 50%; inset-inline-end: 0; z-index: var(--z-sticky); translate: 0 -50%; display: none; gap: var(--space-1); justify-items: end; }
+.tabs a { display: flex; align-items: center; gap: var(--space-3); min-block-size: var(--target-min); padding-inline: var(--space-3) var(--space-5);
+  background: var(--surface-raised); color: var(--text); box-shadow: var(--shadow-sm); text-decoration: none;
+  font: var(--font-weight-medium) var(--font-size-sm)/1 var(--font-mono); translate: calc(100% - var(--space-10)) 0;
+  transition: translate var(--duration-spring) var(--ease-spring); }
+.tabs a[aria-current="true"], .tabs a:focus-visible { translate: 0 0; }
+@media (hover: hover) { .tabs a:hover { translate: 0 0; } }
+.tabs .t-pink { background: var(--stock-pink); } .tabs .t-yellow { background: var(--stock-yellow); } .tabs .t-carbon { background: var(--bg); }
+@media (width >= 80rem) { .tabs { display: grid; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  @supports (animation-timeline: view()) {
+    /* tucked under the sheet above, at an angle; out and square by the time it is 40% into view */
+    html:not(.static) .sheet + .sheet { animation: pull linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    /* the blotter is further from the eye than the paper: its marks move less. Two depths. */
+    html:not(.static) .ghosts { animation: drift linear both; animation-timeline: scroll(root block); }
+    html:not(.static) .ghosts.far { --drift: 18rem; }
+  }
+}
+@keyframes pull { from { translate: var(--pull-x, 0) -9rem; rotate: var(--pull-r, 0deg); } }
+@keyframes drift { to { translate: 0 var(--drift, 8rem); } }
+@media (prefers-reduced-motion: reduce) { .is-paid .stamp { animation: none; } .tabs a { transition: none; } }
+
+@media (width < 56rem) {
+  .sheet { padding: var(--space-5); } .sheet.pink, .sheet.carbon, .sheet.yellow { margin-inline-start: 0; --pull-x: 0rem; }
+  .sheet.pink { --pull-r: -0.8deg; } .sheet.carbon { --pull-r: 0.7deg; } .sheet.yellow { --pull-r: -0.6deg; }
+  .sheet + .sheet { margin-block-start: var(--space-5); }
+  .slip { margin: var(--space-8) calc(var(--space-5) * -1) calc(var(--space-5) * -1); padding: var(--space-5); }
+  .letterhead { grid-template-columns: minmax(0, 1fr); } .serial { text-align: start; }
+  .fields { grid-template-columns: 1fr 1fr; } .fields > div:nth-child(3) { padding-inline-start: 0; border-inline-start: 0; }
+  .fields > div:nth-child(-n+2) { border-block-end: var(--rule); }
+  .opt { display: none; }
+  .stamp { position: static; display: none; inline-size: fit-content; margin: var(--space-5) var(--space-2) 0 auto; font-size: var(--font-size-xl); }
+  .is-paid .stamp { display: block; }
+  .log li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+</style>
+</head>
+<body>
+<div class="desk">
+  <div class="lamp" role="group" aria-label="Theme">
+    <span>Lamp</span>
+    <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+    <button type="button" data-set-theme="light" aria-pressed="false">On</button>
+    <button type="button" data-set-theme="dark" aria-pressed="false">Off</button>
+  </div>
+
+  <!-- old impressions on the blotter (decorative): two depths of parallax -->
+  <div class="ghosts far" aria-hidden="true">
+    <span style="--x: 82%; --y: 9rem; --r: 6deg">Paid<small>No. 0139</small></span>
+    <span style="--x: 1%; --y: 74rem; --r: -11deg">Paid<small>No. 0137</small></span>
+    <span style="--x: 86%; --y: 112rem; --r: 9deg">Sent<small>No. 0141</small></span>
+  </div>
+  <div class="ghosts" aria-hidden="true">
+    <span style="--x: 88%; --y: 38rem; --r: -7deg">Paid<small>No. 0140</small></span>
+    <span style="--x: 0%; --y: 122rem; --r: 5deg">Paid<small>No. 0141</small></span>
+  </div>
+
+  <nav class="tabs" aria-label="Sheets in this book">
+    <a href="#top" data-tab="top"><b>1</b>Original</a>
+    <a href="#client" data-tab="client" class="t-pink"><b>2</b>Duplicate</a>
+    <a href="#record" data-tab="record" class="t-carbon" data-theme="dark"><b>3</b>Carbon</a>
+    <a href="#conditions" data-tab="conditions" class="t-yellow"><b>4</b>Triplicate</a>
+  </nav>
+
+  <main>
+    <!-- ORIGINAL: the offer, written as an invoice to the visitor -->
+    <article class="sheet original is-paid" id="top" style="--stamp-delay: 700ms">
+      <header class="letterhead">
+        <div>
+          <a class="brand" href="#top">Folio</a>
+          <nav aria-label="Sheets"><a href="#client">The client's copy</a><a href="#record">The record</a><a href="#conditions">Conditions</a></nav>
+        </div>
+        <p class="serial"><span class="printed">Invoice no.</span><b>0142</b></p>
+      </header>
+      <dl class="fields">
+        <div><dt class="printed">Bill to</dt><dd class="typed">Your studio</dd></div>
+        <div><dt class="printed">Sent</dt><dd class="typed">Tue 10 Nov</dd></div>
+        <div><dt class="printed">Terms</dt><dd class="typed">Net 7</dd></div>
+        <div><dt class="printed">Paid</dt><dd class="typed">Thu 12 Nov</dd></div>
+      </dl>
+      <div class="offer">
+        <h1>Send the invoice. Get paid Thursday.</h1>
+        <p>Folio builds the invoice from your time sheet, sets it on your own letterhead and takes the payment by card or bank transfer. Last quarter the median Folio invoice was paid in 2.1 days.</p>
+        <p class="stamp" aria-hidden="true">Paid<small>Thu 12 Nov 2026</small></p>
+      </div>
+      <table>
+        <caption class="sr">What you are billed for</caption>
+        <thead><tr><th scope="col" class="printed">For</th><th scope="col" class="printed n opt">Quantity</th><th scope="col" class="printed n">Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Folio for one studio, each month</td><td class="n opt">1</td><td class="n">18.00</td></tr>
+          <tr><td>Invoices built from your time sheet</td><td class="n opt">no limit</td><td class="n">0.00</td></tr>
+          <tr><td>Your letterhead and your typeface, set once</td><td class="n opt">1</td><td class="n">0.00</td></tr>
+          <tr><td>Card and bank-transfer payments, at cost</td><td class="n opt">as used</td><td class="n">0.00</td></tr>
+        </tbody>
+        <tfoot><tr><td>Due each month</td><td class="opt"></td><td class="n">$18.00</td></tr></tfoot>
+      </table>
+      <p class="note">Demo figures. Folio is a fictional product.</p>
+      <div class="slip">
+        <p class="printed">Tear here and return with payment</p>
+        <p><a class="btn" href="#client">Make an invoice</a></p>
+      </div>
+    </article>
+
+    <!-- DUPLICATE: what the client receives; paying it lands the stamp -->
+    <article class="sheet pink" id="client">
+      <p class="copyline printed"><span>Duplicate</span><span>The client's copy</span></p>
+      <h2>What Okafor Ceramics received on Tuesday.</h2>
+      <p class="from"><span><b>Halden &amp; Rye</b><br><span class="printed">Type and print, est. 2011</span></span><span class="typed">No. 0142</span></p>
+      <div class="bill">
+      <table>
+        <caption class="sr">Line items on invoice 0142</caption>
+        <thead><tr><th scope="col" class="printed">Work</th><th scope="col" class="printed n opt">Hours</th><th scope="col" class="printed n opt">Rate</th><th scope="col" class="printed n">Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Identity system</td><td class="n opt">48.0</td><td class="n opt">100.00</td><td class="n">4,800.00</td></tr>
+          <tr><td>Type licensing</td><td class="n opt"></td><td class="n opt"></td><td class="n">620.00</td></tr>
+          <tr><td>Print supervision</td><td class="n opt">11.5</td><td class="n opt">100.00</td><td class="n">1,150.00</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total due</td><td class="opt"></td><td class="opt"></td><td class="n">$6,570.00</td></tr></tfoot>
+      </table>
+      <p class="stamp" aria-hidden="true">Paid<small>Thu 12 Nov 2026</small></p>
+      </div>
+      <div class="pay">
+        <label class="field"><span class="printed">Send the receipt to</span><input type="email" placeholder="accounts@okafor.example" autocomplete="off"></label>
+        <button class="btn" type="button" id="pay" aria-pressed="false">Pay $6,570.00</button>
+        <button class="icon-btn" type="button" popovertarget="row-menu" id="row-menu-btn" aria-label="More actions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+        <div class="menu" id="row-menu" popover>
+          <button type="button">Download PDF</button><button type="button">Ask a question</button><button type="button">Dispute a line</button>
+        </div>
+      </div>
+      <p class="sr" role="status" id="pay-status"></p>
+    </article>
+
+    <!-- THE CARBON: a scoped dark sheet -->
+    <article class="sheet carbon" id="record" data-theme="dark">
+      <p class="copyline printed"><span>Carbon</span><span>The record</span></p>
+      <h2>The carbon keeps a copy of every change.</h2>
+      <ol class="log" aria-label="Record for invoice 0142">
+        <li><span>Tue 10 Nov 09:14</span><span>Sent to accounts@okafor.example</span></li>
+        <li><span>Wed 11 Nov 16:02</span><span>Print supervision <s>11.0 h</s> <ins>11.5 h</ins>, client notified</span></li>
+        <li><span>Thu 12 Nov 10:37</span><span>Paid by bank transfer, $6,570.00</span></li>
+      </ol>
+    </article>
+
+    <!-- TRIPLICATE: the conditions, i.e. how this page is made -->
+    <article class="sheet yellow" id="conditions">
+      <p class="copyline printed"><span>Triplicate</span><span>Conditions</span></p>
+      <h2>Conditions under which this page was made.</h2>
+      <ol class="clauses">
+        <li><b>One light.</b> It hangs straight above the desk. Every sheet's shadow is the same tinted ink, layered at 1, 2, 4, 8, 16 and 32 px.</li>
+        <li><b>Paper has corners.</b> Nothing is rounded except the rubber stamp and the buttons, by 2 px.</li>
+        <li><b>Two inks.</b> Carbon blue to write with, red to number and to stamp. Three paper stocks: white, pink, yellow.</li>
+        <li><b>Printed and typed.</b> What the printer set is in Franklin. What someone typed in is in a typewriter face, so a column adds up by eye.</li>
+        <li><b>What moves.</b> Scrolling pulls each copy out from under the sheet above it. Old impressions on the blotter drift more slowly than the paper. The stamp lands on a short spring. Ask for reduced motion and all of it stays still.</li>
+        <li><b>The lamp.</b> Light and dark are one value per colour. The carbon sheet is dark by one attribute, with no second set of tokens.</li>
+      </ol>
+      <p class="colophon">Set in Libre Franklin and IBM Plex Mono. Every value above is a token in templates/tokens-starter.css; this page only sets the expression layer.</p>
+    </article>
+  </main>
+</div>
+<script>
+(() => {
+  // the lamp: set or remove data-theme on <html>; the tokens do the rest
+  const root = document.documentElement, lampButtons = [...document.querySelectorAll('[data-set-theme]')];
+  const sync = () => lampButtons.forEach((b) => b.setAttribute('aria-pressed', String((root.dataset.theme || '') === b.dataset.setTheme)));
+  lampButtons.forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.setTheme) root.dataset.theme = b.dataset.setTheme; else delete root.dataset.theme;
+    try { localStorage.setItem('folio-theme', b.dataset.setTheme); } catch (e) {}
+    sync();
+  }));
+  sync();
+  // paying the client's copy lands the stamp; pressing again lifts it (the visitor drives the one signature moment)
+  const copy = document.getElementById('client'), pay = document.getElementById('pay'), status = document.getElementById('pay-status');
+  pay.addEventListener('click', () => {
+    const paid = copy.classList.toggle('is-paid');
+    pay.setAttribute('aria-pressed', String(paid));
+    pay.textContent = paid ? 'Lift the stamp' : 'Pay $6,570.00';
+    status.textContent = paid ? 'Paid. Thursday 12 November 2026.' : '';
+  });
+  if (new URLSearchParams(location.search).has('paid')) pay.click();   // ?paid shows the stamped state in screenshots
+  // index tabs follow the sheet crossing the middle of the viewport
+  const tabs = [...document.querySelectorAll('.tabs a')];
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (en.isIntersecting) tabs.forEach((t) => t.setAttribute('aria-current', String(t.dataset.tab === en.target.id)));
+    }), { rootMargin: '-45% 0px -45% 0px' });
+    document.querySelectorAll('main > .sheet').forEach((sh) => io.observe(sh));
+  }
+  // place the menu under its trigger, right-aligned (CSS anchor positioning is not Baseline yet)
+  const menu = document.getElementById('row-menu'), trigger = document.getElementById('row-menu-btn');
+  menu.addEventListener('beforetoggle', (e) => {
+    if (e.newState !== 'open') return;
+    const r = trigger.getBoundingClientRect();
+    menu.style.top = Math.round(r.bottom + 6) + 'px';
+    menu.style.right = Math.round(document.documentElement.clientWidth - r.right) + 'px';
+  });
+})();
+</script>
+</body>
+</html>

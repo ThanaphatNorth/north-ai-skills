@@ -1,7 +1,7 @@
 /* ==========================================================================
    tailwind-theme.css: Tailwind CSS v4 mapping for tokens-starter.css
    Tailwind-only syntax (@theme, @custom-variant, "--color-*: initial"):
-   it must go through the Tailwind compiler. Tested with tailwindcss 4.3.3.
+   it must go through the Tailwind compiler. Tested with tailwindcss 4.3.5.
    Entry stylesheet:
 
      @import "tailwindcss";
@@ -17,7 +17,11 @@
    border-border border-border-strong bg-primary text-primary-foreground
    hover:bg-primary-hover bg-danger-subtle text-danger-text ring-focus
    rounded-md shadow-popover text-2xl font-sans ease-standard p-4 (= --space-4)
-   No z-index/duration namespaces exist: use z-(--z-modal) duration-(--duration-fast).
+   Expression layer: text-display (size, line-height, tracking and weight in one
+   class) shadow-glow inset-shadow-highlight ease-spring ease-spring-bouncy
+   py-section px-gutter max-w-page rounded-control rounded-card
+   No z-index/duration/gradient namespaces exist: use z-(--z-modal)
+   duration-(--duration-spring) bg-(image:--gradient-brand).
    Breakpoints: Tailwind defaults (sm 40rem ... 2xl 96rem) already match the tokens.
    ========================================================================== */
 
@@ -89,6 +93,9 @@
 
   /* Spacing: Tailwind multiplies --spacing, so p-4 = 4 x 0.25rem = --space-4 */
   --spacing: var(--space-1);
+  --spacing-section: var(--space-section); /* py-section */
+  --spacing-gutter: var(--space-gutter);   /* px-gutter, gap-gutter */
+  --container-page: var(--layout-max);     /* max-w-page */
 
   /* Radius */
   --radius-xs: var(--radius-xs);
@@ -111,6 +118,8 @@
   --shadow-popover: var(--elevation-popover);
   --shadow-dialog: var(--elevation-dialog);
   --shadow-toast: var(--elevation-toast);
+  --shadow-glow: var(--glow-primary);                    /* the one primary action */
+  --inset-shadow-highlight: inset 0 1px 0 var(--highlight); /* top edge catching the light */
 
   /* Typography */
   --font-sans: var(--font-sans);
@@ -139,6 +148,10 @@
   --text-4xl--line-height: var(--line-height-tight);
   --text-5xl: var(--font-size-5xl);
   --text-5xl--line-height: var(--line-height-tight);
+  --text-display: var(--font-size-display);
+  --text-display--line-height: var(--line-height-display);
+  --text-display--letter-spacing: var(--tracking-display);
+  --text-display--font-weight: var(--font-weight-display);
   --tracking-tight: var(--tracking-tight);
   --tracking-normal: var(--tracking-normal);
   --tracking-wide: var(--tracking-wide);
@@ -153,6 +166,8 @@
   --ease-in: var(--ease-in);
   --ease-emphasized-out: var(--ease-emphasized-out);
   --ease-emphasized-in: var(--ease-emphasized-in);
+  --ease-spring: var(--ease-spring);
+  --ease-spring-bouncy: var(--ease-spring-bouncy);
   --default-transition-duration: var(--duration-moderate);
   --default-transition-timing-function: var(--ease-standard);
 }

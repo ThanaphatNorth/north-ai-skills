@@ -21,14 +21,14 @@
         and the gallery is offscreen. Base marquee drift runs as a compositor CSS animation. Measured main
         thread ≈ 1.0 ms/frame while scrubbing at 1440×900, 0.4 ms at 390 (headless Chrome, M3).
 -->
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sala Gallery · แสงมรสุม — velocity gallery</title>
+<title>Oriel Gallery · Monsoon Light — velocity gallery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=IBM+Plex+Sans+Thai:wght@300;400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper: #ece5d6; --mat: #f6f1e6; --ink: #1b1712; --muted: #6a6256; --accent: #c23f28; --line: #1b17121f;
@@ -36,15 +36,16 @@
   --ease-standard: cubic-bezier(0.2,0,0,1);
   --ease-emphasized-out: cubic-bezier(0.05,0.7,0.1,1);
   --ease-emphasized-in: cubic-bezier(0.3,0,0.8,0.15);
-  --grot: "Big Shoulders Display", "IBM Plex Sans Thai", sans-serif;
-  --th: "IBM Plex Sans Thai", system-ui, sans-serif;
+  --grot: "Big Shoulders Display", system-ui, sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: "Instrument Serif", Georgia, serif;
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 * { box-sizing: border-box; }
 html { background: var(--paper); color: var(--ink); }
-body { margin: 0; font: 300 17px/1.7 var(--th); background: var(--paper); overflow-x: clip; }
+body { margin: 0; font: 300 17px/1.7 var(--sans); background: var(--paper); overflow-x: clip; }
 a { color: inherit; }
+.nw { white-space: nowrap; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 header { display: flex; justify-content: space-between; align-items: center; padding: 20px clamp(16px, 4vw, 56px); border-bottom: 1px solid var(--line); }
 .logo { font: 800 22px var(--grot); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; gap: 10px; }
@@ -52,7 +53,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 header a.nav { text-decoration: none; font-size: 15px; padding: 6px 0; border-bottom: 1px solid currentColor; }
 .intro { display: grid; grid-template-columns: 1fr; gap: 24px; padding: clamp(48px, 10vh, 120px) clamp(16px, 4vw, 56px) clamp(40px, 8vh, 96px); }
 .intro .kicker { font: 500 14px var(--grot); letter-spacing: .24em; text-transform: uppercase; color: var(--accent); margin: 0; }
-.intro h1 { margin: 0; font: 600 clamp(52px, 10vw, 156px)/1.12 var(--th); letter-spacing: -.01em; }
+.intro h1 { margin: 0; font: 600 clamp(52px, 10vw, 156px)/1.12 var(--sans); letter-spacing: -.01em; }
 .intro h1 em { display: block; font: italic 400 .42em/1.1 var(--serif); letter-spacing: 0; color: var(--muted); }
 .intro p { max-width: 46ch; margin: 0; font-size: 18px; }
 @media (min-width: 900px) { .intro { grid-template-columns: 1.4fr 1fr; align-items: end; } }
@@ -114,7 +115,7 @@ figcaption small { color: var(--muted); font-size: 13px; line-height: 1.6; }
   .card { width: 300px; }
 }
 .visit { padding: clamp(64px, 12vh, 140px) clamp(16px, 4vw, 56px); display: grid; gap: 24px; border-top: 1px solid var(--line); }
-.visit h2 { margin: 0; font: 600 clamp(34px, 5vw, 64px)/1.3 var(--th); }
+.visit h2 { margin: 0; font: 600 clamp(34px, 5vw, 64px)/1.15 var(--sans); }
 .visit dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 20px; margin: 0; }
 .visit dt { font: 800 13px var(--grot); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
 .visit dd { margin: 4px 0 0; font-size: 18px; }
@@ -123,53 +124,53 @@ footer { padding: 28px clamp(16px, 4vw, 56px); font-size: 14px; color: var(--mut
 </head>
 <body>
 <header>
-  <a class="logo" href="#top" lang="en"><i></i>Sala</a>
-  <a class="nav" href="#visit">เยี่ยมชม</a>
+  <a class="logo" href="#top"><i></i>Oriel</a>
+  <a class="nav" href="#visit">Visit</a>
 </header>
 <main id="top">
   <section class="intro">
     <div>
-      <p class="kicker" lang="en">Sala Gallery · Room 1 · 12.06 – 30.09</p>
-      <h1>แสงมรสุม <em lang="en">Monsoon Light</em></h1>
+      <p class="kicker">Oriel Gallery · Room 1 · <span class="nw">12.06 – 30.09</span></p>
+      <h1>Monsoon Light <em>Seven painters, one rainy season</em></h1>
     </div>
-    <p>ภาพวาดเจ็ดชิ้นจากเจ็ดศิลปิน ที่จ้องมองฤดูฝนจนเห็นสีของมัน — ฟ้าก่อนพายุ ทุ่งหลังฝน และแม่น้ำสีชา เลื่อนลงเพื่อเดินผ่านผนังห้อง</p>
+    <p>Seven paintings by seven artists who stared at the rainy season until they saw its colours: the sky before a storm, fields after rain, a river the colour of tea. Scroll to walk the gallery wall.</p>
   </section>
 
-  <section class="gallery" id="gallery" aria-label="ผลงานในนิทรรศการ แสงมรสุม">
+  <section class="gallery" id="gallery" aria-label="Works in the exhibition Monsoon Light">
     <div class="pin">
-      <div class="mq" aria-hidden="true"><div class="mq-out"><div class="mq-in"><span>Monsoon Light — แสงมรสุม — </span><span>Monsoon Light — แสงมรสุม — </span><span>Monsoon Light — แสงมรสุม — </span></div></div></div>
-      <ol class="track" aria-label="เจ็ดผลงาน">
-        <li class="room"><b lang="en">Room 1</b><p>เจ็ดภาพ เรียงตามชั่วโมงของวันที่ฝนตกทั้งวัน ตั้งแต่ฟ้าสางจนค่ำ</p></li>
-        <li class="card" style="--ar:.78"><figure><div class="frame"><div class="art" role="img" aria-label="ภาพเส้นฝนเฉียงบนพื้นฟ้าสีเทาน้ำเงิน"><div class="paint p1"></div></div></div>
-          <figcaption><span class="no">01</span><span class="t">ฝนแรก</span><em lang="en">First Rain</em><small>พิม รัตนกุล · 2026 · สีน้ำมันบนผ้าใบ</small></figcaption></figure></li>
-        <li class="card" style="--ar:1.32; --hs:.74"><figure><div class="frame"><div class="art" role="img" aria-label="ทุ่งข้าวเป็นแถบสีเขียวทองใต้ฟ้าซีด"><div class="paint p2"></div></div></div>
-          <figcaption><span class="no">02</span><span class="t">ทุ่งหลังพายุ</span><em lang="en">Field after the Storm</em><small>ธนา อินทร์แก้ว · 2025 · อะคริลิก</small></figcaption></figure></li>
-        <li class="card" style="--ar:.8"><figure><div class="frame"><div class="art" role="img" aria-label="ดวงอาทิตย์สีแดงชาดจมลงในน้ำสีเขียวหัวเป็ด"><div class="paint p3"></div></div></div>
-          <figcaption><span class="no">03</span><span class="t">ตะวันจมน้ำ</span><em lang="en">Drowned Sun</em><small>มาลี ศรีสุข · 2026 · สีฝุ่น</small></figcaption></figure></li>
-        <li class="card" style="--ar:1.05; --hs:.84"><figure><div class="frame"><div class="art" role="img" aria-label="เงาเรขาคณิตของระเบียงบนผนังสีดินเหลือง"><div class="paint p4"></div></div></div>
-          <figcaption><span class="no">04</span><span class="t">ระเบียงชื้น</span><em lang="en">Damp Veranda</em><small>กฤต วงศ์ใหญ่ · 2024 · สีน้ำมัน</small></figcaption></figure></li>
-        <li class="card" style="--ar:.74"><figure><div class="frame"><div class="art" role="img" aria-label="ก้อนเมฆสีม่วงช้ำตั้งเค้าเหนือเส้นขอบฟ้า"><div class="paint p5"></div></div></div>
-          <figcaption><span class="no">05</span><span class="t">เมฆตั้งเค้า</span><em lang="en">Gathering Clouds</em><small>อรุณี ทองดี · 2026 · สีน้ำ</small></figcaption></figure></li>
-        <li class="card" style="--ar:1.4; --hs:.72"><figure><div class="frame"><div class="art" role="img" aria-label="แม่น้ำสีชาไหลเป็นริ้วสีอำพัน"><div class="paint p6"></div></div></div>
-          <figcaption><span class="no">06</span><span class="t">แม่น้ำสีชา</span><em lang="en">Tea-coloured River</em><small>ภูมิ แสงทอง · 2025 · สีน้ำมัน</small></figcaption></figure></li>
-        <li class="card" style="--ar:.82"><figure><div class="frame"><div class="art" role="img" aria-label="ฟ้าหลังฝนสีฟ้าอมชมพู กับดวงอาทิตย์ดวงเล็กสีขาว"><div class="paint p7"></div></div></div>
-          <figcaption><span class="no">07</span><span class="t">ฟ้าหลังฝน</span><em lang="en">Sky after Rain</em><small>นภา จันทร์เพ็ญ · 2026 · สีพาสเทล</small></figcaption></figure></li>
-        <li class="end"><a href="#visit"><b lang="en">Book a viewing</b><span>จองรอบชม →</span></a></li>
+      <div class="mq" aria-hidden="true"><div class="mq-out"><div class="mq-in"><span>Monsoon Light — Monsoon Light — </span><span>Monsoon Light — Monsoon Light — </span><span>Monsoon Light — Monsoon Light — </span></div></div></div>
+      <ol class="track" aria-label="Seven works">
+        <li class="room"><b>Room 1</b><p>Seven paintings, hung by the hours of one day of rain, from first light to evening.</p></li>
+        <li class="card" style="--ar:.78"><figure><div class="frame"><div class="art" role="img" aria-label="Slanting lines of rain on a grey-blue sky"><div class="paint p1"></div></div></div>
+          <figcaption><span class="no">01</span><span class="t">First Rain</span><small>Mara Lindqvist · 2026 · Oil on canvas</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.32; --hs:.74"><figure><div class="frame"><div class="art" role="img" aria-label="Fields in bands of green and gold under a pale sky"><div class="paint p2"></div></div></div>
+          <figcaption><span class="no">02</span><span class="t">Field after the Storm</span><small>Tomás Herrera · 2025 · Acrylic</small></figcaption></figure></li>
+        <li class="card" style="--ar:.8"><figure><div class="frame"><div class="art" role="img" aria-label="A vermilion sun sinking into teal water"><div class="paint p3"></div></div></div>
+          <figcaption><span class="no">03</span><span class="t">Drowned Sun</span><small>Amara Okonkwo · 2026 · Tempera</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.05; --hs:.84"><figure><div class="frame"><div class="art" role="img" aria-label="Geometric shadows of a veranda on an ochre wall"><div class="paint p4"></div></div></div>
+          <figcaption><span class="no">04</span><span class="t">Damp Veranda</span><small>Kenji Mori · 2024 · Oil</small></figcaption></figure></li>
+        <li class="card" style="--ar:.74"><figure><div class="frame"><div class="art" role="img" aria-label="Bruise-purple clouds gathering above the horizon"><div class="paint p5"></div></div></div>
+          <figcaption><span class="no">05</span><span class="t">Gathering Clouds</span><small>Elena Rossi · 2026 · Watercolour</small></figcaption></figure></li>
+        <li class="card" style="--ar:1.4; --hs:.72"><figure><div class="frame"><div class="art" role="img" aria-label="A tea-coloured river flowing in amber ripples"><div class="paint p6"></div></div></div>
+          <figcaption><span class="no">06</span><span class="t">Tea-coloured River</span><small>Idris Haddad · 2025 · Oil</small></figcaption></figure></li>
+        <li class="card" style="--ar:.82"><figure><div class="frame"><div class="art" role="img" aria-label="A pink-blue sky after rain with a small white sun"><div class="paint p7"></div></div></div>
+          <figcaption><span class="no">07</span><span class="t">Sky after Rain</span><small>Priya Nair · 2026 · Pastel</small></figcaption></figure></li>
+        <li class="end"><a href="#visit"><b>Book a viewing</b><span>Reserve a slot →</span></a></li>
       </ol>
-      <div class="hud" aria-hidden="true"><span class="count"><b>01</b> / 07</span><span class="bar"><i></i></span><span lang="en">Scroll</span></div>
+      <div class="hud" aria-hidden="true"><span class="count"><b>01</b> / 07</span><span class="bar"><i></i></span><span>Scroll</span></div>
     </div>
   </section>
 
   <section class="visit" id="visit">
-    <h2>เปิดทุกวัน ยกเว้นวันจันทร์</h2>
+    <h2>Open daily except Monday</h2>
     <dl>
-      <div><dt lang="en">Hours</dt><dd>11:00 – 20:00</dd></div>
-      <div><dt lang="en">Where</dt><dd>ซอยนานา เยาวราช กรุงเทพฯ</dd></div>
-      <div><dt lang="en">Entry</dt><dd>ไม่มีค่าเข้าชม</dd></div>
+      <div><dt>Hours</dt><dd>11:00 – 20:00</dd></div>
+      <div><dt>Where</dt><dd>14 Harbour Lane, Lisbon</dd></div>
+      <div><dt>Entry</dt><dd>Free admission</dd></div>
     </dl>
   </section>
 </main>
-<footer><span lang="en">Sala Gallery</span> · แกลเลอรีสมมติสำหรับสาธิต <span lang="en">— a fictional gallery for this demo.</span></footer>
+<footer>Oriel Gallery · A fictional gallery for this demo.</footer>
 <style>
 /* the seven "paintings": layered CSS gradients + an SVG grain (no image files) */
 .p1 { background: repeating-linear-gradient(104deg, transparent 0 22px, #ffffff1c 22px 23px, transparent 23px 41px, #0b1a2c22 41px 42px),

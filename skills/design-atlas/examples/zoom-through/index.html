@@ -23,10 +23,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Doi Mok Retreat — Step into the mist</title>
+<title>Mistfall Retreat — Step into the mist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Noto+Sans+Thai:wght@300..600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&display=swap" rel="stylesheet">
 <style>
 :root{
   --ease-standard:cubic-bezier(0.2,0,0,1);
@@ -34,7 +34,7 @@
   --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
   --wall:#14211d; --timber:#5a3c25; --cream:#efe7d8; --forest:#1d3029; --mist:#e9eef0;
   --hx:62vw; --hy:50vh; --hw:min(27vw,40vh); --hh:calc(var(--hw) / .64);
-  --serif:"Fraunces",Georgia,serif; --sans:"Noto Sans Thai",system-ui,sans-serif;
+  --serif:"Fraunces",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box;margin:0}
 html{background:var(--wall);color:var(--cream);font:300 17px/1.7 var(--sans)}
@@ -74,10 +74,10 @@ a{color:inherit}
 .eyebrow{display:block;font:400 13px/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:#f3c7a1;margin-bottom:18px}
 .h-near .t{display:block;font:340 clamp(48px,6.4vw,104px)/.95 var(--serif);letter-spacing:-.02em}
 .h-near .t em{font-style:italic;color:#f3c7a1}
-.h-near .th{display:block;margin-top:18px;font:300 clamp(18px,1.6vw,24px)/1.6 var(--sans);color:rgba(239,231,216,.8)}
+.h-near .sub{display:block;margin-top:18px;font:300 clamp(18px,1.6vw,24px)/1.6 var(--sans);color:rgba(239,231,216,.8)}
 .h-far{left:0;right:0;top:15vh;text-align:center;color:var(--forest);opacity:0;will-change:transform,opacity;padding:0 16px}
 .h-far .t{display:block;font:340 clamp(40px,5.6vw,92px)/1 var(--serif);letter-spacing:-.02em}
-.h-far .th{display:block;margin-top:12px;font:400 clamp(17px,1.5vw,22px)/1.6 var(--sans)}
+.h-far .sub{display:block;margin-top:12px;font:400 clamp(17px,1.5vw,22px)/1.6 var(--sans)}
 .cue{left:50%;bottom:4vh;transform:translateX(-50%);display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;color:rgba(239,231,216,.7)}
 .cue i{width:1px;height:28px;background:linear-gradient(#f3c7a1,transparent)}
 
@@ -111,7 +111,7 @@ footer{margin-top:64px;font-size:14px;opacity:.55}
 </head>
 <body>
 <header class="bar">
-  <a class="brand" href="#top">Doi Mok<small lang="th">ดอยหมอก · เชียงใหม่</small></a>
+  <a class="brand" href="#top">Mistfall<small>Mountain retreat · Cascade Range</small></a>
   <a class="book" href="#stay">Reserve</a>
 </header>
 <main id="top">
@@ -130,21 +130,21 @@ footer{margin-top:64px;font-size:14px;opacity:.55}
       <svg class="things" viewBox="0 0 300 90" preserveAspectRatio="xMidYMax meet"><path d="M30 90V58h34v32zM24 58h46l-4-6H28z" fill="#1b130d"/><path d="M47 52c-14-14-22-30-14-44 6 10 12 24 14 44zM47 52c4-18 14-30 28-34-4 14-14 26-28 34zM47 52c-8-10-24-14-36-8 10 6 22 10 36 8z" fill="#22342a"/><path d="M196 90V66h40v24zM236 70h8a8 8 0 0 1 0 16h-8" fill="#1b130d" stroke="#1b130d" stroke-width="3"/><path d="M208 58c-4-6 4-9 0-16M222 58c-4-6 4-9 0-16" stroke="#e9e3da" stroke-width="2" fill="none" opacity=".6" stroke-linecap="round"/><path d="M250 90h44v-8h-44zM254 82h38v-7h-38z" fill="#2a1b10"/></svg>
     </div>
     <div class="fx vignette" aria-hidden="true"></div>
-    <h1 class="h-near" id="h"><span class="eyebrow">Doi Mok Retreat · 1,640 m</span><span class="t">Step into</span><span class="t"><em>the mist.</em></span><span class="th" lang="th">ก้าวผ่านหน้าต่าง เข้าสู่ทะเลหมอกของดอยหมอก</span></h1>
-    <h2 class="h-far"><span class="t">Where the clouds come to rest.</span><span class="th" lang="th">ที่ซึ่งเมฆลงมาพักบนยอดดอย ทุกเช้า</span></h2>
+    <h1 class="h-near" id="h"><span class="eyebrow">Mistfall Retreat · 1,640 m</span><span class="t">Step into</span><span class="t"><em>the mist.</em></span><span class="sub">Step through the window into a sea of cloud.</span></h1>
+    <h2 class="h-far"><span class="t">Where the clouds come to rest.</span><span class="sub">Every morning the clouds settle on the ridge.</span></h2>
     <p class="cue" aria-hidden="true"><i></i>Scroll to step through</p>
   </div>
 </section>
 <section class="stay" id="stay">
   <h2>Six cabins above the clouds.</h2>
-  <p lang="th">บ้านไม้หกหลังบนสันดอย ตื่นมาพร้อมทะเลหมอกตั้งแต่พฤศจิกายนถึงกุมภาพันธ์</p>
+  <p>Six timber cabins on the ridge. Wake to a sea of cloud from November to February.</p>
   <ul class="facts">
-    <li><b>1,640 m</b>Above sea level, Chiang Mai.</li>
+    <li><b>1,640 m</b>Above sea level, on the Cascade ridge.</li>
     <li><b>6 cabins</b>Each with one window that faces east.</li>
     <li><b>Nov – Feb</b>Sea-of-mist season, sunrise 06:38.</li>
   </ul>
-  <a class="btn" href="#top">Reserve a cabin · จองบ้านพัก</a>
-  <footer>Doi Mok Retreat is a fictional brand made for a design-atlas recipe.</footer>
+  <a class="btn" href="#top">Reserve a cabin</a>
+  <footer>Mistfall Retreat is a fictional brand made for a design-atlas recipe.</footer>
 </section>
 </main>
 <script>

@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   WORD-SWAP HERO · design-atlas signature recipe (GSAP 3.13 ScrollTrigger pin + scrub, optional Lenis)
-  What: a pinned hero in the style of jongque.com. A big headline "Your ___." sits over a framed image
+  What: a pinned hero in the style of a vertical-SaaS landing page. A big headline "Your ___." sits over a framed image
     card; as you scroll, the word and the picture swap through business types (studio -> clinic ->
     salon -> cafe) with a bottom-up wipe, a booking chip per scene, then the card scales up to fill the
     viewport and the next section slides over it.
@@ -10,7 +10,7 @@
   Use when: 3-5 audiences/variants that share one promise; each has a strong picture.
   Avoid when: one audience (just say it), or the variants need explanation (use tabs or cards).
   Ambition: bold.
-  Knobs: WORDS/scenes in the markup (keep EN track, TH track, scenes and chips the same length);
+  Knobs: WORDS/scenes in the markup (keep the headline track, the subline track, scenes and chips the same length);
     CFG.pinVh (scroll length), CFG.scrub, CFG.holdEnd; CSS --card-w / --card-ar, colours.
     ?nolenis (or navigator.webdriver) skips Lenis; tests use it because Lenis owns the scroll.
   Perf: transforms + clip-path inset per scrubbed frame; SVG scenes are static (only their wrapper
@@ -26,10 +26,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>nadd. — Booking for your studio, clinic, salon or café</title>
+<title>slotly. — Booking for your studio, clinic, salon or café</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Anuphan:wght@300..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
 <style>
 :root{
   --ease-standard:cubic-bezier(0.2,0,0,1);
@@ -37,14 +37,13 @@
   --ease-emphasized-in:cubic-bezier(0.3,0,0.8,0.15);
   --cream:#f4f1ea; --ink:#121212; --cobalt:#2f4bff; --muted:#5d5a55;
   --card-ar:5/4; --card-w:min(56vw,(100svh - 340px) * 1.25);
-  --en:"Archivo",system-ui,sans-serif; --th:"Anuphan","Archivo",sans-serif;
+  --en:"Archivo",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0}
 html{background:var(--cream);color:var(--ink);font:400 17px/1.6 var(--en)}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
 body{overflow-x:clip}
-:lang(th){font-family:var(--th)}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--cobalt);outline-offset:3px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -80,7 +79,6 @@ h1 .track>span:nth-child(odd){color:var(--cobalt)}
 .side ol{list-style:none;padding:0;display:grid;gap:6px}
 .side li{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:10px;background:#f4f1ea}
 .side li:first-child{background:var(--cobalt);color:#fff}
-.side .th{display:block;color:var(--muted)}
 .side .big{display:block;font-size:40px;font-weight:850;letter-spacing:-.04em;color:var(--cobalt);line-height:1.05}
 .bars{display:flex;align-items:end;gap:5px;height:40px;margin-top:10px}
 .bars i{flex:1;border-radius:3px;background:#dcd7ff;height:var(--h)}
@@ -127,7 +125,7 @@ html:not(.motion) .next{margin-top:0}
 </head>
 <body>
 <header class="bar">
-  <a class="logo" href="#top">nadd<b>.</b></a>
+  <a class="logo" href="#top">slotly<b>.</b></a>
   <nav aria-label="Main"><a href="#more">Features</a><a href="#more">Pricing</a><a class="go" href="#more">Start free</a></nav>
 </header>
 <main id="top">
@@ -135,11 +133,11 @@ html:not(.motion) .next{margin-top:0}
   <div class="stage">
     <div class="headwrap">
       <h1 id="h"><span class="full sr">Your studio, clinic, salon or café.</span><span class="swap" aria-hidden="true">Your <span class="slot"><span class="track"><span>studio.</span><span>clinic.</span><span>salon.</span><span>café.</span></span></span></span></h1>
-      <p class="sub" lang="th"><span class="full sr">ระบบจองคิวออนไลน์สำหรับสตูดิโอ คลินิก ร้านทำผม และคาเฟ่ของคุณ</span><span class="swap" aria-hidden="true">ระบบจองคิวออนไลน์สำหรับ<span class="slot"><span class="track"><span>สตูดิโอของคุณ</span><span>คลินิกของคุณ</span><span>ร้านทำผมของคุณ</span><span>คาเฟ่ของคุณ</span></span></span></span></p>
+      <p class="sub"><span class="full sr">Online booking for your studio, clinic, salon or café.</span><span class="swap" aria-hidden="true">Online booking for <span class="slot"><span class="track"><span>your studio</span><span>your clinic</span><span>your salon</span><span>your café</span></span></span></span></p>
     </div>
     <div class="cardpos">
-      <div class="side l" aria-hidden="true"><b>Today · <span lang="th">วันนี้</span></b><ol><li><span>09:00</span><span>Mint</span></li><li><span>11:30</span><span>Pim</span></li><li><span>14:00</span><span>Mai</span></li><li><span>16:30</span><span>Ton</span></li></ol></div>
-      <div class="side r" aria-hidden="true"><span class="big">−62%</span><span>no-shows since deposits</span><span class="th" lang="th">ลดการเบี้ยวนัดได้จริง</span><div class="bars"><i style="--h:90%"></i><i style="--h:76%"></i><i style="--h:60%"></i><i style="--h:44%"></i><i style="--h:34%"></i></div></div>
+      <div class="side l" aria-hidden="true"><b>Today</b><ol><li><span>09:00</span><span>Maya</span></li><li><span>11:30</span><span>Leo</span></li><li><span>14:00</span><span>Noor</span></li><li><span>16:30</span><span>Sam</span></li></ol></div>
+      <div class="side r" aria-hidden="true"><span class="big">−62%</span><span>no-shows since deposits</span><div class="bars"><i style="--h:90%"></i><i style="--h:76%"></i><i style="--h:60%"></i><i style="--h:44%"></i><i style="--h:34%"></i></div></div>
       <div class="cardzoom">
         <div class="frame" aria-hidden="true"></div>
         <div class="scenes" aria-hidden="true">
@@ -149,10 +147,10 @@ html:not(.motion) .next{margin-top:0}
           <div class="scene"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="#c66b45"/><g fill="#ffd9a0" opacity=".33"><circle cx="110" cy="156" r="46"/><circle cx="200" cy="156" r="46"/><circle cx="290" cy="156" r="46"/></g><g stroke="#2a1d17" stroke-width="2"><path d="M110 0v130M200 0v130M290 0v130"/></g><g fill="#2a1d17"><path d="M88 150a22 22 0 0 1 44 0zM178 150a22 22 0 0 1 44 0zM268 150a22 22 0 0 1 44 0z"/></g><rect y="250" width="400" height="150" fill="#583826"/><rect y="238" width="400" height="16" fill="#7b5038"/><path d="M176 202h44v20a16 16 0 0 1-16 16h-12a16 16 0 0 1-16-16z" fill="#f5ede2"/><path d="M220 208h6a8 8 0 0 1 0 16h-6" fill="none" stroke="#f5ede2" stroke-width="4"/><path d="M190 194c-6-8 6-12 0-22M206 194c-6-8 6-12 0-22" stroke="#f5ede2" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/><rect x="292" y="176" width="74" height="56" rx="4" fill="#2a1d17"/><path d="M302 192h40M302 204h52M302 216h30" stroke="#f5ede2" stroke-width="3" opacity=".6"/></svg></div>
         </div>
         <div class="chips" aria-hidden="true">
-          <p class="chip" style="--c:#c8664a"><i>✓</i><span><b>Reformer · 07:30</b><span lang="th">จองแล้ว 8 จาก 10 ที่</span></span></p>
-          <p class="chip" style="--c:#2f7d77"><i>✓</i><span><b>Skin consult · 10:15</b><span lang="th">ยืนยันนัดหมายแล้ว</span></span></p>
-          <p class="chip" style="--c:#2a2321"><i>✓</i><span><b>Cut &amp; colour · 14:00</b><span lang="th">กับช่างมายด์</span></span></p>
-          <p class="chip" style="--c:#583826"><i>✓</i><span><b>Table for 4 · 19:00</b><span lang="th">จองโต๊ะริมหน้าต่างแล้ว</span></span></p>
+          <p class="chip" style="--c:#c8664a"><i>✓</i><span><b>Reformer · 07:30</b><span>8 of 10 spots booked</span></span></p>
+          <p class="chip" style="--c:#2f7d77"><i>✓</i><span><b>Skin consult · 10:15</b><span>Appointment confirmed</span></span></p>
+          <p class="chip" style="--c:#2a2321"><i>✓</i><span><b>Cut &amp; colour · 14:00</b><span>With Dana</span></span></p>
+          <p class="chip" style="--c:#583826"><i>✓</i><span><b>Table for 4 · 19:00</b><span>Window table booked</span></span></p>
         </div>
       </div>
     </div>
@@ -160,14 +158,14 @@ html:not(.motion) .next{margin-top:0}
 </section>
 <section class="next" id="more">
   <h2>One booking page. Every kind of business.</h2>
-  <p lang="th">หน้าจองเดียว ใช้ได้กับทุกธุรกิจบริการ ตั้งค่าเสร็จในห้านาที</p>
+  <p>One booking page for every service business. Set up in five minutes.</p>
   <ul class="feat">
-    <li><b>Deposits by PromptPay</b><span lang="th">รับมัดจำผ่านพร้อมเพย์ ลดการเบี้ยวนัด</span></li>
-    <li><b>LINE reminders</b><span lang="th">แจ้งเตือนลูกค้าทาง LINE ก่อนถึงคิว</span></li>
-    <li><b>Staff calendars</b><span lang="th">ปฏิทินแยกตามพนักงานและห้อง</span></li>
+    <li><b>Card deposits</b><span>Take a deposit at booking so fewer customers skip.</span></li>
+    <li><b>SMS reminders</b><span>Text customers before their slot comes up.</span></li>
+    <li><b>Staff calendars</b><span>A separate calendar for each team member and room.</span></li>
   </ul>
-  <a class="btn" href="#top">Start free · เริ่มใช้ฟรี</a>
-  <footer>nadd. is a fictional product made for a design-atlas recipe.</footer>
+  <a class="btn" href="#top">Start free</a>
+  <footer>slotly. is a fictional product made for a design-atlas recipe.</footer>
 </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>

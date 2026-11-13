@@ -4,7 +4,7 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 
 | Skill | What it does |
 |---|---|
-| [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems, motion, scroll/parallax, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. |
+| [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems with an expression layer and `light-dark()` theming, designing from the subject's own material so the result does not read as AI-made (tells, the replacement trap, a four-test audit), a visual-craft finish pass (light, type, optical detail, the beauty bar), multi-script typography, motion, scroll and parallax with a job, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. Language- and market-neutral. |
 | [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, plus a git-based structure check (wiring budget, file/function budgets, copied blocks, layer rules, weakened tests, new dependencies) for any language, and an eval suite. |
 | [`n-arch`](skills/n-arch/SKILL.md) | Architecture profile: maps how a repo is built (shape, layers and import directions, extension recipes, state owners, contracts, commands, budgets) into `docs/architecture/profile.md` and the `.ndev.toml` the n-dev check enforces; refreshes it as the code moves; audits structural debt and hot spots. |
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which loop a piece of work belongs to, the 9 steps and the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), the auto mode both loops run with `--auto`, core lessons and the tracker (Jira or a local board). |
@@ -104,11 +104,12 @@ The skills are Markdown and load with no extra setup. Only their helper scripts 
 skills/design-atlas/
   SKILL.md            process + routing (loaded when the skill fires)
   references/*.md     knowledge, loaded on demand
-  templates/          brief, persona/JTBD, usability script, starter tokens
-  scripts/palette.py  logo or hex -> OKLCH scales, light/dark tokens, contrast report
+  templates/          brief, persona/JTBD, usability script, starter tokens (themed roles + expression layer), Tailwind v4 mapping
+  scripts/palette.py  logo or hex -> OKLCH scales, light-dark() tokens, contrast report
   scripts/shoot.mjs   headless-Chrome screenshots + layout/a11y probes for design QA
   scripts/scrollfilm.mjs  scroll-through film (mp4) + frame scan for scroll stories
-  examples/<slug>/    tested cinematic effects (light trail, spotlight, particles, shader...) to adapt
+  examples/<slug>/    tested cinematic effects (light trail, spotlight, particles, shader...) to adapt,
+                      plus craft-finish: a page designed from its subject (an invoice book), with scroll and parallax that have a job
 skills/n-dev/
   SKILL.md            four rules, scope dial, seven steps with completion criteria
   references/*.md     structure, extension, state (single source of truth), security, performance

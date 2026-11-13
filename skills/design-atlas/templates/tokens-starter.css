@@ -1,21 +1,32 @@
 /* ==========================================================================
    tokens-starter.css: design-atlas starter token set (CSS custom properties)
    --------------------------------------------------------------------------
-   Layers:   1. primitives (raw values: OKLCH ramps, scales)
-             2. semantic   (roles: --bg, --text, --primary ... ; themed)
-             3. component  (control/card sizing; theme-free values only)
-   Theming:  light = default.
-             dark  = OS preference (prefers-color-scheme) unless
-                     <html data-theme="light">; force with data-theme="dark".
-             data-theme="dark|light" also works on any subtree (scoped theme).
+   Layers:   1. primitives  (raw values: OKLCH ramps, scales)
+             2. semantic    (roles: --bg, --text, --primary ... ; themed)
+             3. expression  (the brand's character: display type, rhythm, shape,
+                             light, gradient, texture, motion personality)
+             4. component   (control/card sizing)
+   Theming:  every themed role is ONE value: light-dark(<light>, <dark>). The
+             active side follows color-scheme: the OS preference by default;
+             data-theme="light|dark" on <html> or on any subtree pins it.
+             Nothing is declared twice, so the two themes cannot drift apart.
              data-brand / data-density: set on <html> only (see notes below).
-   Rebrand:  change --brand-h / --brand-c (and --accent-h / --accent-c).
-             Ramp lightness is fixed per step, so every semantic pair keeps
-             >= 4.5:1 (text) / >= 3:1 (borders, focus) for any hue (checked
-             at 0-330deg; weakest primary-foreground on primary = 4.7:1).
+   Rebrand:  change --brand-h / --brand-c (and --accent-h / --accent-c), then
+             the expression layer (section 3). Ramp lightness is fixed per
+             step, so every semantic pair keeps >= 4.5:1 (text) / >= 3:1
+             (borders, focus) for any hue (checked at 0-330deg; weakest
+             primary-foreground on primary = 4.7:1).
              A yellow/lime brand at L 0.54 reads as olive: for a bright
              yellow button use --brand-400 + --neutral-950 text instead.
-   Support:  oklch() + calc() in color: Chrome 111+, Safari 15.4+, Firefox 113+.
+   Support:  light-dark(): Chrome 123, Firefox 120, Safari 17.5 (Baseline
+             widely available, Nov 2026). oklch(): Chrome 111, Safari 15.4,
+             Firefox 113. linear() easing: Chrome 113, Firefox 112, Safari 17.2.
+             Relative colours (oklch(from ...)): Chrome 125, Firefox 128,
+             Safari 18. Older targets: build with Lightning CSS, which
+             down-levels light-dark() and oklch().
+   Do not register themed colour roles with @property: a registered <color>
+             computes light-dark() where it is declared, so a scoped
+             data-theme subtree would inherit the page's side.
    Breakpoints (custom properties cannot be used inside @media; copy values):
              sm 40rem (640px) · md 48rem (768px) · lg 64rem (1024px)
              xl 80rem (1280px) · 2xl 96rem (1536px)
@@ -139,8 +150,9 @@
   --border-width-strong: 2px;
 
   /* Font stacks: first family is the brand choice; the rest are safe fallbacks.
-     Thai coverage: "Noto Sans Thai"/"IBM Plex Sans Thai" (load them if used). */
-  --font-sans: "Inter", "Noto Sans Thai", ui-sans-serif, system-ui, -apple-system,
+     Other scripts: add that script's face right after the brand face (font
+     selection runs per character), e.g. "Inter", "Noto Sans Arabic", ... */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji";
   --font-serif: "Source Serif 4", ui-serif, Georgia, Cambria, "Times New Roman", serif;
@@ -194,7 +206,8 @@
   --z-toast: 1600;
   --z-tooltip: 1700;
 
-  /* Motion (curves = Material 3 tokens). See motion.md for usage rules. */
+  /* Motion (curves = Material 3 tokens). See motion.md for usage rules.
+     Springs and the brand's motion personality live in section 3. */
   --duration-instant: 50ms;
   --duration-fast: 100ms;    /* hover, press feedback */
   --duration-moderate: 200ms; /* small UI: toggles, tooltips, fades */
@@ -206,9 +219,6 @@
   --ease-emphasized-out: cubic-bezier(0.05, 0.7, 0.1, 1);
   --ease-emphasized-in: cubic-bezier(0.3, 0, 0.8, 0.15);
   --ease-linear: linear;
-  --spring-fast: 0.9 1400;    /* dampingRatio stiffness, read by JS (Motion, Reanimated) */
-  --spring-default: 0.9 700;
-  --spring-slow: 0.9 300;
 
   /* Interaction state layers (Material 3 opacities, androidx StateTokens v0_210) */
   --state-hover: 0.08;
@@ -218,16 +228,22 @@
   --opacity-disabled: 0.5; /* whole-element dim; M3 uses 0.38 content / 0.1 container */
 }
 
-/* Thai (and other scripts with stacked marks): looser line-height, no negative tracking.
-   Values from references/typography-layout.md; Thai needs ~1.5x the vertical room of Latin. */
-:lang(th) {
+/* Scripts that need taller lines and no negative tracking: stacked or deep marks
+   (Arabic, Persian, Urdu, Indic scripts, Thai, Lao, Khmer, Burmese, Tibetan,
+   Vietnamese) and dense scripts (Chinese, Japanese, Korean). Keep the languages
+   you ship. Values: references/typography-layout.md, "Multi-script typography". */
+:lang(ar), :lang(fa), :lang(ur), :lang(hi), :lang(bn), :lang(ta), :lang(te),
+:lang(th), :lang(lo), :lang(km), :lang(my), :lang(bo), :lang(vi),
+:lang(zh), :lang(ja), :lang(ko) {
   --line-height-tight: 1.3;   /* display >= 48px: 1.2-1.35 */
   --line-height-snug: 1.4;    /* headings 24-40px: 1.3-1.45 */
   --line-height-normal: 1.6;  /* UI + body: never below 1.5 */
   --line-height-relaxed: 1.8; /* long-form reading */
-  --tracking-tight: 0em;      /* never tighten Thai */
+  --line-height-display: 1.2;
+  --tracking-tight: 0em;      /* tightening collides marks and breaks joined scripts */
+  --tracking-display: 0em;
+  --tracking-wide: 0em;       /* no case, so no all-caps labels: use weight or colour */
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -235,213 +251,113 @@
     --duration-moderate: 0ms;
     --duration-slow: 0ms;
     --duration-slower: 0ms;
+    --duration-spring-fast: 0ms;
+    --duration-spring: 0ms;
+    --duration-spring-slow: 0ms;
+    --press-scale: 1;
   }
 }
 
 /* --------------------------------------------------------------------------
    2. SEMANTIC: role tokens. Components use ONLY these.
       Pairs: every fill has a -foreground that passes 4.5:1 on it.
+      Each role = light-dark(<light>, <dark>); the side follows color-scheme.
    -------------------------------------------------------------------------- */
+:root {
+  color-scheme: light dark; /* follow the OS until data-theme pins a side */
 
-/* Light (default, and any [data-theme="light"] subtree) */
-:root,
-[data-theme="light"] {
-  color-scheme: light;
+  --bg: light-dark(var(--neutral-50), var(--neutral-950));
+  --surface: light-dark(var(--neutral-0), var(--neutral-900));
+  /* raised = menus, popovers. Light lifts with shadow; dark lifts with lightness. */
+  --surface-raised: light-dark(var(--neutral-0), var(--neutral-800));
+  /* sunken = wells, code blocks, table stripes */
+  --surface-sunken: light-dark(var(--neutral-100), oklch(0.12 var(--neutral-c) var(--neutral-h)));
+  --scrim: light-dark(oklch(0 0 0 / 0.5), oklch(0 0 0 / 0.6));
 
-  --bg: var(--neutral-50);
-  --surface: var(--neutral-0);
-  --surface-raised: var(--neutral-0);   /* + --shadow-md; menus, popovers */
-  --surface-sunken: var(--neutral-100); /* wells, code blocks, table stripes */
-  --scrim: oklch(0 0 0 / 0.5);
+  --text: light-dark(var(--neutral-950), var(--neutral-50));
+  --text-muted: light-dark(var(--neutral-600), var(--neutral-400));
+  --text-disabled: light-dark(var(--neutral-400), var(--neutral-600)); /* exempt from contrast rules */
+  --text-inverse: light-dark(var(--neutral-50), var(--neutral-950));
+  --link: light-dark(var(--brand-700), var(--brand-300));
 
-  --text: var(--neutral-950);
-  --text-muted: var(--neutral-600);
-  --text-disabled: var(--neutral-400);  /* exempt from contrast rules */
-  --text-inverse: var(--neutral-50);
-  --link: var(--brand-700);
+  --border: light-dark(var(--neutral-200), var(--neutral-800));        /* decorative dividers, card edges */
+  --border-strong: light-dark(var(--neutral-500), var(--neutral-500)); /* input outlines: >= 3:1 vs --surface */
 
-  --border: var(--neutral-200);         /* decorative dividers, card edges */
-  --border-strong: var(--neutral-500);  /* input outlines: >= 3:1 vs --surface */
+  --primary: light-dark(var(--brand-600), var(--brand-400));
+  --primary-hover: light-dark(var(--brand-700), var(--brand-300));
+  --primary-active: light-dark(var(--brand-800), var(--brand-200));
+  --primary-foreground: light-dark(var(--neutral-0), var(--brand-950));
+  --primary-subtle: light-dark(var(--brand-100), var(--brand-900));
+  --primary-subtle-foreground: light-dark(var(--brand-800), var(--brand-200));
 
-  --primary: var(--brand-600);
-  --primary-hover: var(--brand-700);
-  --primary-active: var(--brand-800);
-  --primary-foreground: var(--neutral-0);
-  --primary-subtle: var(--brand-100);
-  --primary-subtle-foreground: var(--brand-800);
+  --accent: light-dark(var(--accent-600), var(--accent-400));
+  --accent-foreground: light-dark(var(--neutral-0), var(--accent-950));
+  --accent-subtle: light-dark(var(--accent-100), var(--accent-900));
 
-  --accent: var(--accent-600);
-  --accent-foreground: var(--neutral-0);
-  --accent-subtle: var(--accent-100);
+  --success: light-dark(var(--green-600), var(--green-500));
+  --success-foreground: light-dark(var(--neutral-0), var(--green-950));
+  --success-subtle: light-dark(var(--green-50), var(--green-950));
+  --success-text: light-dark(var(--green-700), var(--green-300));
 
-  --success: var(--green-600);
-  --success-foreground: var(--neutral-0);
-  --success-subtle: var(--green-50);
-  --success-text: var(--green-700);
+  --warning: light-dark(var(--amber-500), var(--amber-500)); /* yellow fills take dark text */
+  --warning-foreground: light-dark(var(--amber-950), var(--amber-950));
+  --warning-subtle: light-dark(var(--amber-50), var(--amber-950));
+  --warning-text: light-dark(var(--amber-700), var(--amber-300));
 
-  --warning: var(--amber-500);          /* yellow fills take dark text */
-  --warning-foreground: var(--amber-950);
-  --warning-subtle: var(--amber-50);
-  --warning-text: var(--amber-700);
+  --danger: light-dark(var(--red-600), var(--red-500));
+  --danger-foreground: light-dark(var(--neutral-0), var(--red-950));
+  --danger-subtle: light-dark(var(--red-50), var(--red-950));
+  --danger-text: light-dark(var(--red-700), var(--red-300));
 
-  --danger: var(--red-600);
-  --danger-foreground: var(--neutral-0);
-  --danger-subtle: var(--red-50);
-  --danger-text: var(--red-700);
+  --info: light-dark(var(--blue-600), var(--blue-500));
+  --info-foreground: light-dark(var(--neutral-0), var(--blue-950));
+  --info-subtle: light-dark(var(--blue-50), var(--blue-950));
+  --info-text: light-dark(var(--blue-700), var(--blue-300));
 
-  --info: var(--blue-600);
-  --info-foreground: var(--neutral-0);
-  --info-subtle: var(--blue-50);
-  --info-text: var(--blue-700);
-
-  --focus-ring: var(--brand-600);
+  --focus-ring: light-dark(var(--brand-600), var(--brand-300));
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
-  --shadow-color: 0.25 0.02 var(--neutral-h); /* L C H, used inside oklch() */
-  --shadow-strength: 1;
-}
+  /* Light and depth. One light source, straight above, for the whole product.
+     --shadow-ink: the shadow colour, tinted with the neutral hue (never plain
+       black on a tinted page). Dark surfaces need a far stronger ink.
+     --edge:      a 1px ring that replaces a border on floating surfaces, so
+       the edge adapts to whatever sits behind it.
+     --highlight: the top inner edge catching the light (raised surfaces,
+       filled buttons): box-shadow: inset 0 1px 0 var(--highlight). */
+  --shadow-ink: light-dark(oklch(0.25 0.03 var(--neutral-h) / 0.07), oklch(0 0 0 / 0.24));
+  --edge: light-dark(oklch(0.25 0.03 var(--neutral-h) / 0.08), oklch(1 0 0 / 0.09));
+  --highlight: light-dark(oklch(1 0 0 / 0.7), oklch(1 0 0 / 0.07));
 
-/* Dark: OS preference (unless the page pins light) ... */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
+  /* Each level stacks the same ink with offset and blur doubling per layer
+     (1, 2, 4, 8 ...): the stack reads as one soft shadow, not a grey smudge. */
+  --shadow-xs: 0 1px 2px var(--shadow-ink);
+  --shadow-sm: 0 1px 1px var(--shadow-ink), 0 2px 2px var(--shadow-ink);
+  --shadow-md: 0 1px 1px var(--shadow-ink), 0 2px 2px var(--shadow-ink),
+    0 4px 4px var(--shadow-ink), 0 8px 8px var(--shadow-ink);
+  --shadow-lg: 0 1px 1px var(--shadow-ink), 0 2px 2px var(--shadow-ink),
+    0 4px 4px var(--shadow-ink), 0 8px 8px var(--shadow-ink), 0 16px 16px var(--shadow-ink);
+  --shadow-xl: 0 1px 1px var(--shadow-ink), 0 2px 2px var(--shadow-ink),
+    0 4px 4px var(--shadow-ink), 0 8px 8px var(--shadow-ink), 0 16px 16px var(--shadow-ink),
+    0 32px 32px var(--shadow-ink);
 
-    --bg: var(--neutral-950);
-    --surface: var(--neutral-900);
-    --surface-raised: var(--neutral-800); /* higher = lighter in dark mode */
-    --surface-sunken: oklch(0.12 var(--neutral-c) var(--neutral-h));
-    --scrim: oklch(0 0 0 / 0.6);
-
-    --text: var(--neutral-50);
-    --text-muted: var(--neutral-400);
-    --text-disabled: var(--neutral-600);
-    --text-inverse: var(--neutral-950);
-    --link: var(--brand-300);
-
-    --border: var(--neutral-800);
-    --border-strong: var(--neutral-500);
-
-    --primary: var(--brand-400);
-    --primary-hover: var(--brand-300);
-    --primary-active: var(--brand-200);
-    --primary-foreground: var(--brand-950);
-    --primary-subtle: var(--brand-900);
-    --primary-subtle-foreground: var(--brand-200);
-
-    --accent: var(--accent-400);
-    --accent-foreground: var(--accent-950);
-    --accent-subtle: var(--accent-900);
-
-    --success: var(--green-500);
-    --success-foreground: var(--green-950);
-    --success-subtle: var(--green-950);
-    --success-text: var(--green-300);
-
-    --warning: var(--amber-500);
-    --warning-foreground: var(--amber-950);
-    --warning-subtle: var(--amber-950);
-    --warning-text: var(--amber-300);
-
-    --danger: var(--red-500);
-    --danger-foreground: var(--red-950);
-    --danger-subtle: var(--red-950);
-    --danger-text: var(--red-300);
-
-    --info: var(--blue-500);
-    --info-foreground: var(--blue-950);
-    --info-subtle: var(--blue-950);
-    --info-text: var(--blue-300);
-
-    --focus-ring: var(--brand-300);
-
-    --shadow-color: 0 0 0;
-    --shadow-strength: 3; /* shadows read weaker on dark; lean on surface lightness */
-  }
-}
-
-/* ... or forced dark on <html> or any subtree. Keep in sync with the block above. */
-[data-theme="dark"] {
-  color-scheme: dark;
-
-  --bg: var(--neutral-950);
-  --surface: var(--neutral-900);
-  --surface-raised: var(--neutral-800);
-  --surface-sunken: oklch(0.12 var(--neutral-c) var(--neutral-h));
-  --scrim: oklch(0 0 0 / 0.6);
-
-  --text: var(--neutral-50);
-  --text-muted: var(--neutral-400);
-  --text-disabled: var(--neutral-600);
-  --text-inverse: var(--neutral-950);
-  --link: var(--brand-300);
-
-  --border: var(--neutral-800);
-  --border-strong: var(--neutral-500);
-
-  --primary: var(--brand-400);
-  --primary-hover: var(--brand-300);
-  --primary-active: var(--brand-200);
-  --primary-foreground: var(--brand-950);
-  --primary-subtle: var(--brand-900);
-  --primary-subtle-foreground: var(--brand-200);
-
-  --accent: var(--accent-400);
-  --accent-foreground: var(--accent-950);
-  --accent-subtle: var(--accent-900);
-
-  --success: var(--green-500);
-  --success-foreground: var(--green-950);
-  --success-subtle: var(--green-950);
-  --success-text: var(--green-300);
-
-  --warning: var(--amber-500);
-  --warning-foreground: var(--amber-950);
-  --warning-subtle: var(--amber-950);
-  --warning-text: var(--amber-300);
-
-  --danger: var(--red-500);
-  --danger-foreground: var(--red-950);
-  --danger-subtle: var(--red-950);
-  --danger-text: var(--red-300);
-
-  --info: var(--blue-500);
-  --info-foreground: var(--blue-950);
-  --info-subtle: var(--blue-950);
-  --info-text: var(--blue-300);
-
-  --focus-ring: var(--brand-300);
-
-  --shadow-color: 0 0 0;
-  --shadow-strength: 3;
-}
-
-/* Elevation. Declared on every theme scope so a [data-theme] subtree
-   recomputes shadows from its own --shadow-color (var() resolves where the
-   property is declared, then inherits as a fixed value). */
-:root,
-[data-theme] {
-  --shadow-xs: 0 1px 2px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength)));
-  --shadow-sm: 0 1px 2px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
-    0 2px 6px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength)));
-  --shadow-md: 0 2px 4px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
-    0 6px 16px oklch(var(--shadow-color) / calc(0.08 * var(--shadow-strength)));
-  --shadow-lg: 0 4px 8px oklch(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
-    0 12px 32px oklch(var(--shadow-color) / calc(0.12 * var(--shadow-strength)));
-  --shadow-xl: 0 8px 16px oklch(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
-    0 24px 56px oklch(var(--shadow-color) / calc(0.16 * var(--shadow-strength)));
-
-  /* Semantic elevation roles */
+  /* Semantic elevation roles. Floating levels carry their own edge ring:
+     do not add a CSS border to an element that uses them. */
   --elevation-card: var(--shadow-xs);
-  --elevation-raised: var(--shadow-sm);  /* hover lift, sticky header */
-  --elevation-popover: var(--shadow-md); /* menus, popovers, comboboxes */
-  --elevation-dialog: var(--shadow-lg);  /* dialogs, drawers */
-  --elevation-toast: var(--shadow-xl);
+  --elevation-raised: var(--shadow-sm);                         /* hover lift, sticky header */
+  --elevation-popover: 0 0 0 1px var(--edge), var(--shadow-md); /* menus, popovers, comboboxes */
+  --elevation-dialog: 0 0 0 1px var(--edge), var(--shadow-lg);  /* dialogs, drawers */
+  --elevation-toast: 0 0 0 1px var(--edge), var(--shadow-xl);
 }
 
-/* Apply the theme on every theme scope. Inherited properties (color) are
-   computed on the parent, so a [data-theme] subtree must re-declare them or it
-   keeps the parent's text color (dark-on-dark). */
+/* Pin a theme on <html> or on any subtree. Role tokens stay unresolved
+   light-dark() values until a property uses them, so they follow the nearest
+   color-scheme without being declared again. */
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+
+/* Inherited properties (color) are computed on the parent, so each theme scope
+   re-applies them or it keeps the parent's text colour (dark-on-dark). */
 :root,
 [data-theme] {
   color: var(--text);
@@ -449,12 +365,87 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. COMPONENT: theme-free sizing shared by controls (button, input, select).
-      Theme-dependent component tokens (e.g. --button-bg: var(--primary))
-      belong on the component selector, not :root, or scoped themes break.
+   3. EXPRESSION: the tokens that carry the brand's character. Semantic tokens
+      make a product consistent; these make it recognisable. A rebrand edits
+      this section and the hues in section 1, never the components.
+      Usage rules and recipes: references/visual-craft.md.
+      THE VALUES BELOW ARE PLACEHOLDERS, NOT A LOOK. Set each one from the
+      subject's own material and write its source beside it; delete any token
+      (gradient, aura, glow, grain) the direction has no source for. Shipped
+      unchanged they give the page every machine-made site has
+      (references/ai-tells.md).
    -------------------------------------------------------------------------- */
 :root {
-  /* Use control heights as min-height, never height: Thai stacked marks and text scaling need room. */
+  /* Display type: one display moment per view (hero or payoff). max = 2.5 x min,
+     so 200% browser zoom still enlarges it (WCAG 1.4.4). */
+  --font-size-display: clamp(3.5rem, 1.4457rem + 9.1304vw, 8.75rem); /* 56-140 */
+  --font-weight-display: 600;
+  --line-height-display: 0.95;
+  --tracking-display: -0.035em;
+
+  /* Rhythm: the breathing room between sections and at the page edge */
+  --space-section: clamp(4rem, 2.4348rem + 6.9565vw, 8rem); /* 64-128 */
+  --space-gutter: clamp(1rem, 0.6087rem + 1.7391vw, 2rem);  /* 16-32 */
+  --layout-max: 80rem;                                      /* 1280: widest content column */
+
+  /* Shape: the corner personality. Sharp 0-4px, soft 6-12px, round 16px+.
+     Containers sit one step rounder than controls. */
+  --shape-control: var(--radius-md);
+  --shape-container: var(--radius-xl);
+  --shape-pill: var(--radius-full);
+
+  /* Colour moments: at most one gradient surface and one glow per view.
+     --gradient-brand stays analogous for any brand: the brand hue to a hue 40deg
+     further round, 0.1 lighter (ends within 60deg of hue and 0.15 of lightness
+     do not read as a lighting effect or pass through mud). */
+  --gradient-brand: linear-gradient(135deg in oklch, var(--brand-500),
+    oklch(0.72 var(--brand-c) calc(var(--brand-h) + 40)));
+  --gradient-aura: radial-gradient(70% 60% at 50% 0% in oklch,
+    oklch(from var(--primary) l c h / 0.22), transparent 70%); /* soft light behind a hero or key card */
+  --glow-primary: 0 0 0 1px oklch(from var(--primary) l c h / 0.4),
+    0 8px 24px -8px oklch(from var(--primary) l c h / 0.55);  /* the one primary action */
+
+  /* Texture: grain hides banding in large gradients and gives flat colour a surface.
+     Use on a ::after overlay (pointer-events: none), heroes and feature panels only. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.06;
+
+  /* Motion personality. CSS springs sampled from the spring equation
+     (settled to 0.2%); pair each curve with its duration.
+     --ease-spring:        damping ratio 0.8 (Material 3 Expressive default and
+                           slow spatial): 1.5% overshoot. Sheets, cards, layout.
+     --ease-spring-bouncy: damping ratio 0.6 (M3 Expressive fast spatial): 9.5%
+                           overshoot. Small controls only: switches, chips, icons.
+     Springs move things (position, size, rotation). Colour and opacity never
+     overshoot: keep --ease-standard / --ease-out for those. */
+  --ease-spring: linear(0, 0.006 1.5%, 0.024 3%, 0.056 4.8%, 0.104 6.8%, 0.199 10%,
+    0.529 20.2%, 0.628 23.8%, 0.708 27%, 0.777 30.2%, 0.835 33.5%, 0.882 36.8%, 0.922 40.2%,
+    0.956 44.2%, 0.982 48.5%, 1 53.2%, 1.01 58.5%, 1.015 70.5%, 1);
+  --ease-spring-bouncy: linear(0, 0.007 1.2%, 0.033 2.8%, 0.074 4.2%, 0.127 5.8%, 0.246 8.5%,
+    0.526 14.2%, 0.641 16.8%, 0.756 19.5%, 0.846 22%, 0.921 24.5%, 0.981 27%, 1.026 29.5%,
+    1.061 32.2%, 1.089 36.2%, 1.094 40.8%, 1.081 46%, 1.019 60.2%, 0.999 68.5%, 0.991 80%, 1);
+  --duration-spring-fast: 350ms; /* with --ease-spring-bouncy (stiffness 800) */
+  --duration-spring: 400ms;      /* with --ease-spring (stiffness 380) */
+  --duration-spring-slow: 550ms; /* with --ease-spring (stiffness 200): full-screen moves */
+  --press-scale: 0.97;           /* :active feedback on buttons and cards */
+
+  /* The same springs for JS engines (Motion, Reanimated, Compose, SwiftUI):
+     dampingRatio stiffness. Standard = calm product UI; expressive = brand surfaces. */
+  --spring-fast: 0.9 1400;
+  --spring-default: 0.9 700;
+  --spring-slow: 0.9 300;
+  --spring-expressive-fast: 0.6 800;
+  --spring-expressive-default: 0.8 380;
+  --spring-expressive-slow: 0.8 200;
+}
+
+/* --------------------------------------------------------------------------
+   4. COMPONENT: sizing shared by controls (button, input, select).
+      Component tokens that only alias a role (--button-bg: var(--primary))
+      can live here too: the role stays an unresolved light-dark() value.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Use control heights as min-height, never height: stacked diacritics and text scaling need room. */
   --control-height-sm: 2rem;    /* 32: secondary/inline only */
   --control-height-md: 2.75rem; /* 44: default, touch-safe (= --target-min) */
   --control-height-lg: 3rem;    /* 48 */
@@ -462,11 +453,11 @@
   --control-padding-x-md: var(--space-4);
   --control-padding-x-lg: var(--space-5);
   --control-gap: var(--space-2);
-  --control-radius: var(--radius-md);
-  --control-font-size: var(--font-size-base); /* 16: inputs below 16px make iOS Safari zoom; Thai needs it */
+  --control-radius: var(--shape-control);
+  --control-font-size: var(--font-size-base); /* 16: inputs below 16px make iOS Safari zoom */
 
   --card-padding: var(--space-6);
-  --card-radius: var(--radius-xl);
+  --card-radius: var(--shape-container);
   --card-gap: var(--space-4);
 }
 

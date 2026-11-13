@@ -1,10 +1,10 @@
 # Accessibility (WCAG 2.2 AA and beyond)
 
-> Read when: designing or reviewing any screen, component, form, animation or colour palette; building custom widgets (dialog, menu, tabs, combobox, disclosure); shipping to the EU, US public sector or Thai government; writing a11y acceptance criteria or a test plan; a user mentions screen readers, keyboard, zoom, contrast, reduced motion, colour blindness or legal compliance.
+> Read when: designing or reviewing any screen, component, form, animation or colour palette; building custom widgets (dialog, menu, tabs, combobox, disclosure); shipping to the EU, US public sector or other public-sector work; writing a11y acceptance criteria or a test plan; a user mentions screen readers, keyboard, zoom, contrast, reduced motion, colour blindness or legal compliance.
 
-**Contents:** Defaults to apply without asking · WCAG 2.2 AA checklist by POUR · Contrast and APCA · Keyboard and focus (recipes) · Semantics and ARIA patterns · Forms and errors · Motion and media · Colour-blind-safe design · Text resizing, Dynamic Type, reflow · Mobile: screen readers and targets · Cognitive accessibility (COGA) · Legal landscape 2025–2026 · Thai notes · Testing workflow and tools · Pitfalls · Sources
+**Contents:** Defaults to apply without asking · WCAG 2.2 AA checklist by POUR · Contrast and APCA · Keyboard and focus (recipes) · Semantics and ARIA patterns · Forms and errors · Motion and media · Colour-blind-safe design · Text resizing, Dynamic Type, reflow · Mobile: screen readers and targets · Cognitive accessibility (COGA) · Legal landscape 2025–2026 · Localization notes · Testing workflow and tools · Pitfalls · Sources
 
-Related: palette building and contrast tokens in `color.md`; type scale, Thai line-height in `typography-layout.md`; animation durations in `motion.md`; parallax and scroll effects in `scroll-parallax.md`; platform specifics in `platform-web.md`, `platform-mobile.md`, `platform-desktop.md`; cognitive load and plain-language psychology in `psychology.md`.
+Related: palette building and contrast tokens in `color.md`; type scale, multi-script line-height in `typography-layout.md` (Multi-script typography); animation durations in `motion.md`; parallax and scroll effects in `scroll-parallax.md`; platform specifics in `platform-web.md`, `platform-mobile.md`, `platform-desktop.md`; cognitive load and plain-language psychology in `psychology.md`.
 
 ## Defaults to apply without asking
 
@@ -159,7 +159,7 @@ Skip link (first focusable element on the page):
 
 ```html
 <body>
-  <a class="skip-link" href="#main">Skip to main content</a> <!-- th: ข้ามไปยังเนื้อหาหลัก -->
+  <a class="skip-link" href="#main">Skip to main content</a>
   <header>…</header>
   <main id="main" tabindex="-1">…</main>
 </body>
@@ -303,7 +303,7 @@ About 1 in 12 men have a colour vision deficiency, red-green most common (NEI).
 - Truncation: wrap instead of ellipsis for primary content; if truncated, make full text available.
 - iOS: use Dynamic Type text styles (`.body`, `.headline`; UIKit `preferredFont(forTextStyle:)` + `adjustsFontForContentSizeCategory`). App Store "Larger Text" Accessibility Nutrition Label requires text to enlarge to ≥ 200% (or the system max) without overlap or unusable truncation; iOS Dynamic Type exceeds 200% at AX3. Stack side-by-side layouts at accessibility sizes; tab bars use the Large Content Viewer.
 - Android: text in `sp`, layouts that wrap; test at the largest font and display size.
-- Thai script needs vertical room for stacked vowels and tone marks: don't clip line boxes; see `typography-layout.md` for Thai line-height.
+- Scripts with stacked vowels or tone marks need vertical room: don't clip line boxes; see `typography-layout.md` (Multi-script typography).
 
 ## Mobile: screen readers and targets
 
@@ -344,16 +344,14 @@ As of 2026-10-10; not legal advice.
 
 Practical rule: build to WCAG 2.2 AA, publish an accessibility statement with a contact route, document known exceptions and fix dates.
 
-## Thai notes
+## Localization notes
 
-- Set `<html lang="th">`; wrap English terms in Thai pages with `lang="en"` (3.1.2) so screen readers switch voice and pronunciation. Thai VoiceOver is supported on iOS ("Thai (Thailand)"), and NVDA's interface is translated into Thai; quality of Thai word segmentation varies by screen reader and synthesizer (unverified this session) — test with real Thai content.
-- Thai has no spaces between words, so avoid images of text and fake spacing with `&nbsp;`; use real text so AT and translation tools can segment it.
-- Dates: Buddhist Era is common; give machines the ISO date: `<time datetime="2026-10-10">10 ต.ค. 2569</time>`.
-- Standards in Thailand:
-  - **มอก. 2565-2555 (TIS 2565-2555)**: Thai Industrial Standard adopting WCAG 2.0 (adopted 2013). NSTDA (สวทช.) is the W3C Lead Translation Organization for WCAG 2.2 Thai; a Thai authorized translation of WCAG 2.2 is published on NECTEC (dated 28 Dec 2025), and TISI plans to update the standard from ISO/IEC 40500:2025.
-  - **TWCAG 2025** (แนวทางการพัฒนาเว็บที่ทุกคนเข้าถึงได้): by the Digital Council of Thailand (สภาดิจิทัลฯ) with the Thai Internet Foundation and ThaiHealth (สสส.); updates TWCAG 2022; based on WCAG 2.2; covers websites and mobile apps.
-  - Government awards by สดช. (2023): judged by manual review, automated checks with zero errors, then testing by blind and deaf users. One blind judge flagged sites that embed their own "reading" widget, which clashes with users' own screen readers — don't add overlay/reader widgets; fix the markup.
-- For Thai public-sector projects, state the target explicitly in requirements: "WCAG 2.2 AA (TWCAG 2025)".
+- Set `lang` on the document and on foreign-language runs (WCAG 3.1.1, 3.1.2) so screen readers pick the right voice and pronunciation. Word segmentation quality varies by screen reader and synthesizer: test with real content in each shipped language.
+- Use real text, not images of text, so assistive technology and translation tools can segment it; scripts without word spaces break badly with fake spacing such as `&nbsp;`.
+- When the visible date uses a local calendar or format, give machines the ISO date: `<time datetime="2026-10-10">…</time>`.
+- Scripts with stacked diacritics need line boxes that are not clipped (no fixed heights with `overflow: hidden`).
+- Most national standards adopt WCAG: name the target standard and level explicitly in requirements (for example "WCAG 2.2 AA plus the local standard").
+- Do not install accessibility overlay or "reader" widgets: they conflict with users' own assistive technology. Fix the source markup.
 
 ## Testing workflow and tools
 
@@ -410,7 +408,7 @@ Manual pass (≈ 15 min per key page):
 | Status toast never announced | Live region injected with its text | Keep an empty `role="status"` in the DOM, update its text |
 | OTP field rejects paste; users locked out | Paste blocked "for security" (fails 3.3.8) | Allow paste, `autocomplete="one-time-code"` |
 | Lighthouse 100 but blind users can't check out | Automated checks cover ~half the issues | Manual keyboard + screen-reader pass on key flows |
-| Accessibility overlay widget installed, complaints rise | Overlays conflict with users' own AT (Thai judges flagged this) | Remove overlay; fix source markup |
+| Accessibility overlay widget installed, complaints rise | Overlays conflict with users' own AT (users' own screen readers clash with the widget) | Remove overlay; fix source markup |
 | APCA-passing palette fails audit | APCA isn't the legal standard | Meet WCAG 2 ratios; use APCA only as an extra check |
 | Layout breaks at iOS AX sizes | Fixed heights, side-by-side rows | Wrap/stack at accessibility sizes, allow multi-line labels |
 | Carousel fails 2.2.2 | Auto-advance without pause | Visible Pause, no auto-advance under reduced motion |
@@ -439,10 +437,6 @@ Manual pass (≈ 15 min per key page):
 - Level Access, Is WCAG conformance enough for EAA — https://www.levelaccess.com/blog/is-wcag-conformance-enough-for-eaa-compliance/
 - Federal Register, Extension of compliance dates (ADA Title II), 2026-04-20 — https://www.federalregister.gov/documents/2026/04/20/2026-07663/extension-of-compliance-dates-for-nondiscrimination-on-the-basis-of-disability-accessibility-of-web · JD Supra summary — https://www.jdsupra.com/legalnews/doj-extends-title-ii-ada-web-2176958/
 - US Access Board, ICT (Revised 508 Standards) — https://www.access-board.gov/ict/
-- W3C translators list, NSTDA WCAG 2.2 Thai (2025) — https://lists.w3.org/Archives/Public/w3c-translators/2025JulSep/0017.html · (2026) https://lists.w3.org/Archives/Public/w3c-translators/2026JanMar/0000.html
-- NECTEC, WCAG 2.2 Thai translation — https://www.nectec.or.th/standard/WCAG/REC-WCAG22-20241212-TH/
-- TWCAG 2025 (Digital Council of Thailand), hosted copy — https://digital.hcu.ac.th/wp-content/uploads/2025/05/Accessibility-Guideline-2025-V.3.1-Final.pdf
-- Thai PBS, WCAG website awards (2023) — https://www.thaipbs.or.th/now/content/191
 - Deque, Automated testing coverage — https://www.deque.com/automated-accessibility-testing-coverage/ · axe DevTools — https://www.deque.com/axe/devtools/
 - Chrome, Lighthouse accessibility scoring — https://developer.chrome.com/docs/lighthouse/accessibility/scoring
 - Accessibility Insights for Web — https://accessibilityinsights.io/docs/web/overview/ · Stark — https://www.getstark.co/

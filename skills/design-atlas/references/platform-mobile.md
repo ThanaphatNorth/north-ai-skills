@@ -1,8 +1,8 @@
 # Platform: Mobile (iOS, Android, cross-platform)
 
-> Read when: designing or reviewing an iPhone/iPad or Android phone/tablet/foldable app (native, React Native/Expo, Flutter, SwiftUI, Compose) — navigation, bars, sheets, gestures, thumb reach, onboarding and permission prompts, push, mobile forms/OTP, splash, size classes, Dynamic Type/font scaling, or Thai-market specifics (LINE Login, PromptPay, Thai text).
+> Read when: designing or reviewing an iPhone/iPad or Android phone/tablet/foldable app (native, React Native/Expo, Flutter, SwiftUI, Compose) — navigation, bars, sheets, gestures, thumb reach, onboarding and permission prompts, push, mobile forms/OTP, splash, size classes, Dynamic Type/font scaling, or local-market conventions (local sign-in provider, instant-payment QR, multi-script text).
 
-**Contents:** Platform snapshot · iOS (Liquid Glass) · Android (Material 3 Expressive) · Cross-platform strategy · Thumb reach & ergonomics · Gestures · Onboarding & permissions · Push notifications · Mobile forms · Empty, offline, loading · Launch & splash · Tablets & foldables · Accessibility · Thai market · HTML mockups of app screens · Pitfalls · Sources
+**Contents:** Platform snapshot · iOS (Liquid Glass) · Android (Material 3 Expressive) · Cross-platform strategy · Thumb reach & ergonomics · Gestures · Onboarding & permissions · Push notifications · Mobile forms · Empty, offline, loading · Launch & splash · Tablets & foldables · Accessibility · Local market conventions · HTML mockups of app screens · Pitfalls · Sources
 
 Siblings: `platform-web.md` (mobile web, PWA), `accessibility.md`, `motion.md`, `typography-layout.md`, `product-patterns.md` (onboarding flows, empty states), `design-systems.md` (tokens across platforms).
 
@@ -254,11 +254,11 @@ class MainActivity : ComponentActivity() {
 - **Contrast:** 4.5:1 for text up to 17pt, 3:1 for ≥18pt or bold (Apple's thresholds). Verify over Liquid Glass with Increase Contrast and Reduce Transparency on.
 - **Motion:** honour Reduce Motion / Remove animations — replace springs and parallax with fades.
 
-## Thai market
-- **LINE Login** is the expected social sign-in in Thailand: OAuth 2.0 + OpenID Connect (v2.1), native SDKs for iOS, Android, Flutter; users already logged in to LINE on the device are signed in to web apps automatically. Offer it beside Sign in with Apple / Google and phone OTP; check App Review Guideline 4.8 for when Sign in with Apple must accompany third-party logins (unverified this session).
-- **PromptPay** (Bank of Thailand, since 2016): pay by phone number, citizen ID or account via Thai QR Payment scanned in a banking app; free up to 5,000 THB. UX: show the QR large with amount and payee name, "Save QR" to Photos (users scan from gallery in their bank app), countdown for expiry, and auto-detect payment completion instead of asking for a slip upload where the gateway allows.
-- **Thai text:** needs ~150% of Latin vertical space; Android 16 ignores `elegantTextHeight` for apps targeting it and Google explicitly lists Thai among scripts whose layouts must be re-checked → test tall marks (ฎ ฐ ญ, ปี่ ฟื้น) for clipping in buttons, chips, tabs, single-line text fields. Let labels grow and wrap; don't size Thai UI from English strings.
-- Dates: show Buddhist Era (พ.ศ.) when the user's calendar is Buddhist; store ISO/Gregorian.
+## Local market conventions
+- **Local sign-in provider:** where one dominates (the main messaging or super-app account), offer it beside Sign in with Apple / Google and phone OTP; check App Review Guideline 4.8 for when Sign in with Apple must accompany third-party logins (unverified this session).
+- **Local instant-payment / QR rails:** show the QR large with amount and payee name, a "Save QR" action for same-device payment (users open it from the gallery in their bank app), an expiry countdown, and poll for confirmation instead of asking for a slip upload where the gateway allows.
+- **Scripts with tall or stacked marks:** Android 16 ignores `elegantTextHeight` for apps targeting it and Google lists such scripts among those whose layouts must be re-checked → test for clipping in buttons, chips, tabs, single-line text fields. Use `minHeight`, let labels grow and wrap; don't size UI from English strings.
+- **Local calendars:** show the user's calendar, store ISO.
 
 ## HTML mockups of app screens
 
@@ -266,7 +266,7 @@ When the deliverable is an app screen built as HTML (for review, a pitch or a us
 - **Real app at phone width, framed on desktop.** Below ~480 px the page *is* the app (full-bleed, safe-area padding via `env(safe-area-inset-*)`); above it, centre a 390×844 device frame and put a review panel beside it. Never ship the frame to phones.
 - **Every state is addressable**: `?state=ideal|loading|empty|offline|error|permission-denied` and `?theme=light|dark` render that state directly (deep-linkable for reviews and for `scripts/shoot.mjs` jobs via `"query"`); the review panel only sets the same parameters.
 - **Platform chrome is real**: status-bar spacing, a tab bar for top-level navigation only (create actions go to a FAB or a header button, per this file's navigation rules), sheets that trap focus and close on Esc/back, 44pt/48dp targets.
-- **Fake data looks real**: real-length Thai names, dish/product names and counts; empty and very long variants; demo data labelled as such in the spec.
+- **Fake data looks real**: real-length local names, dish/product names and counts; empty and very long variants; demo data labelled as such in the spec.
 - **QA** at 390×844, 375×667 and 320×568 (short phones break first), light and dark, reduced motion.
 
 ## Pitfalls
@@ -278,7 +278,7 @@ When the deliverable is an app screen built as HTML (for review, a pitch or a us
 | Android app content under status/nav bar after targetSdk bump | Edge-to-edge enforced (35) / opt-out removed (36) | `enableEdgeToEdge()` + `safeDrawing`/Scaffold `innerPadding`, test 3-button and gesture nav |
 | Back handling silently broken on Android 16 | Logic in `onBackPressed()` | Move to `OnBackPressedCallback`/`BackHandler` |
 | Tablet shows stretched phone UI | Relied on portrait lock (ignored ≥600dp at API 36) | Adaptive layouts by window size class |
-| Thai tone marks clipped on Android 16 | `elegantTextHeight` no longer honoured, tight fixed heights | `minHeight`, line height in sp, no fixed single-line heights |
+| Stacked marks clipped on Android 16 | `elegantTextHeight` no longer honoured, tight fixed heights | `minHeight`, line height in sp, no fixed single-line heights |
 | Permission dialog never shows again | User denied twice on Android | Detect, explain, deep-link to Settings |
 | OTP autofill fails | Six separate inputs, wrong content type, SMS without origin line | Single input with one-time-code type + origin-bound SMS |
 | Glass control unreadable over photo | Clear glass over bright media without dimming | Regular glass, or 35% dark dimming layer |
@@ -330,6 +330,4 @@ When the deliverable is an app screen built as HTML (for review, a pitch or a us
 - Hoober: Design for fingers and thumbs instead of touch — http://www.uxmatters.com/mt/archives/2013/11/design-for-fingers-and-thumbs-instead-of-touch.php
 - Smashing: Accessible tap target sizes — https://www.smashingmagazine.com/2023/04/accessible-tap-target-sizes-rage-taps-clicks/
 - web.dev SMS OTP form — https://web.dev/articles/sms-otp-form
-- W3C i18n text size in translation (Thai vertical space) — https://www.w3.org/International/articles/article-text-size
-- LINE Login overview — https://developers.line.biz/en/docs/line-login/overview/
-- Bank of Thailand: PromptPay — https://www.bot.or.th/en/financial-innovation/digital-finance/digital-payment/promptpay.html
+- W3C i18n text size in translation (vertical space by script) — https://www.w3.org/International/articles/article-text-size

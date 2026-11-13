@@ -157,12 +157,12 @@ Method used in every example: **brand truth** (one sentence the brand can prove)
      - IV: daylight palette, with price and trust facts.
    - **Anchor:** a "Talk to a doctor now" pill always visible; the path ends *on* the button, so the light becomes the CTA.
    - **Budget:** SVG + CSS `stroke-dashoffset` with `animation-timeline`; static state = the full drawn path on a dusk-to-day gradient.
-2. **Shop-owned booking SaaS** (JongQue-style)
-   - **Truth:** every booking and every baht stays with the shop.
+2. **Shop-owned booking SaaS**
+   - **Truth:** every booking and every dollar stays with the shop.
    - **Metaphor:** "two screens that breathe together".
    - **Mechanics:** #43 intro image lands in the product UI + #37 pinned demo with two synced devices + #34 giant "0%".
    - **Acts:** title sequence (#66) → the customer phone and shop dashboard sync on scroll → AI setup → customisation → "0%" release → industries.
-   - **Anchor:** header CTA + LINE chat.
+   - **Anchor:** header CTA + SMS/chat reminders.
    - **Budget:** already low-cost (GSAP + sticky).
 3. **Pharmacy delivery**
    - **Truth:** medicine reaches you within the hour.
@@ -182,7 +182,7 @@ Method used in every example: **brand truth** (one sentence the brand can prove)
    - **Truth:** tiny daily deposits become something real.
    - **Metaphor:** "grains of light gathering into a shape".
    - **Mechanics:** #23 assemble from fragments + #34 a big number.
-   - **Acts:** a single glowing dot (฿20) → dots accumulate per scroll step into a house/bike outline → "฿7,300 in a year" fills the screen.
+   - **Acts:** a single glowing dot ($1) → dots accumulate per scroll step into a house/bike outline → "$365 in a year" fills the screen.
    - **Anchor:** "Open an account in 5 minutes" sticky pill.
    - **Budget:** SVG circles placed with `getPointAtLength` (#20); WebGL only as an enhancement.
 6. **Specialty coffee roaster**

@@ -48,7 +48,6 @@ Research for `skills/design-atlas` (goal: teach an agent to *invent* cinematic c
    - LET'S TALK (Lusion)
    - Let's talk (Locomotive)
    - Buy plus the price in the hero and sticky local nav (Apple)
-   - คุยกับเรา "Talk to us" (JongQue)
    - Contact (Active Theory, Oryzo)
    [obs]
 7. **Sound is opt-in, with the toggle visible.** Examples: Igloo "Sound: OFF", Immersive Garden "Click to enable sound", Work Happiness "Enter without sound", Lusion PLAY/MUTE, and toggles on Active Theory and Bruno [obs].
@@ -63,10 +62,10 @@ Research for `skills/design-atlas` (goal: teach an agent to *invent* cinematic c
 
 ## 1. JongQue — the user's reference
 
-- URL: https://www.jongque.com/ — `<title>`: "JongQue · ระบบจองคิวที่ร้านเป็นเจ้าของ ไม่หักค่าคอมมิชชัน" ("a booking system the shop owns, no commission"). No award listed. This is a commercial SaaS, which makes it the most relevant model for "cinematic and still converts".
-- **Concept** [int]: "Your business, your bookings". The page tells one booking's life, from a customer tapping a slot to the money landing in the shop's own PromptPay. Every act proves one promise: ownership, automation, zero commission.
+- URL: https://www.jongque.com/ — `<title>`: "JongQue" ("a booking system the shop owns, no commission"). No award listed. This is a commercial SaaS, which makes it the most relevant model for "cinematic and still converts".
+- **Concept** [int]: "Your business, your bookings". The page tells one booking's life, from a customer tapping a slot to the money landing in the shop's own instant-payment. Every act proves one promise: ownership, automation, zero commission.
 - **Opening** [obs, dense frames]:
-  - 0.2 s: white page with a tiny tracked-caps tag, "YOUR BUSINESS, YOUR BOOKINGS.", and a small "Tap to skip" label at the bottom left (Thai: แตะเพื่อข้าม) [code].
+  - 0.2 s: white page with a tiny tracked-caps tag, "YOUR BUSINESS, YOUR BOOKINGS.", and a small "Tap to skip" label at the bottom left [code].
   - 0.7 s: a green dot.
   - 1.1 s: a green check-mark draws and the "JongQue" wordmark rises out of a mask.
   - 2.6 s: the logo leaves and a 1 px hairline spans the full width (`intro-line`).
@@ -75,7 +74,7 @@ Research for `skills/design-atlas` (goal: teach an agent to *invent* cinematic c
   - ~11 s: the hero, "Your business, / your bookings." (grey second line, emerald full stop), with a phone mock-up and a CTA pill.
   - Code: the intro window starts at full viewport and animates into the rect of the shop-front mock's cover image (`.intro-window` → `.ah-object .sf-cover`) [code]. The last frame of the intro *is* the product's first frame.
 - **Acts.** Section classes are literally `act aiset`, `act flow`, `act ind`, `act zero` [code], and eyebrow labels use Roman numerals (II, V) [obs]:
-  - I. **Pinned hero demo**, about 0–3,200 px [obs]. The phone (customer) and the dashboard (shop) sit side by side. On scroll: pick 14:00 → PromptPay QR deposit → the dashboard row "รอตรวจสลิป" (waiting for slip check) → slip verified ✓ → revenue ฿1,600 → ฿1,800 → confirmation sent. A GSAP timeline scrubs at `scrub: .8` and steps through UI states in `onUpdate` [code].
+  - I. **Pinned hero demo**, about 0–3,200 px [obs]. The phone (customer) and the dashboard (shop) sit side by side. On scroll: pick 14:00 → instant-payment QR deposit → the dashboard row (waiting for slip check) → slip verified ✓ → revenue $1,600 → $1,800 → confirmation sent. A GSAP timeline scrubs at `scrub: .8` and steps through UI states in `onUpdate` [code].
   - II. **AI setup.** Paste your Facebook / LINE OA text and the AI drafts services, hours and team. The copy states the AI leaves unknown prices blank and saves nothing until you confirm.
   - III. **Storefront customisation.** A sticky list 01–08 (layout, header style, colour, font, arrangement, services, gallery, motion) restyles a live phone-and-web preview.
   - IV. **"Customers book in 3 steps"**: three phones.
@@ -102,8 +101,6 @@ Research for `skills/design-atlas` (goal: teach an agent to *invent* cinematic c
   - motion code lives in a dynamically imported `motion-*.js` chunk; if it fails, the `<html>` gets `motion-failed` and pinned sections fall back to static layout (`.motion-failed .ah--pinned {height:auto}`)
   - Lenis only on `(min-width:1024px) and (pointer:fine)`, with `lerp .085`
   - the cursor hides while the cookie banner is open
-  - a skip-to-content link ("ข้ามไปที่เนื้อหา") is the first DOM text
-  - nav with the "คุยกับเรา" CTA and a TH/EN switch always visible [obs]
   - with reduced motion emulated, the hero was static at 1.5 s and the pinned demo became a plain grid [obs]
 - **Tech:** React SPA (Vite asset names), GSAP 3.15.0, Lenis 1.3.25 [obs runtime]. No three.js and no canvas [obs].
 - **Transferable rule: The intro must end inside the product. The animation's last frame is the hero's first frame, and the hero is a working demo of the core promise scrubbed by scroll.**

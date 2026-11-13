@@ -33,7 +33,7 @@ Raw outputs: probe JSON in `…/scratchpad/recipes/logs/<slug>-shoot.json`, perf
 
 ## 1. Spotlight reveal · `spotlight-reveal`
 
-- **Feeling / story:** discovery and intimacy; "the secret is in the details". The fictional brand is Kāla Atelier, a Bangkok watchmaker. In near-total darkness the pointer is a soft torch. It reveals the headline, an illustrated watch dial, a blueprint drawn behind the dial (Ø 38.0 MM, PLATE 3/7), and four engraved notes in the corners (guilloché, calibre, moon phase, Nº 017/100) that are only legible inside the beam. Luminous hour markers glow faintly above the dark, so the page is never empty.
+- **Feeling / story:** discovery and intimacy; "the secret is in the details". The fictional brand is Kāla Atelier, a watchmaker. In near-total darkness the pointer is a soft torch. It reveals the headline, an illustrated watch dial, a blueprint drawn behind the dial (Ø 38.0 MM, PLATE 3/7), and four engraved notes in the corners (guilloché, calibre, moon phase, Nº 017/100) that are only legible inside the beam. Luminous hour markers glow faintly above the dark, so the page is never empty.
 - **Use when:** one hero moment with few words and a product with details worth hunting for (watches, perfume, jewellery, a gallery opening, a teaser, a night bar or hotel).
 - **Avoid when:** the page must be scanned fast (pricing, docs, forms), or the hero holds information users need right away.
 - **Ambition:** bold / cinematic.
@@ -72,7 +72,7 @@ stage.addEventListener('focusin', (e) => { const r = e.target.getBoundingClientR
 ```
 - **Knobs:** CSS `--ambient` (0–1 darkness outside the beam), `--night/--brass/--cream/--lume`. JS `CFG.follow` (lerp), `idle` (ms before the auto-light wanders again), `holdTap`, `rMin/rMax` (radius clamp, 0.34 × the smaller stage side), and `breathe`.
 - **Reduced motion:** no loop. The light is static on the dial with 1.45× radius and `--ambient` drops to 0.55, so everything reads. This is a composed still, and the lights toggle still works.
-- **Mobile / touch:** the auto-light wanders slowly through the visible part of the stage. A tap aims it and holds for 2.6 s. The hint text switches to "Tap to aim the light · แตะเพื่อส่องไฟ". Notes become a 2-column grid under the dial, and the blueprint is trimmed so nothing overflows.
+- **Mobile / touch:** the auto-light wanders slowly through the visible part of the stage. A tap aims it and holds for 2.6 s. The hint text switches to "Tap to aim the light". Notes become a 2-column grid under the dial, and the blueprint is trimmed so nothing overflows.
 - **A11y:** real text in DOM order. "Turn on the lights" button (`aria-pressed`, also the L key). Keyboard focus pulls the light to the focused control. Decorative SVG is `aria-hidden`.
 - **Gotchas hit:**
   - Headless Chrome fires no `focus`/`focusin` when the page isn't focused (`document.hasFocus()` = false), so the focus-follow looked broken in shots. The page was fine. The shot job now dispatches `FocusEvent('focusin')` after `.focus()`; the alternative is CDP `Emulation.setFocusEmulationEnabled`.
@@ -83,7 +83,7 @@ stage.addEventListener('focusin', (e) => { const r = e.target.getBoundingClientR
 
 ## 2. Light text · `light-text`
 
-- **Feeling / story:** guidance, arrival, "a light left on for you". The fictional brand is Phare Lanta, six rooms in a working lighthouse. The four-line headline "Light finds / its way home. / แสงนำทางคุณ / กลับบ้านเสมอ" is dark until a lighthouse beam sweeps across it line by line. Lit lines keep a warm afterglow, and the sequence ends on a fully lit headline.
+- **Feeling / story:** guidance, arrival, "a light left on for you". The fictional brand is Phare Lanta, six rooms in a working lighthouse. The four-line headline "Light finds / its way home." is dark until a lighthouse beam sweeps across it line by line. Lit lines keep a warm afterglow, and the sequence ends on a fully lit headline.
 - **Use when:** the headline IS the hero, in 2–5 short lines at display size (≥ ~48 px).
 - **Avoid when:** long copy, small type, pages people must scan, or any information users need before the light arrives.
 - **Ambition:** cinematic.
@@ -196,7 +196,7 @@ function open() {                                   // auto at 1.2 s or on first
 
 ## 4. Word-swap hero · `word-swap-hero`
 
-- **Feeling / story:** "this was made for you, whoever you are". The fictional brand is nadd., a booking SaaS, in the style of jongque.com. A big "Your ___." headline sits over a framed image card, and scrolling swaps **studio → clinic → salon → café**. Each swap brings a bottom-up wipe of the scene, a Thai subline swap (ระบบจองคิวออนไลน์สำหรับ…ของคุณ), and a booking chip per scene ("Reformer · 07:30 · จองแล้ว 8 จาก 10 ที่"). Side widgets (today's queue, −62% no-shows) drift at their own depth. The card then scales to full-bleed and the dark next section slides over it.
+- **Feeling / story:** "this was made for you, whoever you are". The fictional brand is nadd., a booking SaaS, in the style of jongque.com. A big "Your ___." headline sits over a framed image card, and scrolling swaps **studio → clinic → salon → café**. Each swap brings a bottom-up wipe of the scene, a subline swap…, and a booking chip per scene ("Reformer · 07:30 · 8 of 10 booked"). Side widgets (today's queue, −62% no-shows) drift at their own depth. The card then scales to full-bleed and the dark next section slides over it.
 - **Use when:** 3–5 audiences or variants share one promise and each has a strong picture.
 - **Avoid when:** there is one audience (just say it), or the variants need explaining (use tabs or cards).
 - **Ambition:** bold.
@@ -246,7 +246,6 @@ mm.add('(prefers-reduced-motion: no-preference)', () => {
   - A centred headline with a fixed-width word slot sits off-centre for short words. I shifted the whole line by `(max − w)/2` with a transform, which avoids animating width.
   - A scrubbed word roll leaves half-words when the user stops mid-way. The roll now happens only in the middle third of each wipe.
   - `navigator.webdriver` is **false** in `shoot.mjs`'s headless Chrome, so tests must pass `?nolenis`. A check with Lenis on still drove the timeline from `scrollTo` (scene 2 revealed, track at −25%).
-  - "ลด / การเบี้ยวนัด" broke mid-phrase in a narrow widget, so the Thai went on its own line.
   - The lesson's resize/reload test was run over CDP:
     - Reload at 80% progress: the full-bleed card still covers the stage (card −51…1491 × −167…1067 on 1440×900).
     - Resize to 390×844, then scroll back to 80%: it still covers (−173…563 × −38…882).
