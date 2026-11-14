@@ -143,6 +143,7 @@ skills/n-defect-loop/
 skills/develop-init/
   SKILL.md            per-repo setup for both loops; templates/config.md, templates/tracker.env
 plugins/90north-develop/  plugin manifest, agents, hooks (the session-start line, the command guard), evals, symlinks to the skills above
+.ndev.toml + docs/architecture/profile.md  how this repo's own scripts are layered, and the rules the structure check holds them to
 .claude-plugin/marketplace.json  this repo as a plugin marketplace
 research/<skill>/     raw research notes with sources (provenance, not loaded by the skill)
 tools/validate_skill.py   one skill: frontmatter, referenced files, reference shape, source URLs
