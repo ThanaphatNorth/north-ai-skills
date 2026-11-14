@@ -367,12 +367,14 @@ class WhereUnattended(unittest.TestCase):
         plain, auto = where(root, env), where(root, env, "--auto")
         self.assertEqual((auto.returncode, auto.stderr, auto.stdout), (0, "", plain.stdout))
 
-    def test_a_project_with_settings_only_may_start(self):
+    def test_a_project_with_settings_only_is_not_set_up_for_a_pass(self):
+        """Nothing is under .claude/ to refuse, but there is no working state folder either: develop-init writes it."""
         root = os.path.realpath(tempfile.mkdtemp())
         os.makedirs(os.path.join(root, ".claude", "90north-develop"))
         write_env(root, "TRACKER=local\n")
         r = where(root, moved_project()[2], "--auto")
-        self.assertEqual((r.returncode, r.stderr), (0, ""))
+        self.assertEqual(r.returncode, 2, r.stderr)
+        self.assertIn("/90north-develop:develop-init", r.stderr)
 
     def test_a_legacy_folder_is_refused_and_points_at_develop_init(self):
         """.claude/defect-loop/ is under .claude/ too, and move-state.sh does not take it: develop-init does."""

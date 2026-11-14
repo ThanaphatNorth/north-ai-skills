@@ -141,6 +141,61 @@ class Moves(MoveCase):
             self.assertEqual(fh.read(), ".claude/90north-develop/runs/\nnode_modules/\n")
 
 
+WHERE = os.path.join(SCRIPTS, "where.sh")
+
+
+class Interrupted(MoveCase):
+    """A move that stops half way leaves a project an unattended pass still refuses, and a second run finishes it:
+    the ledgers decide which place is in use, so they move last."""
+
+    def auto(self):
+        return subprocess.run([WHERE, "--auto"], cwd=self.root, env=ENV, capture_output=True, text=True)
+
+    def carry(self, *names):
+        """Move these names by hand, as a run that stopped after them would have."""
+        os.makedirs(self.new, exist_ok=True)
+        for name in names:
+            os.rename(os.path.join(self.old, name), os.path.join(self.new, name))
+
+    def finishes(self):
+        code, _, err = self.move()
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(self.tree(self.new), sorted(WORKING))
+        self.assertEqual(self.tree(self.old), sorted(SETTINGS))
+        r = self.auto()
+        self.assertEqual((r.returncode, r.stderr), (0, ""))
+
+    def test_the_board_moves_after_the_rest_and_the_ledgers_last(self):
+        code, out, _ = self.move()
+        self.assertEqual(code, 0)
+        moved = [line.split()[1] for line in out.splitlines() if line.startswith("moved ")]
+        self.assertEqual(sorted(moved[:3]), ["knowledge", "lessons.md", "runs"])
+        self.assertEqual(moved[3:], ["board", "dev-ledger.md", "defect-ledger.md"])
+
+    def test_stopped_before_the_ledgers(self):
+        self.carry("lessons.md", "knowledge", "runs", "board")
+        r = self.auto()
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertIn("move-state.sh", r.stderr)
+        self.finishes()
+
+    def test_stopped_between_the_two_ledgers(self):
+        self.carry("lessons.md", "knowledge", "runs", "board", "dev-ledger.md")
+        r = self.auto()
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertIn("two places", r.stderr)
+        self.finishes()
+
+    def test_stopped_before_the_board_in_a_project_with_no_ledger(self):
+        for name in ("dev-ledger.md", "defect-ledger.md"):
+            os.remove(os.path.join(self.old, name))
+        self.carry("lessons.md", "knowledge", "runs")
+        r = self.auto()
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertEqual(self.move()[0], 0)
+        self.assertEqual(self.auto().returncode, 0)
+
+
 class DryRun(MoveCase):
     def test_it_lists_what_would_move_and_changes_nothing(self):
         code, out, err = self.move("--dry-run")

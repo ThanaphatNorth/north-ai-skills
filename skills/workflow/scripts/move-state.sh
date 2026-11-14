@@ -26,7 +26,10 @@ old=$DEVELOP_DIR
 root=${old%/.claude/90north-develop}
 new="$root/.90north-develop"
 
-names=(dev-ledger.md defect-ledger.md ai-ledger.md lessons.md knowledge runs)
+# The order is part of the contract. _state.sh reads which place is in use from the ledgers, then from the cards on
+# the board, so those move last: a run that stops half way leaves a project that is still read under .claude/ and
+# still refused by `where.sh --auto`, and running this script again finishes the move.
+names=(ai-ledger.md lessons.md knowledge runs)
 # the board: `board`, or the folder tracker.env names. A relative name moves with the rest; an absolute path stays
 # where it is; a relative path that climbs out (..) would name another place after the move, so it is refused.
 board=${LOCAL_BOARD:-board} kept_board=""
@@ -37,6 +40,7 @@ case $board in
     exit 1 ;;
   *) names+=("$board") ;;
 esac
+names+=(dev-ledger.md defect-ledger.md)
 
 if [ -e "$old/runs/.pass.lock" ]; then
   echo "move-state: a pass lock is at $old/runs/.pass.lock — wait for the pass to end (or remove a stale lock), then run again" >&2
