@@ -3,7 +3,8 @@
 
 Claude Code writes one JSON object per line. A tool call is a `tool_use` block and its answer a `tool_result`
 block with the same id. A subagent that runs in the background answers later, in a `<task-notification>` that
-names the call's id. Lines carry an ISO `timestamp`; a transcript without them still works, by line order.
+names the call's id: a user message when the session was waiting, a queued attachment when it was busy. Lines
+carry an ISO `timestamp`; a transcript without them still works, by line order.
 
 Which files the session changed comes from git and the file system, not from the tool that wrote them: an agent
 writes files with a shell here-document as often as with an edit tool.
@@ -72,6 +73,9 @@ def _read_line(line: Dict[str, object], session: Session, seen: Set[str]) -> Non
     content = message.get("content") if isinstance(message, dict) else None
     if line.get("type") == "user":
         session.finished.update(_FINISHED.findall(_text(content)))
+    queued = line.get("attachment")  # a notification that arrived mid-turn is queued and written as an attachment
+    if isinstance(queued, dict) and queued.get("type") == "queued_command":
+        session.finished.update(_FINISHED.findall(str(queued.get("prompt", ""))))
     for block in content if isinstance(content, list) else []:
         if not isinstance(block, dict):
             continue

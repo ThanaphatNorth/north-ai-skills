@@ -7,7 +7,7 @@ Shape: a skills repository (instruction files) with four small command-line prog
 
 - `skills/<name>/` → one skill each: `SKILL.md` (what an agent reads), `references/`, `templates/`, `scripts/`, `evals/`. The source of truth for every skill.
 - `skills/n-dev/scripts/` → the structure check (`structure_check.py` + package `ndev_check/`) and the gate hook (`finish_gate.py` + `gate_session.py`).
-- `skills/workflow/scripts/` → the tracker door: `tracker.sh` and `jira-*.sh` (shell), `local_board*.py` (cards as markdown files), `jira_*.py` and `md2adf.py` (Jira text and payloads).
+- `skills/workflow/scripts/` → the tracker door: `tracker.sh` and `jira-*.sh` (shell), `local_board*.py` (cards as markdown files), `jira_*.py` and `md2adf.py` (Jira text and payloads); and `ledger.sh`, the one way a ledger row is written.
 - `plugins/90north-develop/` → the plugin: manifest, `agents/`, `hooks/` (session-start line, command guard), `evals/`, and `skills/` as symlinks into `skills/`.
 - `tools/` → this repo's own checkers: `check_repo.py` + package `repo_check/`, `validate_skill.py`, `quality.sh` (types and coverage), `consistency-review.md`.
 - `.claude-plugin/marketplace.json` → what `/plugin marketplace add` reads.
@@ -53,6 +53,7 @@ Also enforced by: `tools/quality.sh` (mypy `--strict` for Python 3.8, branch cov
 | the plugin version | `plugins/90north-develop/.claude-plugin/plugin.json` | `.claude-plugin/marketplace.json` repeats it; `tools/check_repo.py` fails when they differ | both files in one commit |
 | what a subagent may not run | `plugins/90north-develop/hooks/guard_rules.py` | `guard.py` | a rule set per agent, with a test |
 | a project's loop settings | `<project>/.claude/90north-develop/config.md` and `tracker.env` | `_state.sh`, which parses them as text and never runs them | develop-init |
+| a work item's state in a loop | `<project>/.claude/90north-develop/<flow>-ledger.md`, one row per change | the loop's S0 | `skills/workflow/scripts/ledger.sh` only |
 | Jira credentials | a file outside every repo, named by the user's own environment | `_env.sh`, which reads it without exporting | `jira-login.sh` |
 
 ## Contracts

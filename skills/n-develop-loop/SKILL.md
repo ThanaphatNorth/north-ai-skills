@@ -11,6 +11,7 @@ subagents write the code.
 - **Shared parts** live in the workflow skill (`W = ../workflow/` from this skill's base directory): the stages
   S0–S6, the dispatch safety block, the tracker (`W/scripts/tracker.sh`, Jira or the local board) and the auto
   mode. Read `W/references/stages.md` once per run.
+- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 5).
 - **Code:** every line follows n-dev (`../n-dev/`).
 
 ## Calls and modes

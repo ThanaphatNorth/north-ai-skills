@@ -473,6 +473,16 @@ class CommitGate(GateCase):
         self.review(background=True)
         self.assertEqual(self.before_commit("git -C . commit -q -m work"), (0, ""))
 
+    def test_a_reviewer_whose_answer_arrived_while_the_session_was_busy_lets_the_commit_run(self):
+        self.standard_work()
+        call_id = self.review(background=True, finished=False)
+        # Claude Code queues a notification that arrives mid-turn and writes it as an attachment, not a user message
+        self.events.append({"type": "attachment", "timestamp": "2026-11-14T05:57:17.281Z", "attachment": {
+            "type": "queued_command", "commandMode": "task-notification",
+            "prompt": "<task-notification>\n<task-id>a9</task-id>\n<tool-use-id>%s</tool-use-id>\n"
+                      "<status>completed</status>\n<result>0 blockers</result>\n</task-notification>" % call_id}})
+        self.assertEqual(self.before_commit(), (0, ""))
+
     def test_tiny_work_commits_without_a_review(self):
         self.shell_write("src/price.py", "y = 2\n")
         self.shell_write("tests/test_price.py")

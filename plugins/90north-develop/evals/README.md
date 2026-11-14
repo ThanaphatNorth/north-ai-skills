@@ -91,8 +91,48 @@ descriptions, so the line is what carries the routing; the shorter descriptions 
 has the bug card TASK-2 describes.
 
 Cases 04 and 05 end where an attended run waits for its answer, so they check that the round comes first and comes
-once. What happens after the answer (isolate, build, verify, ship) needs a running stack and a person, and no case
-covers it.
+once. Their prompts say that someone is at the keyboard; a plain request is checked in § Whole runs, which also
+covers what happens after the answer.
+
+## Whole runs
+
+The cases stop at the question round. What comes after it (isolate, build, verify, ship, learn) is checked by
+running a loop in a real session on a copy of `_shared/board-repo/`, with a plain request and no hint that someone
+is at the keyboard, and reading the session's transcript, git and the board afterwards. No push: the fixture has no
+remote and no standing approval, so a finished item parks at `awaiting-push`.
+
+```bash
+cp -R plugins/90north-develop/evals/_shared/board-repo /tmp/run/pricing && cd /tmp/run/pricing && git init -q -b main && git add -A && git commit -q -m base
+printf 'Run the defect loop on TASK-2.' | claude -p --plugin-dir <plugin> --setting-sources project --model sonnet --permission-mode acceptEdits \
+  --allowedTools Bash Write Edit Read Glob Grep Skill Agent Task --strict-mcp-config --output-format stream-json --verbose > run.jsonl
+```
+
+Answer a question round with `claude -p --resume <session id>` and the same flags. For auto mode the copy also needs
+config § Auto mode, `knowledge/`, `runs/` and a card labelled `ai-queue`; the request is
+`/90north-develop:n-defect-loop --auto [--dry-run]`.
+
+Runs on 0.11.0 (2026-11-14, Sonnet, one each; the cost is what the session reported):
+
+| Run | What happened | Ended |
+|---|---|---|
+| n-defect-loop TASK-2 | worktree, `defect-repro` red, `defect-fixer`, `risk-reviewer` beside QA, comment, ledger through `ledger.sh` | fixed, 3 of 3 tests, `awaiting-push`, nothing pushed · $0.55 |
+| n-develop-loop TASK-1 | one question (the push), then after "no": worktree, `dev-builder` red specs, `dev-builder` build, `risk-reviewer` beside QA, comment, ledger | built, 11 of 11 tests, `awaiting-push`, no second stop · $0.71 |
+| n-defect-loop `--auto --dry-run` | triage, lock, `defect-repro` red, BEFORE comment, lock released, ledger `dry-run`, six run files | card still queued · the learner was not dispatched · $0.42 |
+| n-defect-loop `--auto` | triage, repro, fixer, review beside QA, `loop-verifier` CONFIRMED, comment, `loop-learner` | `awaiting-push` · run files kept outside `DL`, V8 not read, pass lock left behind (below) · $0.99 |
+| n-arch `audit` | structure check over the whole repo, two planted imports to prove the rules fire | report only, no file written · $0.12 |
+
+What the first runs showed, and what was changed because of it:
+
+- **A ledger row could not be written.** A shell redirect into `.claude/90north-develop/` is refused in a session
+  that asks nobody, like the Write tool; one run stopped there with the fix done and nothing recorded. Ledger rows
+  now go through `skills/workflow/scripts/ledger.sh`.
+- **One run built first and asked about the push at the end**, and ran no separate QA. `stages.md` § Decision round
+  now says what a run does when nobody can be asked, and § S2 makes QA's report a condition for shipping.
+- **Still open: the state folder is under `.claude/`.** In the live auto pass the Write tool was refused for the
+  run files, so the conductor kept them in its scratch folder, where the next pass cannot find them; the verifier
+  ran before the comment draft existed; and the pass lock could not be removed afterwards. `auto-mode.md` § A0 now
+  stops a pass that cannot write its folder, and § A7 puts the draft before the verifier, but the cause is where
+  the state lives. Until that is settled, run auto mode only where a person can approve those writes.
 
 ## Reading the result
 

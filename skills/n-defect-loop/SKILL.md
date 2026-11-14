@@ -10,6 +10,7 @@ You are the **orchestrator** (the main conversation): you read the tracker, deci
 return and write to the tracker (Jira or the local board, through `W/scripts/tracker.sh`).
 - **Shared parts** live in the workflow skill (`W = ../workflow/` from this skill's base directory): the stages
   S0–S6, the dispatch safety block, the tracker and the auto mode. Read `W/references/stages.md` once per run.
+- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 5).
 - **Code:** every fix follows n-dev (`../n-dev/`).
 
 ## Calls and modes

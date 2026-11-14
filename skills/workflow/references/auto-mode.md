@@ -87,6 +87,10 @@ The pass log is `DL/runs/<date>/run.md`.
 - **Pass lock.** `DL/runs/.pass.lock` holds the start time of a running pass, of either loop.
   - If it is younger than config › pass minutes, log `another pass is running` and stop.
   - Otherwise write it now, and remove it when A9 ends, also after a failure.
+- **The state folder can be written.** Right after the pass lock, create this pass's folder `DL/runs/<date>/` and
+  its `run.md`. If the session refuses a write under `DL` (a session that asks nobody can protect `.claude/`), stop
+  the pass here: take no card, and say in the reply which write was refused. Never keep run files anywhere else: the
+  next pass, the verifier and the learner read them from `DL/runs/`.
 - **Config.** No config § Auto mode (or a legacy § AI loop not yet migrated) → stop and run
   `/90north-develop:develop-init`. Confirm the tracker answers with one cheap read.
 - **Profile.** Read the architecture profile (`docs/architecture/profile.md`, or `.ndev.toml` `[profile] path`).
@@ -169,8 +173,9 @@ A failed proof goes back to A5 and counts as an attempt. The card takes the **st
 attempts, or once S2's two fix rounds are used. It is not `blocked-needs-human`: the pass report names it, and
 nobody is asked mid-pass.
 
-**A7 · Verifier gate** (step 7). Dispatch `loop-verifier` with the run folder, the branch diff, the spec and the
-evidence.
+**A7 · Verifier gate** (step 7). Write the comment draft into the run folder first: claim V8 reads it, and a
+comment the verifier has not read is not posted. Then dispatch `loop-verifier` with the run folder, the branch
+diff, the spec and the evidence.
 - `verdict: CONFIRMED` → A8.
 - `REFUTED` → redo the stage the refuted claim names (`auto-evidence-and-ship.md` § Verifier outcomes), with one
   retry.

@@ -131,6 +131,7 @@ skills/workflow/
   templates/card.md           a local-board card
   templates/feature-doc.md    a feature doc
   scripts/tracker.sh, _state.sh  one door to the tracker: TRACKER=jira | local
+  scripts/ledger.sh   one door to the ledgers: checks a row, stamps it, appends it in the main checkout
   scripts/jira-*.sh, md2adf.py  Jira backend (REST v3)
   scripts/local_board*.py     local board backend (markdown cards)
 skills/n-develop-loop/

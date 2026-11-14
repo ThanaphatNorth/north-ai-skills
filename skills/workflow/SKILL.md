@@ -87,7 +87,7 @@ no ticket is owned by two loops at once.
 | `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
 | `tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
 | `board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
-| `dev-ledger.md` / `defect-ledger.md` | one row per state change of a work item, per loop, both modes (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
+| `dev-ledger.md` / `defect-ledger.md` | one row per state change of a work item, per loop, both modes, written with `scripts/ledger.sh` (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
 | `lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
 | `knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
 | `runs/<date>/<KEY>/`, `runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
