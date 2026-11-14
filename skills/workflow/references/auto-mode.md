@@ -84,7 +84,10 @@ The pass log is `DL/runs/<date>/run.md`.
 **A0 · Before the pass.**
 - **S0.** Run S0 (`W/references/stages.md`) with the loop's flow (`defect` or `dev`). Its first command here is
   `W/scripts/where.sh --auto`. Exit 3 means the working state is under `.claude/` (a project that has not moved
-  yet, or a legacy folder): the pass ends with the line the script printed as its reply. Write no lock, take no
+  yet, a legacy folder, a name or link that leads there, or a project that itself sits under a folder named
+  `.claude`) or is in two places (read beside the project while a ledger, cards, lessons or knowledge are still
+  under `.claude/`). Exit 2 means there is no setup, or no
+  working state folder yet. Either way the pass ends with the line the script printed as its reply. Write no lock, take no
   card, write no run file, and do not test whether a write would succeed. Otherwise S0 goes on and reads the core
   lessons and `DL/lessons.md` in full.
 - **Pass lock.** `DL/runs/.pass.lock` holds the start time of a running pass, of either loop.

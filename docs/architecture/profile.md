@@ -54,7 +54,7 @@ Also enforced by: `tools/quality.sh` (mypy `--strict` for Python 3.8, branch cov
 | what a subagent may not run | `plugins/90north-develop/hooks/guard_rules.py` | `guard.py` | a rule set per agent, with a test |
 | a project's loop settings | `<project>/.claude/90north-develop/config.md` and `tracker.env` | `_state.sh`, which parses them as text and never runs them | develop-init |
 | a work item's state in a loop | `<project>/.90north-develop/<flow>-ledger.md`, one row per change | the loop's S0 | `skills/workflow/scripts/ledger.sh` only |
-| where a project's two folders are | `skills/workflow/scripts/_state.sh` (`DEVELOP_DIR` settings, `DEVELOP_STATE_DIR` working state) | every tracker script; the loops through `where.sh` | `move-state.sh` moves an old layout, once |
+| where a project's two folders are | `skills/workflow/scripts/_state.sh` (`DEVELOP_DIR` settings, `DEVELOP_STATE_DIR` working state, both physical paths; a ledger, then cards, decide which place is in use; `DEVELOP_STATE_SPLIT` when the old place still keeps a record) | every tracker script; the loops through `where.sh` | `move-state.sh` moves an old layout, once |
 | Jira credentials | a file outside every repo, named by the user's own environment | `_env.sh`, which reads it without exporting | `jira-login.sh` |
 
 ## Contracts

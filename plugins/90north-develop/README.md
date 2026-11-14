@@ -166,7 +166,9 @@ Two folders. `<repo>/.claude/90north-develop/` holds the settings: Claude Code a
 it works, so a run with nobody at the keyboard can still record it. A project set up before 0.12 has everything in
 the first folder: `skills/workflow/scripts/move-state.sh` moves the working state (develop-init offers it). Until then
 the attended loops keep using the old place, and an unattended pass does not start: `where.sh --auto`, its first
-command, refuses it. `where.sh` prints the two folders a project uses.
+command, refuses it. `where.sh` prints the two folders a project uses, as absolute paths with links followed, and
+says when the working state is under `.claude/` or in both places (then no run starts until a person has put each
+file in one place).
 
 | File | Holds |
 |--|--|
