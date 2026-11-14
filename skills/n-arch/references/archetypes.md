@@ -247,7 +247,7 @@ without `--all`, and see the `layer` finding. No finding means the globs or pref
 |---|---|---|
 | 0, and the rule fired on a planted violation | the rule describes the code | enforce it |
 | a few, in one or two files | known exceptions | enforce it; list the files as debt in the profile |
-| many, spread out | the rule is a target, or the globs are wrong | check the globs; if right, ask the user (step 5) |
+| many, spread out | the rule is a target, or the globs are wrong | check the globs; if right, it is a target: step 5's rule settles it |
 
 ## Sources
 

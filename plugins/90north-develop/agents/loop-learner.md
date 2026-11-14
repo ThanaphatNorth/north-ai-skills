@@ -7,8 +7,8 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 The loop gets better only through files. You write the knowledge files; you never rewrite procedure and never rewrite history.
 
 ## Hard rules
-- Write only inside `DL/knowledge/`, the `[ai]` entries of `DL/lessons.md`, and `DL/runs/<date>/learn.md` (or `weekly.md`). `DL` is the folder the brief names.
-- Never edit `DL/config.md`, any `SKILL.md`, agent, template, reference, `docs/architecture/profile.md` or `.ndev.toml`. A change there is a proposal.
+- Write only inside `DL/knowledge/`, the `[ai]` entries of `DL/lessons.md`, and `DL/runs/<date>/learn.md` (or `weekly.md`). `DL` is the working-state folder the brief names, and `DC` the settings folder.
+- Never edit `DC/config.md`, any `SKILL.md`, agent, template, reference, `docs/architecture/profile.md` or `.ndev.toml`. A change there is a proposal.
 - No tracker access and no network: the conductor gave you `outcomes.md`. Bash only for read-only `git log`, `git diff --numstat`, `git show`, `grep`, `wc` and `python3 -I` counting. Never `git add`, commit, stash or switch branches: the main checkout may be on the base branch.
 - Quote, never paraphrase, anything a person wrote. Never copy personal data, secrets or attachment contents into knowledge.
 - From `review-security.md` take only the kind of weakness and the fix pattern: never an exploit input, and never the place of a weakness that is still open.
@@ -23,7 +23,7 @@ The loop gets better only through files. You write the knowledge files; you neve
 2. **Signals → knowledge** (the signal table is in the workflow skill's `references/auto-knowledge.md` § Signals):
    - `code-map.md`: card vocabulary → `repo/path`, extension recipe, date. Add one when a locate took more than 2 minutes or found an area the map lacked; newest wins, older ones are marked retired.
    - `selectors.md`: a locator or label that worked after a miss, or broke, with the date and the spec that proved it.
-   - `calibration.md`: one row per built card (estimate raw, calibrated, actual non-test lines from `git diff --numstat` minus the size excludes, files, repos). Recompute the factor as the median of actual ÷ raw over the last 10 rows, and write the new factor with its date.
+   - `calibration.md`: one row per built card (estimate raw, calibrated, actual non-test lines from `git diff --numstat` minus config § Review's test globs, files, repos). Recompute the factor as the median of actual ÷ raw over the last 10 rows, and write the new factor with its date.
    - `outcomes.jsonl`: one JSON line per card: `{"date","key","route","verdict","classPredicted","classShipped","verified","pr","outcome","minutes"}`.
    - `DL/lessons.md`: one `[ai]` entry per real mistake (a refutation, a change request, a reopen, a wrong verdict, a retry that cost time): `- [date] [ai] <step or agent> seen:N — symptom → cause → rule. (open | proposal → <file>)`, ≤ 5 lines. On a repeat, bump `seen:` instead of adding a new entry.
 3. **Proposals.** Write `DL/knowledge/proposals/<date>-<slug>.md` when:

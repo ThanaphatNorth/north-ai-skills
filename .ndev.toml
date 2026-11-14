@@ -1,0 +1,71 @@
+# .ndev.toml — read by n-dev's structure check (skills/n-dev/scripts/structure_check.py). Written with the n-arch skill.
+# Reasons for every number and rule live in the architecture profile named below; keep this file to the facts.
+# Format: a strict TOML subset — [tables], "strings", integers, booleans, [arrays]. No inline tables, no dates.
+
+[profile]
+path = "docs/architecture/profile.md"
+
+[budgets]
+max-file = 300
+max-test-file = 600
+max-func = 50
+max-wiring = 20
+dup-lines = 6
+max-line = 140
+
+[check]
+exclude = [
+  "skills/*/evals/**",
+  "plugins/*/evals/**",
+  "skills/design-atlas/examples/**",
+  "research/**",
+]
+
+# --- n-dev's structure check: rules -> file and git access -> entry points
+[layers.check-core]
+paths = ["skills/n-dev/scripts/ndev_check/**"]
+imports = ["ndev_check"]
+may-import = []
+
+[layers.check-io]
+paths = ["skills/n-dev/scripts/ndev_check/fileio*", "skills/n-dev/scripts/ndev_check/gitdiff*", "skills/n-dev/scripts/ndev_check/config*"]
+imports = ["ndev_check.fileio", "ndev_check.gitdiff", "ndev_check.config"]
+may-import = ["check-core"]
+
+[layers.check-app]
+paths = ["skills/n-dev/scripts/ndev_check/runner*", "skills/n-dev/scripts/structure_check*", "skills/n-dev/scripts/finish_gate*", "skills/n-dev/scripts/gate_session*"]
+imports = ["ndev_check.runner", "structure_check", "finish_gate", "gate_session"]
+may-import = ["check-core", "check-io"]
+
+# --- the tracker scripts: card and Jira rules -> files, network text and command lines
+[layers.board-core]
+paths = ["skills/workflow/scripts/local_board_card*", "skills/workflow/scripts/local_board_change*", "skills/workflow/scripts/local_board_query*", "skills/workflow/scripts/local_board_core*", "skills/workflow/scripts/jira_read*", "skills/workflow/scripts/jira_write*"]
+imports = ["local_board_card", "local_board_change", "local_board_query", "local_board_core", "jira_read", "jira_write"]
+may-import = []
+
+[layers.board-app]
+paths = ["skills/workflow/scripts/local_board.py", "skills/workflow/scripts/local_board_files*", "skills/workflow/scripts/jira_fmt*", "skills/workflow/scripts/md2adf*"]
+imports = ["local_board", "local_board_files", "jira_fmt", "md2adf"]
+may-import = ["board-core"]
+
+# --- the repo's own checkers: rules -> runner and command lines
+[layers.tools-rules]
+paths = ["tools/repo_check/**"]
+imports = ["repo_check"]
+may-import = []
+
+[layers.tools-app]
+paths = ["tools/repo_check/runner*", "tools/check_repo*", "tools/validate_skill*"]
+imports = ["repo_check.runner", "check_repo", "validate_skill"]
+may-import = ["tools-rules"]
+
+# --- the plugin's command guard: rules -> the hook that reads stdin
+[layers.guard-core]
+paths = ["plugins/90north-develop/hooks/guard_rules*", "plugins/90north-develop/hooks/guard_shell*"]
+imports = ["guard_rules", "guard_shell"]
+may-import = []
+
+[layers.guard-app]
+paths = ["plugins/90north-develop/hooks/guard.py"]
+imports = ["guard"]
+may-import = ["guard-core"]

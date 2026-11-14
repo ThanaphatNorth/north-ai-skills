@@ -1,6 +1,6 @@
 # Triage — score, readiness, verdict and class for every card type
 
-> Read when: auto mode A2 scores the queue, or A3 triages a card. Every number here is a default; the project's value lives in `DL/config.md` § Auto mode and wins.
+> Read when: auto mode A2 scores the queue, or A3 triages a card. Every number here is a default; the project's value lives in `DC/config.md` § Auto mode and wins.
 
 Triage answers one question from written rules: *can the AI do this card now, unattended, and prove it?* It does not judge priority or scope; the people who own the board do. Anything that needs a product judgement becomes a question on the card (`need-info`) or a hand-off to a person (`need-dev`) with the analysis attached.
 
@@ -132,5 +132,5 @@ The record per `auto-tracker-record.md`: the AI summary field (type, files, appr
 ## Sources
 
 - Distilled from a production Jira AI loop that triaged every card type with one table and a three-column matrix (2026); the numbers are that loop's starting defaults.
-- n-dev scope dial and design-note gate: `../n-dev/SKILL.md`.
+- n-dev scope dial and § Questions (what counts as a decision): `../n-dev/SKILL.md`.
 - n-arch profile sections (Map, Extension recipes, State owners, Contracts): `../n-arch/templates/profile.md`.

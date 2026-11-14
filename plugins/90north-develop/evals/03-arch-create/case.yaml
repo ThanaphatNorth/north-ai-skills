@@ -1,0 +1,45 @@
+schema_version: "1.0"
+name: 03-arch-create
+description: Map a layered repo that has one real violation of its own stated rule — measure before prescribing, record the violation, settle every choice by rule, ask nothing.
+tags: [n-arch, architecture, questions]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1500
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep]
+  prompt: |
+    Map this repo's architecture with the n-arch skill, so later changes start from it. Nobody is available to
+    answer questions in this run, so do not wait for an answer. Finish with a short report.
+runs: 3
+graders:
+  - type: file_exists
+    name: profile-written
+    path: "docs/architecture/profile.md"
+  - type: regex
+    name: layers-in-the-check-config
+    target: {source: file, path: .ndev.toml}
+    pattern: '\[layers\.'
+  - type: regex
+    name: profile-is-dated
+    target: {source: file, path: docs/architecture/profile.md}
+    pattern: 'verified-at'
+  - type: regex
+    name: measured-with-the-structure-check
+    target: trace
+    pattern: 'n-dev structure check against'
+  - type: llm
+    name: the-real-violation-is-recorded
+    focus: {source: file, path: docs/architecture/profile.md}
+    criteria: >-
+      The profile states the rule that the interface layer must not import the infrastructure layer, and records
+      that the code breaks it today in src/interface/health.js (as a violation count, a named debt or a target
+      rule). It does not claim the rule is fully met.
+  - type: llm
+    name: report-settles-by-rule-and-asks-nothing
+    criteria: >-
+      The final message reports the layers, the violation found, and the choices it settled itself by rule. It does
+      not end on a question that blocks the work.
+  - type: tool_used
+    name: n-arch-fired
+    tool: Skill

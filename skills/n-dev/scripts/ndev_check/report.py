@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from typing import List, Optional, Sequence
 
-from .model import Budgets, Finding
+from .model import Budgets, Finding, printable
 
 _TITLES = {
     "wiring": "Pre-existing files changed beyond a wiring diff",
@@ -22,6 +22,8 @@ _EXISTING_TITLE = ("Already over budget at the base ref (%d) — not caused by t
 
 def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = (),
             config: Optional[str] = None) -> str:
+    """The report people read: a header, findings grouped by kind, existing debt apart, and a last line
+    that starts `RESULT:`."""
     head = "n-dev structure check against %s (file %d, test file %d, function %d, wiring %d, dup %d lines, line %d)" % (
         base if base.startswith("(") else base[:12], budgets.max_file, budgets.max_test_file, budgets.max_func,
         budgets.max_wiring, budgets.dup_lines, budgets.max_line)
@@ -33,10 +35,10 @@ def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequ
         if not group:
             continue
         out.append("\n%s (%d)" % (title, len(group)))
-        out.extend("  %s:%d  %s" % (f.path, f.line, f.message) for f in group)
+        out.extend(_row(f) for f in group)
     if existing:
         out.append("\n" + _EXISTING_TITLE % len(existing))
-        out.extend("  %s:%d  %s" % (f.path, f.line, f.message) for f in existing)
+        out.extend(_row(f) for f in existing)
     result = ("%d finding(s) — fix each, or give a one-line reason in the report" % len(findings)
               if findings else "clean")
     note = "; %d already over budget at the base ref (informational)" % len(existing) if existing else ""
@@ -44,8 +46,14 @@ def as_text(findings: List[Finding], base: str, budgets: Budgets, existing: Sequ
     return "\n".join(out)
 
 
+def _row(f: Finding) -> str:
+    """One finding on one line, whatever characters its path or the code it quotes contains."""
+    return "  %s:%d  %s" % (printable(f.path), f.line, printable(f.message))
+
+
 def as_json(findings: List[Finding], base: str, budgets: Budgets, existing: Sequence[Finding] = (),
             config: Optional[str] = None) -> str:
+    """The same report as one JSON object: base, config, budgets, findings, existing."""
     return json.dumps({"base": base, "config": config, "budgets": budgets.__dict__,
                        "findings": [f.as_dict() for f in findings],
                        "existing": [f.as_dict() for f in existing]}, indent=2)

@@ -111,7 +111,7 @@ PROVIDERS["promptpay"] = PromptPay
 1. **Pin the current behaviour** with characterization tests: run the code, record what it actually does, assert exactly that (Michael Feathers). They must pass before and after.
 2. **Extract the seam** with zero behaviour change: pull the decision into a function or strategy, as small as the task needs. Commit this separately, with its own message, so the review can check "no behaviour change" on its own.
 3. **Extend** at the new seam with new files.
-4. **Record it** in the extension plan and the report as an in-place edit with its reason. If the extraction would touch code paths the task does not use, or change a public interface, stop and ask (design-note stop rule).
+4. **Record it** in the extension plan and the report as an in-place edit with its reason. An extraction that would touch code paths the task does not use, or change a public interface, is a decision for the question round (`SKILL.md` § Questions); found mid-build, leave the extraction out, extend with the smallest in-place edit, and report it.
 
 ## Keeping the original safe
 

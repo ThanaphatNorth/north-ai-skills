@@ -55,7 +55,7 @@ All must hold:
 |---|---|
 | Standing approval | config § Push policy quotes the user's words, dated, and they name **merge** for this class; config › auto-merge is on; the repo matches config's auto-merge repos. `--delete-branch` only when the words also name deleting merged branches |
 | Safe kind | every changed file matches config's auto-merge paths (the feature doc path in config § Docs counts as allowed), and the diff holds only the kinds in the auto-merge column of `auto-triage.md` § Decision matrix |
-| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config's size excludes; feature docs and their index are excluded like tests), ≤ config max files (feature docs not counted), no new dependency, env var, route, state owner or API call |
+| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config § Review's test globs; feature docs and their index are excluded like tests), ≤ config max files (feature docs not counted), no new dependency, env var, route, state owner or API call |
 | Low blast radius | severity and environment in the auto-merge band, no person's force-review label, not reopened, not a feedback round |
 | Structure | the n-dev structure check has no finding on the branch (existing debt listed apart is fine) and the profile is current for the touched paths |
 | Security and performance | `review-security.md` and `review-performance.md` found nothing at blocker or should-fix in any round (`found in all rounds` reads 0 and 0). A change that needed a security or performance fix is not low-impact: a person reviews it |

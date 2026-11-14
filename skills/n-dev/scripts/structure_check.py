@@ -20,23 +20,30 @@ informational, it does not fail the check (growth of it still trips the wiring b
 
 Budgets, excludes and layers come from .ndev.toml at the repo root when present; flags override it.
 
-Exit status: 0 clean, 1 findings, 2 usage or git error. Needs Python 3.8+ and git.
+Exit status: 0 clean, 1 findings, 2 when the check could not run (usage, git, config, the OS): the reason
+is one `error:` line on stderr and stdout stays empty. Needs Python 3.8+ and git.
 """
+from __future__ import annotations
+
 import argparse
+import io
 import os
 import sys
+import traceback
+from typing import Optional, Sequence, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # also works under python3 -I
 
 from ndev_check import config, gitdiff, report  # noqa: E402
-from ndev_check.model import Budgets  # noqa: E402
+from ndev_check.model import Budgets, printable  # noqa: E402
 from ndev_check.runner import run  # noqa: E402
 
 
-def parse_args(argv):
+def parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
+    """The flags as given. A budget flag left out is None, so the config file's value can apply."""
     d = Budgets()
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--repo", default=".", help="any path inside the repository (default: cwd)")
+    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])  # no docstring under -OO
+    ap.add_argument("--repo", default=".", help="any directory inside the repository (default: cwd)")
     ap.add_argument("--base", help="ref to compare against (default: merge-base with the default branch)")
     ap.add_argument("--all", action="store_true", help="audit the whole repository instead of a change")
     cfg = ap.add_mutually_exclusive_group()
@@ -55,23 +62,57 @@ def parse_args(argv):
     return ap.parse_args(argv)
 
 
-def main(argv=None):
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """The exit status: 0 clean, 1 findings, 2 when the check could not run (one `error:` line says why)."""
     a = parse_args(argv)
     if a.all and a.base:
-        print("error: --all audits the whole repository and takes no --base", file=sys.stderr)
-        return 2
+        return _error("--all audits the whole repository and takes no --base")
     try:
-        root = gitdiff.repo_root(a.repo)
-        cfg = config.Config() if a.no_config else config.load(root, a.config and os.path.abspath(a.config))
-        budgets = cfg.apply(Budgets(), {name: getattr(a, name) for name in Budgets.__dataclass_fields__})
-        base = gitdiff.EMPTY_TREE if a.all else gitdiff.resolve_base(root, a.base)
-        findings, existing = run(root, base, budgets, [*cfg.exclude, *a.exclude], cfg.layers, audit=a.all)
-    except (gitdiff.GitError, config.ConfigError) as e:
-        print("error: %s" % e, file=sys.stderr)
-        return 2
+        status, text = _check(a)
+        _emit(text)
+    except (gitdiff.GitError, config.ConfigError, OSError) as e:
+        return _error(str(e))
+    except Exception as e:  # a bug in the check: keep its traceback, but exit 1 would read as "findings"
+        traceback.print_exc()
+        return _error("internal error (%s: %s)" % (type(e).__name__, e))
+    return status
+
+
+def _check(a: argparse.Namespace) -> Tuple[int, str]:
+    """(exit status, rendered report) for the change the flags describe."""
+    root = gitdiff.repo_root(a.repo)
+    cfg = config.Config() if a.no_config else config.load(root, a.config and os.path.abspath(a.config))
+    budgets = cfg.apply(Budgets(), {name: getattr(a, name) for name in Budgets.__dataclass_fields__})
+    base = gitdiff.EMPTY_TREE if a.all else gitdiff.resolve_base(root, a.base)
+    findings, existing = run(root, base, budgets, [*cfg.exclude, *a.exclude], cfg.layers, audit=a.all)
     render = report.as_json if a.json else report.as_text
-    print(render(findings, "(whole repository)" if a.all else base, budgets, existing, cfg.path))
-    return 1 if findings else 0
+    return (1 if findings else 0,
+            render(findings, "(whole repository)" if a.all else base, budgets, existing, cfg.path))
+
+
+def _emit(text: str) -> None:
+    """Print the report. A character stdout cannot encode is written as an escape, and a reader that has
+    closed the pipe ends the output quietly: neither changes the exit status. Any other write failure is
+    raised as the OSError it is."""
+    out = sys.stdout
+    if out is None:  # started with stdout closed (`>&-`): there is nowhere to print
+        return
+    if isinstance(out, io.TextIOWrapper):
+        out.reconfigure(errors="backslashreplace")
+    try:
+        print(text, file=out)
+        out.flush()
+    except OSError as e:
+        # What is still buffered can never be written; drop it, or the interpreter fails again at exit.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), out.fileno())
+        if not isinstance(e, BrokenPipeError):
+            raise
+
+
+def _error(reason: str) -> int:
+    """Print the one `error:` line (control characters escaped) and give exit status 2."""
+    print("error: %s" % printable(reason), file=sys.stderr)
+    return 2
 
 
 if __name__ == "__main__":

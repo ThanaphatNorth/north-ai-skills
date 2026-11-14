@@ -3,15 +3,16 @@
 > Read when: setting up a repo (develop-init), writing a query or lane into config, or a loop calls
 > `W/scripts/tracker.sh` and you need a verb's arguments for this repo's backend.
 
-Every loop reaches the tracker through `W/scripts/tracker.sh <verb> …`. `TRACKER` in `DL/tracker.env` picks the backend:
+Every loop reaches the tracker through `W/scripts/tracker.sh <verb> …`. `TRACKER` in `DC/tracker.env` picks the backend:
 
 | `TRACKER` | Backend | For |
 |---|---|---|
 | `jira` (the default, also when the line is missing) | the `jira-<verb>.sh` scripts, Jira REST v3, credentials file | a team board in Jira |
 | `local` | `local_board.py`: one markdown file per card in the board folder | a repo with no Jira; works offline and needs no account |
 
-Scripts find `DL` by walking up from the current folder (`_state.sh`). A state folder found inside a linked git worktree
-is mapped to the same folder in the main checkout, so every worktree reads and writes one board.
+Scripts find the settings folder `DC` by walking up from the current folder (`_state.sh`) and take the working state `DL`
+from beside it; `where.sh` prints both. Folders found inside a linked git worktree are mapped to the same folders in
+the main checkout, so every worktree reads and writes one board.
 
 ## Verbs
 
@@ -83,6 +84,16 @@ Examples:
 
 **Fields.** On a local board, config § Auto mode names fields by header name (`severity`) or by section heading
 (`acceptance-criteria`), never by `customfield_` id.
+
+**Refusals, both backends.** A call that cannot be done prints one line on stderr and exits 1; wrong usage exits 2.
+- Every argument is checked before anything is read, written or requested: an issue key has the shape `ABC-12`, an
+  id is digits, a field id is a name, and on Jira free text such as a query is URL-encoded, never joined into the
+  URL. A bad value exits 2 with no request made.
+- A card or an attachment that is a link leaving the board folder is refused.
+- `attach` on Jira exits 1 when Jira refused any of the files; the others are still uploaded.
+- `tracker.env` and the Jira credentials file are read as text, one `NAME=value` per line, and never run: a
+  `$VARIABLE` or `$(command)` in a value stays text, and only a leading `~/` in a path is expanded. The Jira site
+  and the credentials path come from `tracker.env` only, never from the calling shell.
 
 ## Sources
 

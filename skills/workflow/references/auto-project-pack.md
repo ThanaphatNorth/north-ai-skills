@@ -6,7 +6,7 @@ The framework holds the procedure; the **project pack** holds the facts. A pack 
 
 | Kind of fact | Owner | Written by |
 |---|---|---|
-| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DL/config.md` § Auto mode (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
+| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DC/config.md` § Auto mode (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
 | architecture: map, layers, extension recipes, state owners, contracts, commands | `docs/architecture/profile.md` | `/90north-develop:n-arch` |
 | budgets, layer globs, allowed import directions | `.ndev.toml` | `/90north-develop:n-arch` |
 | house rules, reusable component lists, coding conventions | the repo's practice pack (a `*-practices` skill or docs folder), linked from the profile's Conventions and from config § Team | the team |
@@ -18,7 +18,7 @@ Nothing project-specific goes in the plugin. When you are about to write a repo 
 ## New project, step by step
 
 1. **Profile.** Run `/90north-develop:n-arch` (create mode) in each repo the board touches. Without a profile the loop still runs, but nothing can reach the auto-merge class, and every locate starts from search.
-2. **Config.** Run `/90north-develop:develop-init`; answer yes to the auto mode step. It reads the board's ids (issue types, statuses, transitions, custom fields) and writes § Auto mode with every line checked or `TBD`.
+2. **Config.** Run `/90north-develop:develop-init`; choose auto mode in its one question round. It reads the board's ids (issue types, statuses, transitions, custom fields) and writes § Auto mode with every line checked or `TBD`.
 3. **Never-touch list.** Start from the profile's Contracts and State owners, then add the domain risks the profile cannot know: money and tax, personal or health data, permissions, ids minted by another system, infra. Give each a glob or a marker the verifier can grep.
 4. **Stack and evidence.** Prove once by hand that the stack recipe comes up and that one spec records with the cursor, the focus box and the caption band. Write what worked into config § Evidence.
 5. **Dry runs.** Register the schedule with `--dry-run` (`W/templates/auto-scheduled-task.md`) and read 2–3 passes' `run.md` and the triage comments on the board.

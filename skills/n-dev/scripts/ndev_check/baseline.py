@@ -6,13 +6,13 @@ and order of appearance), was already over the limit at the base ref; growth of 
 caught by the wiring check. Every other finding describes the change itself and stays new."""
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+from typing import List, Mapping, Optional, Tuple
 
 from . import classify
 from .functions import Span, find_spans
 from .model import Finding, count_lines
 
-Texts = Dict[str, Optional[str]]
+Texts = Mapping[str, Optional[str]]
 
 
 def split(findings: List[Finding], current_texts: Texts,
@@ -27,6 +27,8 @@ def split(findings: List[Finding], current_texts: Texts,
 
 
 def _existing(f: Finding, now: Optional[str], was: Optional[str]) -> Optional[Finding]:
+    """The finding re-worded as existing debt when the same file or function was already over the limit
+    at the base ref; None when this change caused it."""
     if was is None or now is None:
         return None
     if f.kind == "file-size":
@@ -46,6 +48,8 @@ def _existing(f: Finding, now: Optional[str], was: Optional[str]) -> Optional[Fi
 
 
 def _same_function(f: Finding, now: str, was: str) -> Optional[Span]:
+    """The function the finding is about, as it was at the base ref: same name, same position among
+    the functions of that name. None when it was not there."""
     style = classify.function_style(f.path)
     current = find_spans(now, style)
     span = next((s for s in current if s.start == f.line), None)

@@ -1,13 +1,13 @@
 # Auto mode — the unattended pass both loops run with `--auto`
 
 > Read when: `n-defect-loop --auto` or `n-develop-loop --auto` starts a pass, by hand, on `/loop`, or from a
-> scheduled task. The attended mode (a person answers in chat) is the loop's own `SKILL.md`; this file is what
+> scheduled task. The attended mode (a person answers its one decision round) is the loop's own `SKILL.md`; this file is what
 > changes when nobody is there.
 
 You are the **conductor** (the main conversation of the loop that was called). You read and write the tracker,
 decide, dispatch subagents, read every hand-off file before the next dispatch, and never summarise a step from
-memory. `W` is the workflow skill (this file's skill), `DL` the per-repo state folder (`W/SKILL.md` § Per-repo
-state). Every code change follows n-dev (`../n-dev/`), and every structural fact comes from the repo's n-arch
+memory. `W` is the workflow skill (this file's skill); `DC` is the project's settings folder and `DL` its working-state
+folder, both as `W/scripts/where.sh` prints them (`W/SKILL.md` § Per-repo state). Every code change follows n-dev (`../n-dev/`), and every structural fact comes from the repo's n-arch
 profile (`../n-arch/`).
 
 The same 9 steps run as in the attended mode, but the loop builds only what needs no gate. Any gate becomes a parked
@@ -50,7 +50,7 @@ state with a question on the card, and the pass goes on to the next card. Auto m
 | `90north-develop:defect-repro` / `90north-develop:dev-builder` (WP-0) | the BEFORE spec, red on the base |
 | `90north-develop:defect-fixer` / `90north-develop:dev-builder` | the change, test-first (n-dev steps 4–5), a local commit |
 | S2 reviewer + QA (`W/references/stages.md`) | code review of the diff, the checks (scanners included), the spec run twice |
-| `90north-develop:risk-reviewer` (S2, once per lens) | security and performance findings on the diff; never fixes |
+| `90north-develop:risk-reviewer` (S2: one run for all lenses on a small diff, else once per lens) | code, security and performance findings on the diff; never fixes |
 | `90north-develop:loop-verifier` | tries to refute each claim before anything is published; never fixes |
 | `90north-develop:loop-learner` | turns this pass's files and outcomes into knowledge and proposals; never touches the tracker or git |
 
@@ -82,11 +82,18 @@ The pass log is `DL/runs/<date>/run.md`.
 ## The pass
 
 **A0 · Before the pass.**
-- **S0.** Run S0 (`W/references/stages.md`) with the loop's flow (`defect` or `dev`). It reads the core lessons and
-  `DL/lessons.md` in full.
+- **S0.** Run S0 (`W/references/stages.md`) with the loop's flow (`defect` or `dev`). Its first command here is
+  `W/scripts/where.sh --auto`. Exit 3 means the working state is under `.claude/` (a project that has not moved
+  yet, or a legacy folder): the pass ends with the line the script printed as its reply. Write no lock, take no
+  card, write no run file, and do not test whether a write would succeed. Otherwise S0 goes on and reads the core
+  lessons and `DL/lessons.md` in full.
 - **Pass lock.** `DL/runs/.pass.lock` holds the start time of a running pass, of either loop.
   - If it is younger than config › pass minutes, log `another pass is running` and stop.
-  - Otherwise write it now, and remove it when A9 ends, also after a failure.
+  - Otherwise, first check that the working state can be written: create this pass's folder `DL/runs/<date>/` and
+    its `run.md`. If the session refuses that write, stop the pass here: write no lock, take no card, and say in the
+    reply which write was refused. Never keep run files anywhere else: the next pass, the verifier and the learner
+    read them from `DL/runs/`.
+  - Then write the lock, and remove it when A9 ends, also after a failure.
 - **Config.** No config § Auto mode (or a legacy § AI loop not yet migrated) → stop and run
   `/90north-develop:develop-init`. Confirm the tracker answers with one cheap read.
 - **Profile.** Read the architecture profile (`docs/architecture/profile.md`, or `.ndev.toml` `[profile] path`).
@@ -145,9 +152,9 @@ No card → log `no cards`, go to A9.
 **A5 · Build** (steps 5–6, n-dev steps 1–5).
 1. Move the card to In Progress.
 2. Do n-dev 1–3 yourself: orient from the profile, take the card's criteria as success criteria, and write a
-   design note in the run folder for Standard work. Any n-dev step-3 gate case found now **stops** the card:
-   need-dev, with the note posted as the solution. Gate cases are a change to state shape, schema or a public
-   interface, or a trade-off a person would care about.
+   design note in the run folder for Standard work. Any gate case found now **stops** the card: need-dev,
+   with the note posted as the solution. Gate cases are any change to state shape, schema or a public interface
+   (an additive one too: nobody is here to answer), or a trade-off a person would care about.
 3. Build, by loop:
    - **n-defect-loop:** root cause at `path:line` (the loop's step 5), then `defect-fixer`.
    - **n-develop-loop:** one `dev-builder` per work package.
@@ -160,7 +167,7 @@ No card → log `no cards`, go to A9.
 **A6 · PROOF and verify** (step 7).
 1. Fetch the base. If the branch is behind, merge the base into it (never rebase), so PROOF runs on the head that
    would ship.
-2. S2 runs review, the security and performance reviews (`risk-reviewer`, once per lens) and QA in parallel. QA
+2. S2 runs the code, security and performance reviews (one `risk-reviewer` for a small diff, else one reviewer per lens) and QA in parallel. QA
    runs the **same** spec green on the fix branch twice, then the checks and `structure_check.py --base <base>`,
    which reads `.ndev.toml`.
 3. Run S3 Evidence.
@@ -169,8 +176,9 @@ A failed proof goes back to A5 and counts as an attempt. The card takes the **st
 attempts, or once S2's two fix rounds are used. It is not `blocked-needs-human`: the pass report names it, and
 nobody is asked mid-pass.
 
-**A7 · Verifier gate** (step 7). Dispatch `loop-verifier` with the run folder, the branch diff, the spec and the
-evidence.
+**A7 · Verifier gate** (step 7). Write the comment draft into the run folder first: claim V8 reads it, and a
+comment the verifier has not read is not posted. Then dispatch `loop-verifier` with the run folder, the branch
+diff, the spec and the evidence.
 - `verdict: CONFIRMED` → A8.
 - `REFUTED` → redo the stage the refuted claim names (`auto-evidence-and-ship.md` § Verifier outcomes), with one
   retry.
@@ -192,8 +200,9 @@ card in `run.md` and write a row in the loop's ledger.
 **A9 · Learn.**
 1. Run S5 clean-up.
 2. Collect the outcomes since the last pass (`auto-knowledge.md` § Signals) into `DL/runs/<date>/outcomes.md`.
-3. Dispatch `loop-learner`. It applies the safe knowledge updates and writes proposals for anything else.
-4. Run S6 with one change: its step 2 never edits `DL/config.md` or a skill here, it only writes proposals.
+3. Dispatch `loop-learner`, naming the absolute `DC` and `DL` paths and this pass's run folder in its brief. It
+   applies the safe knowledge updates and writes proposals for anything else.
+4. Run S6 with one change: its step 2 never edits `DC/config.md` or a skill here, it only writes proposals.
 5. Write the pass report in the user's language. It lists every card touched, its state and what is unverified,
    and on a committed local board the changed card files for a person to commit.
 6. Remove the pass lock.
@@ -233,7 +242,7 @@ card in `run.md` and write a row in the loop's ledger.
 |---|---|---|
 | A0 | profile read and checked for drift; missing → no auto-merge, n-arch proposed | — |
 | A3 | Map + Extension recipes locate the code. The forbidden areas, each with a glob or marker, are: Contracts, the persistence / identity / start-up-config rows of State owners, and config's never-touch list | scope dial sizes the card: Large → need-dev |
-| A5 | builders get the profile path and the layer rules | conductor steps 1–3, builders steps 4–5 with the red gate; step-3 gate cases stop the card |
+| A5 | builders get the profile path and the layer rules | conductor steps 1–3, builders steps 4–5 with the red gate; gate cases stop the card |
 | A6–A7 | `.ndev.toml` budgets and layers drive the structure check | the structure check's findings are verifier claim V6 |
 | A9 | locate misses and drift → refresh proposal; a target rule now met → proposal to enforce it | repeated findings → lessons for the builders |
 

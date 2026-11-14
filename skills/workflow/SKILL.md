@@ -1,6 +1,7 @@
 ---
 name: workflow
-description: Map and router of the 90north-develop plugin — decides which loop a piece of work belongs to (n-defect-loop for defects; n-develop-loop for new development, new features and changed requirements; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what both loops share - the 9 steps, the per-repo state folder, the shared stages (isolate, verify, evidence, ship, clean up, learn), the auto mode both loops run with --auto (queue and lock, triage matrix, verifier, ship classes, learner), the dispatch safety block, core lessons and the tracker (Jira or a local board). Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
+description: Map and router of the 90north-develop plugin — which loop a piece of work belongs to (n-defect-loop for defects, n-develop-loop for new development and changed requirements, develop-init when the repo is not set up), and what both loops share - the 9 steps, the one decision round, the shared stages, auto mode, the safety block and the tracker. Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or a loop skill points here for a shared stage.
+argument-hint: "[<KEY> | <what you want to do>]"
 ---
 
 # 90north-develop · workflow
@@ -9,7 +10,7 @@ Two loops, split by type of work, on one discipline and one set of per-repo fact
 keep code, identifiers and commit messages in the repo's language.
 
 ```
-                     develop-init  (once per repo)  →  .claude/90north-develop/
+                     develop-init  (once per repo)  →  .claude/90north-develop/ + .90north-develop/
                                       │
      n-defect-loop  (defects)                       n-develop-loop  (features, changes)
   1 Read the board ── 2 Triage ── 3 Check the spec           (the same three steps)
@@ -21,7 +22,7 @@ keep code, identifiers and commit messages in the repo's language.
          S1 Isolate · S2 Verify (review, security + performance review, QA) · S3 Evidence video
          S4 Ship (comment → push per policy → PR → lane) · S5 Clean up · S6 Learn
                                       │
-   attended (default): a gate asks you in chat
+   attended (default): one decision round before anything is built, then it runs to the end
    --auto (references/auto-mode.md): queue + lock, triage matrix, verifier gate, ship classes, learner;
                                      a gate parks the card with a question
                                       │
@@ -36,7 +37,8 @@ What differs is the middle: a defect needs a cause, a feature needs a design. Bo
 true in the same PR: its rules with their sources, rule → test, and decisions with reasons
 (`references/feature-docs.md`).
 
-Each loop runs **attended** by default, so a person answers its gates in chat. With `--auto` it runs **unattended**
+Each loop runs **attended** by default: it asks every question in one decision round, before anything is isolated
+or built, and then runs to the end (`references/stages.md` § Decision round). With `--auto` it runs **unattended**
 (`references/auto-mode.md`): it builds only what needs no gate, puts an adversarial verifier before anything is
 published, and ships by a written policy.
 
@@ -45,13 +47,18 @@ Only a low- or no-impact change inside a standing approval merges on its own (`r
 
 ## Route the work
 
+This table sorts work the user wants taken through a loop: they named a loop or a board item, or asked which
+loop. A code change asked for with none of those is n-dev's, whatever its size; the plugin's session-start line
+(`hooks/session-start.txt` in the plugin) sends it there, and no loop starts on its own. A board key or a loop's
+name always wins over n-dev's own description, which also lists tickets and specs.
+
 | Signal | Loop | Command |
 |---|---|---|
 | No `.claude/90north-develop/config.md` (or only the legacy `.claude/defect-loop/`) | set up first | `/90north-develop:develop-init` |
-| Bug / defect type, or "it used to work / it doesn't do what the spec says" | defects | `/90north-develop:n-defect-loop [KEY] [--auto]` |
-| Story, Task, Improvement, change request, a spec file, or "add / change / build …" | development | `/90north-develop:n-develop-loop <KEY \| spec path \| request \| --next> [--auto]` |
+| A board item of type Bug / defect, or one that says "it used to work / it doesn't do what the spec says" | defects | `/90north-develop:n-defect-loop [KEY] [--auto]` |
+| A board item that is a Story, Task, Improvement or change request; or a spec file or an "add / change / build …" request the user asks to take through the loop | development | `/90north-develop:n-develop-loop <KEY \| spec path \| request \| --next> [--auto]` |
 | An unattended pass over the board, on a schedule or `/loop`, or "AI loop / autopilot" | either loop with `--auto` (one schedule per loop) | `references/auto-mode.md` |
-| Small change with no ticket (one file, one rule, no new module) | discipline only | `/90north-develop:n-dev` |
+| A code change asked for with no board item and no loop named, whatever its size | discipline only | `/90north-develop:n-dev` |
 | "Map / document / audit the architecture", layer rules, or n-dev says the profile is missing or stale | architecture profile | `/90north-develop:n-arch [refresh \| audit]` |
 | Unclear | read the ticket: behaviour that **exists and is wrong** against the current spec is a defect; behaviour that **does not exist yet**, or that the spec now asks to change, is development | — |
 
@@ -73,26 +80,39 @@ triages it `by-design / change request` and hands it off. A "Task" saying "the t
 A handoff writes one ledger row in each loop's ledger (`handed-to-n-develop-loop` / `from-n-defect-loop KEY`), so
 no ticket is owned by two loops at once.
 
-## Per-repo state (`DL` = `<repo-root>/.claude/90north-develop/`)
+## Per-repo state: settings in `DC`, working state in `DL`
+
+`DC` = `<repo-root>/.claude/90north-develop/` holds the settings. Claude Code asks a person before it writes under
+`.claude/`, which is right for the file that holds the push approval and the tracker's address.
+`DL` = `<repo-root>/.90north-develop/` holds what a loop writes as it works. It sits outside `.claude/` so that a
+session that can ask nobody can still record its work.
+
+`scripts/where.sh` prints both folders for the project it is run in. A loop takes `DC` and `DL` from it and never
+builds the paths by hand: in a project that has not moved yet they are one folder, and a file written to the other
+place would split the state in two.
 
 | File | Owner of | Written by |
 |---|---|---|
-| `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
-| `tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
-| `board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
-| `dev-ledger.md` / `defect-ledger.md` | one row per state change of a work item, per loop, both modes (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
-| `lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
-| `knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
-| `runs/<date>/<KEY>/`, `runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
+| `DC/config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
+| `DC/tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
+| `DL/board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
+| `DL/dev-ledger.md` / `DL/defect-ledger.md` | one row per state change of a work item, per loop, both modes, written with `scripts/ledger.sh` (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
+| `DL/lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
+| `DL/knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
+| `DL/runs/<date>/<KEY>/`, `DL/runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
 
-Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them; the scripts find either folder. Set `DEVELOP_DIR` to point at the folder explicitly.
+A project set up before 0.12 has its working state in `DC` as well: `where.sh` then prints the same folder twice, with a note. The scripts read and write it there (the folder that holds a ledger or the board is the one in use; an empty file or folder is a leftover and decides nothing), and `scripts/move-state.sh` moves it (develop-init offers it; `--dry-run` shows what would move). Until it is moved, a session that can ask nobody cannot write every run file or remove the pass lock there, so an unattended pass does not start: `where.sh --auto`, its first command, refuses it (exit 3) before a lock or a card is taken.
+
+Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them, and an unattended pass does not start there either; the scripts find either settings folder. Set `DEVELOP_DIR` (settings) and `DEVELOP_STATE_DIR` (working state) to point at the folders explicitly.
 
 ## Tracker (`scripts/tracker.sh <verb>` — used by every loop)
 
 Every loop reaches the tracker through one door, `scripts/tracker.sh <verb> …`. Run it from inside the project; it
 finds `DL` by walking up. `TRACKER` in `tracker.env` picks the backend:
 - `jira` (the default): Jira REST v3 through the `jira-<verb>.sh` scripts. The credentials file is read by the
-  scripts only; never cat it.
+  scripts only; never cat it. The user creates it in their own terminal with `scripts/jira-login.sh [--force] [path]`:
+  it asks for the email and the API token (not echoed), writes the file with mode 600 and prints `OK <name>` or
+  `FAILED HTTP <code>`. The file holds only `JIRA_EMAIL=` and `JIRA_TOKEN=` lines; it is parsed, never run.
 - `local`: a board of markdown cards in the repo, for a project with no Jira.
 
 Both backends run the same flows, with the queue, lock, lanes, comments and evidence. The verb arguments for each
@@ -113,7 +133,7 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 
 | Open | When |
 |---|---|
-| `references/stages.md` | a loop reaches a shared stage (S0–S6), or writes a dispatch brief |
+| `references/stages.md` | a loop reaches a shared stage (S0–S6) or its decision round, or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of any loop, in full |
 | `references/feature-docs.md` | step 2 by-design (cite or propose the rule), step 3 (read the area's rules), steps 5–6 (plan and write the doc in the same PR), step 8 (the `Docs:` line), verifier V10 |
 | `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |

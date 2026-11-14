@@ -32,7 +32,7 @@ goes in the report; a "no" is a finding.
 
 - A finding names the size at which it hurts: rows, users, items or bytes, taken from the architecture profile, the
   project's config, seed data or the ticket. "Could be slow" with no size is not a finding. When no size is known,
-  ask for it; until then the finding is marked `size unknown` and is at most a should-fix.
+  the finding is marked `size unknown`, is at most a should-fix, and the report names the size that would settle it.
 - A fix starts with a test that measures what scales (queries, calls, items processed, bytes, renders) and is seen
   red before the fix. Wall-clock limits in tests are flaky: use them only through the repo's own benchmark harness.
 - A finding in code you did not touch is reported, not fixed, unless the task asks (same rule as existing debt).

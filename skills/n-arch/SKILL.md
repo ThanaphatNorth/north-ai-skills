@@ -1,6 +1,7 @@
 ---
 name: n-arch
-description: Capture how a repository is built as rules people, agents and a checker can all use — architecture shape, layers and allowed import directions, extension recipes, state owners, contracts, commands and size budgets — in docs/architecture/profile.md plus a .ndev.toml the n-dev structure check enforces; refresh it when the code moves; audit the whole repo for structural debt and hot spots. Use when a repo has no architecture profile, when n-dev reports the profile missing or stale, when the user asks to map, document or audit the architecture or set layer/boundary rules, or when setting up n-dev or the 90north-develop loops in a repo.
+description: Write and keep a repository's architecture profile — layers and allowed import directions, extension recipes, state owners, contracts, commands and size budgets, in docs/architecture/profile.md plus the .ndev.toml the n-dev structure check enforces; refresh it when the code moves; audit the repo for structural debt. Use when a repo has no architecture profile, n-dev reports it missing or stale, the user asks to map, document or audit the architecture or set layer rules, or when setting up n-dev or the loops in a repo.
+argument-hint: "[refresh | audit]"
 ---
 
 # n-arch
@@ -67,16 +68,22 @@ folders (`git ls-tree -d --name-only HEAD`). Rows those paths touch are re-check
 4. **Write the drafts** from `templates/profile.md` and `templates/ndev.toml`. Every row carries its evidence; an
    unknown is `TBD — <what would settle it>`, never a guess. Keep the profile short (about 150 lines): link ADRs and
    docs rather than restating them.
-5. **Confirm what only the user can decide** — one question each, at most four, with the evidence:
-   - intended vs actual shape, where they differ;
-   - each target rule: enforce it on new code now (the check judges added lines only, so old violations do not fail
-     it) or keep it documented only;
-   - a budget looser than the defaults.
-   Everything else is settled by evidence; do not ask about it. *Done when* each open choice has an answer.
+5. **Settle the open choices** by rule; a question is the exception:
+   - intended and actual shape differ → the profile records both; `.ndev.toml` enforces the actual one and carries
+     the intended one as a target with its count;
+   - a target rule → enforce it on new code when the repo's own docs, ADRs or lint config state it (the check
+     judges added lines only, so old violations do not fail it); a rule you inferred stays documented only;
+   - a budget looser than the defaults → the value the repo's lint config sets, else the one most files hold, with
+     the reason in the profile.
+
+   Ask only when two sources of equal standing contradict each other on a layer rule (two ADRs, lint config
+   against CONTRIBUTING) and the answer changes what the check will fail: one AskUserQuestion, at most 4 questions,
+   the recommended option first, before the files go into the repo. Run from develop-init, or with nobody to
+   answer → the rules above settle every choice. *Done when* each choice has a rule or an answer behind it.
 6. **Verify and hand over.** Run the structure check with the final file (`--all`, then once without `--all` to see it
    is quiet on the current branch) and the repo's own boundary tool if it has one. Set `verified-at` to `git rev-parse
-   HEAD` and today's date. Report: archetype, the layer table, violation counts per rule, top hot spots, TBDs, and the
-   files written. Commit only if the user asks, following the repo's conventions.
+   HEAD` and today's date. Report: archetype, the layer table, violation counts per rule, top hot spots, TBDs, each choice
+   settled by rule with the line that changes it, and the files written. Commit only if the user asks, following the repo's conventions.
 
 ## Rules
 

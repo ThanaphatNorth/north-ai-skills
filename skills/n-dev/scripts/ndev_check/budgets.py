@@ -20,6 +20,8 @@ def check_wiring(f: ChangedFile, b: Budgets) -> List[Finding]:
 
 
 def check_file_size(f: ChangedFile, b: Budgets) -> List[Finding]:
+    """A finding when a new file, or one this change added lines to, is over its line budget
+    (test files have their own, larger one)."""
     limit = b.max_test_file if classify.is_test(f.path) else b.max_file
     n = f.line_count
     if n <= limit or not (f.is_new or f.added):
@@ -65,5 +67,6 @@ def check_line_length(f: ChangedFile, b: Budgets) -> List[Finding]:
 
 
 def check_all(f: ChangedFile, b: Budgets) -> List[Finding]:
+    """Every budget finding for one changed file: wiring, file size, function size, line width."""
     return (check_wiring(f, b) + check_file_size(f, b) + check_function_size(f, b)
             + check_line_length(f, b))

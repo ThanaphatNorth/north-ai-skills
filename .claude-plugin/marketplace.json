@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "90north-develop",
-      "version": "0.9.0",
+      "version": "0.12.0",
       "source": "./plugins/90north-develop",
-      "description": "North's development plugin: n-defect-loop (defects: reproduce → root cause → test-first fix → PR → QA lane) and n-develop-loop (features and changes: acceptance red → design → test-first build → PR → review lane), the same 9 steps in each, attended or unattended with --auto; only low-impact changes inside a standing approval merge on their own. On the n-dev discipline, with n-arch capturing each repo's architecture rules, for any repo — on Jira or on a local board of markdown cards when there is no Jira. Both keep a feature doc per area true in every PR (rules with sources, rule → test, decisions)."
+      "description": "North's development plugin: n-defect-loop and n-develop-loop take a defect or a story from the board to a pull request, attended (one question round, then to the end) or unattended with --auto, on the n-dev discipline, for any repo on Jira or on a local board of markdown cards."
     }
   ]
 }

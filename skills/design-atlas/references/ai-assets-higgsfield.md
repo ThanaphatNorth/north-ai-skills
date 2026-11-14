@@ -90,7 +90,7 @@ Hard rules for the agent:
 6. **Finish.**
    - `upscale_video` (Topaz) only if the source is under the display size.
    - `reframe` for extra aspects.
-   - Download the files, then do all of §Post-processing locally: encode, seam check, register stills, take posters from frames.
+   - Download the files, then do all of § Post-processing and encoding on your own machine: encode, seam check, register stills, take posters from frames.
 7. **3D.** `generate_3d` (Meshy, Tripo, Hunyuan3D) gives a GLB. Run `gltf-transform optimize` before shipping, and set budgets per `3d-webgl.md`.
 
 ### Photoreal stills pipeline (run end to end on 2026-10-10)

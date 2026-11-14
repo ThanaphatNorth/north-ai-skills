@@ -14,7 +14,7 @@ from __future__ import annotations
 import fnmatch
 import posixpath
 import re
-from typing import List, Mapping, Optional, Sequence, Tuple
+from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from . import classify
 from .imports import find_imports
@@ -33,9 +33,8 @@ def check_layers(files: Sequence[ChangedFile], layers: Sequence[Layer],
         own = None if classify.is_test(f.path) else _layer_of(f.path, layers)
         if own is None:
             continue
-        had = {spec for _, spec in find_imports(f.path, (base_texts or {}).get(f.path) or "")}
-        for line, spec in find_imports(f.path, f.text):
-            target = _target(f.path, spec, layers) if line in f.added and spec not in had else None
+        for line, spec in _added_imports(f, (base_texts or {}).get(f.path)):
+            target = _target(f.path, spec, layers)
             if target is None or target.name == own.name or target.name in own.may_import:
                 continue
             allowed = ", ".join(own.may_import) or "nothing"
@@ -44,14 +43,23 @@ def check_layers(files: Sequence[ChangedFile], layers: Sequence[Layer],
     return out
 
 
+def _added_imports(f: ChangedFile, base_text: Optional[str]) -> List[Tuple[int, str]]:
+    """(line, specifier) of the imports this change added: on an added line, and not a specifier the file
+    already imported at the base ref."""
+    had = {spec for _, spec in find_imports(f.path, base_text or "")}
+    return [(line, spec) for line, spec in find_imports(f.path, f.text) if line in f.added and spec not in had]
+
+
 def _layer_of(path: str, layers: Sequence[Layer], fold_case: bool = False) -> Optional[Layer]:
+    """The layer whose most specific `paths` glob matches the path, or None when no layer claims it."""
     if fold_case:
         path = path.lower()
     return _most_specific((_fixed_prefix(g), layer) for layer in layers for g in layer.paths
                           if _matches(path, g.lower() if fold_case else g))
 
 
-def _most_specific(scored) -> Optional[Layer]:
+def _most_specific(scored: Iterable[Tuple[int, Layer]]) -> Optional[Layer]:
+    """The layer with the highest score; the first one wins a tie."""
     best: Optional[Tuple[int, Layer]] = None
     for score, layer in scored:
         if best is None or score > best[0]:
@@ -60,6 +68,7 @@ def _most_specific(scored) -> Optional[Layer]:
 
 
 def _fixed_prefix(glob: str) -> int:
+    """How specific a glob is: the number of characters before its first wildcard."""
     return len(re.split(r"[*?\[]", glob, maxsplit=1)[0])
 
 
@@ -69,6 +78,7 @@ def _matches(path: str, glob: str) -> bool:
 
 
 def _target(path: str, spec: str, layers: Sequence[Layer]) -> Optional[Layer]:
+    """The layer an import specifier refers to, or None when it refers to no declared layer."""
     resolved = _resolve_relative(path, spec)
     if resolved is not None:
         return _layer_of(resolved, layers)
@@ -78,12 +88,15 @@ def _target(path: str, spec: str, layers: Sequence[Layer]) -> Optional[Layer]:
 
 
 def _starts_with(spec: str, prefix: str) -> bool:
+    """True when the specifier is the prefix, or continues it at a separator (`@/infra` does not claim
+    `@/infrared`)."""
     if spec == prefix:
         return True
     return spec.startswith(prefix) and (prefix[-1] in _BOUNDARY or spec[len(prefix)] in _BOUNDARY)
 
 
 def _resolve_relative(path: str, spec: str) -> Optional[str]:
+    """The repo path a relative specifier points at; None when the specifier is not relative."""
     here = posixpath.dirname(path)
     if spec in (".", "..") or spec.startswith(("./", "../")):
         return posixpath.normpath(posixpath.join(here, spec))

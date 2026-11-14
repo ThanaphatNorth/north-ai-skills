@@ -1,0 +1,27 @@
+schema_version: "1.0"
+name: 01-workflow-route
+description: A ticket typed "Bug" that asks for behaviour that never existed — the router sends it to development, not to the defect loop.
+tags: [workflow, routing]
+execution:
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: |
+    We use the 90north-develop plugin. A ticket of type Bug says: "The monthly export button should also offer CSV.
+    Today it only gives XLSX." The current spec says the export is XLSX only. Which loop takes this ticket, and
+    what is the first thing that happens to it? Answer in at most five lines. Do not change any file.
+runs: 3
+graders:
+  - type: regex
+    name: names-the-development-loop
+    target: last_message
+    pattern: 'n-develop-loop'
+  - type: llm
+    name: type-is-a-hint-not-the-answer
+    criteria: >-
+      The answer says the ticket is a change request (new behaviour the current spec does not have), not a defect,
+      even though its type is Bug, and that it goes to the development loop (n-develop-loop), with the defect loop at
+      most recording it as by-design / change request and handing it over. It does not propose fixing it as a defect.
+  - type: tool_used
+    name: workflow-fired
+    tool: Skill
