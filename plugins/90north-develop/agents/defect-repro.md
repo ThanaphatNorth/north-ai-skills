@@ -11,6 +11,7 @@ Your job is to make the reported defect happen on camera and turn it into a test
 - Never start, restart or boot an app or API process, and never point anything at a database. Use only the running stack in your brief.
 - Create data only through the app (UI or its API), using the repo's test-data naming so its teardown removes it. Never delete data.
 - Never install tools or browsers. If a browser is missing, use the wrapper config the brief names (e.g. `channel: 'chrome'`).
+- Never push, merge, delete a branch or worktree, or write to the remote with `gh`, and never call the tracker: the orchestrator ships and reports. Never write `.ndev.toml` or the architecture profile.
 - Never put personal data, real names, secrets or real-account OTPs in the spec, logs or report. Save login sessions only under your output folder, mode 600, never print them, and delete them at the end.
 
 ## Inputs (from the brief)

@@ -48,6 +48,29 @@ graders:
     criteria: >-
       The final message reports how the change respects the repo's layers (handler -> use case -> port), and states
       the result of a structure or layer check that was actually run, or says plainly that none was run.
+  - type: regex
+    name: gate-structure-check-ran
+    arm: with-only   # adherence to the finish gate: shown per run, not part of the with/without score
+    target: trace
+    pattern: 'n-dev structure check against'
+  - type: regex
+    name: gate-feature-branch-created
+    arm: with-only
+    target: trace
+    pattern: 'git (?:-C \S+ )?(?:checkout|switch)(?: -\w+)* -[bc]\b'
+  - type: regex
+    name: gate-commit-quoted-in-report
+    arm: with-only
+    target: last_message
+    pattern: '[Cc]ommit[\s\S]{0,160}\b[0-9a-f]{7,40}\b|\b[0-9a-f]{7,40}\b[\s\S]{0,160}[Cc]ommit'
+  - type: llm
+    name: gate-review-ran
+    arm: with-only
+    focus: trace
+    criteria: >-
+      After the tests were green, a reviewer with a fresh context (a subagent started with the Agent or Task tool)
+      read the diff for structure, security and performance, and the final message reports what it found or that it
+      found nothing. A review the agent did itself in the same context does not count.
   - type: tool_used
     name: n-dev-fired
     tool: Skill

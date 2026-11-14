@@ -84,6 +84,16 @@ Examples:
 **Fields.** On a local board, config § Auto mode names fields by header name (`severity`) or by section heading
 (`acceptance-criteria`), never by `customfield_` id.
 
+**Refusals, both backends.** A call that cannot be done prints one line on stderr and exits 1; wrong usage exits 2.
+- Every argument is checked before anything is read, written or requested: an issue key has the shape `ABC-12`, an
+  id is digits, a field id is a name, and on Jira free text such as a query is URL-encoded, never joined into the
+  URL. A bad value exits 2 with no request made.
+- A card or an attachment that is a link leaving the board folder is refused.
+- `attach` on Jira exits 1 when Jira refused any of the files; the others are still uploaded.
+- `tracker.env` and the Jira credentials file are read as text, one `NAME=value` per line, and never run: a
+  `$VARIABLE` or `$(command)` in a value stays text, and only a leading `~/` in a path is expanded. The Jira site
+  and the credentials path come from `tracker.env` only, never from the calling shell.
+
 ## Sources
 
 - `W/scripts/tracker.sh`, `_state.sh`, `local_board.py`, `local_board_core.py`

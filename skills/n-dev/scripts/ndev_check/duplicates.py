@@ -16,20 +16,24 @@ _SKIP_EXACT = {"end", "else", "else {", "} else {", "return;", "break;", "contin
 
 @dataclass(frozen=True)
 class Window:
+    """A run of consecutive meaningful lines in one file: the unit two files are compared by."""
     path: str
     lines: Tuple[int, ...]   # original line numbers of the meaningful lines in the window
 
     @property
     def start(self) -> int:
+        """Line number of the first meaningful line."""
         return self.lines[0]
 
     @property
     def end(self) -> int:
+        """Line number of the last meaningful line."""
         return self.lines[-1]
 
 
 @dataclass(frozen=True)
 class Duplicate:
+    """An added block (`path`, lines `start` to `end`) that repeats code starting at `other_path`:`other_start`."""
     path: str
     start: int
     end: int
@@ -38,6 +42,7 @@ class Duplicate:
 
 
 def _normalise(line: str) -> str:
+    """The line without outer whitespace and with inner runs as one space, so reformatting hides no copy."""
     return re.sub(r"\s+", " ", line.strip())
 
 
@@ -72,6 +77,7 @@ def _meaningful(text: str) -> List[Tuple[int, str]]:
 
 
 def _windows(path: str, text: str, size: int) -> Iterable[Tuple[str, Window]]:
+    """(digest, window) for every run of `size` consecutive meaningful lines."""
     rows = _meaningful(text)
     for i in range(len(rows) - size + 1):
         chunk = rows[i:i + size]

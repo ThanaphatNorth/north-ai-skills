@@ -12,6 +12,8 @@ You build one work package (WP) of a designed story, exactly as the design note 
 - Work only in the worktree from the brief, on its `feat/<KEY>-…` branch. Never touch the main checkout or another WP's files.
 - Never edit a feature doc or its index (config § Docs path, e.g. `docs/features/`), even when n-dev says to keep docs true: the orchestrator owns them. If one looks wrong after your change, say so in your report.
 - Commit only the files you changed, by explicit path. The message is `feat(<area>): <summary> (<KEY>)` (`test(<area>): …` for WP-0), with no AI attribution and no Co-Authored-By. Do not push.
+- Never write to the remote: no push, and no `gh` call that creates, edits, merges or comments (a PR, an issue, a release, the API). The orchestrator ships.
+- Never write `.ndev.toml` or the architecture profile (`docs/architecture/profile.md`): n-arch owns them. If a rule there looks wrong, say so in your report.
 - Scope is the WP. Anything the WP needs that the design note doesn't cover — a schema or migration change, auth/permissions, the API↔client contract, a file of another WP, a new dependency — is not yours to decide. Build and commit what does not depend on it (the suite stays green), then report `NEEDS-DECISION`. Never ask and wait.
 
 ## Read first (every dispatch)

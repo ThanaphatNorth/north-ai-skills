@@ -1,0 +1,38 @@
+schema_version: "1.0"
+name: 04-develop-asks-once
+description: A ready story and no standing approval to push — the loop reads, checks the spec and drafts the design, then asks everything once, before it isolates or builds anything.
+tags: [n-develop-loop, decision-round, questions]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1500
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep, Task, Agent]
+  prompt: |
+    Use the n-develop-loop skill of the 90north-develop plugin on TASK-1 from this repo's board. I am at the
+    keyboard and will answer your questions.
+runs: 3
+graders:
+  - type: file_exists
+    name: nothing-built-before-the-answer
+    path: "src/discount.js"
+    exists: false
+  - type: regex
+    name: nothing-isolated-before-the-answer
+    target: trace
+    pattern: 'git worktree add'
+    match: not_contains
+  - type: regex
+    name: asks-about-the-push
+    target: last_message
+    pattern: '[Pp]ush'
+  - type: llm
+    name: one-round-with-a-recommendation
+    criteria: >-
+      The final message is one question round asked before any code is written: it asks whether the branch for
+      TASK-1 (feat/TASK-1-…) may be pushed and its pull request opened once the work is verified, gives a
+      recommended answer, and holds every other open question in the same message. It does not say the feature is
+      already built, and it does not announce a second round of questions later.
+  - type: tool_used
+    name: loop-fired
+    tool: Skill

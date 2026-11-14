@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import unittest
 
-from fakejira import TOKEN, fake_project
+from fakejira import SITE, TOKEN, calls, fake_project, requests, run_script
 
 SCRIPTS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EDIT = os.path.join(SCRIPTS, "jira-edit.sh")
@@ -97,6 +97,86 @@ class PutWithFakeCurl(unittest.TestCase):
         calls = open(self.log).read().splitlines()
         self.assertTrue(any("PUT" in c and c.endswith("https://site.example.test/rest/api/3/issue/ABC-1") for c in calls), calls)
         self.assertFalse(any(TOKEN in c for c in calls), "token must reach curl on stdin, never in argv")
+
+
+class Pinned(unittest.TestCase):
+    """The exact stdout, stderr and exit code of jira-edit.sh before the scripts were hardened."""
+
+    USAGE = ("usage: %s <KEY> [--dry-run] (--add-label L | --remove-label L | --field ID=JSON | --field-md ID=FILE)"
+             "...\n" % EDIT)
+    URL = SITE + "/rest/api/3/issue/ABC-1"
+
+    def project(self, put_code="204", labels='{"fields":{"labels":["ai-do-now","ai-queue"]}}'):
+        return fake_project("""
+            *" PUT "*) reply %s ;;
+            *) reply 200 '%s' ;;
+        """ % (put_code, labels))[:2]
+
+    def test_put_then_the_labels_read_back(self):
+        root, env = self.project()
+        r = run_script("jira-edit.sh", ["ABC-1", "--add-label", "ai-do-now", "--field", 'customfield_1="ก"'], root, env)
+        self.assertEqual((r.returncode, r.stdout, r.stderr),
+                         (0, "ABC-1 edit → HTTP 204 · labels now: ai-do-now,ai-queue\n", ""))
+        self.assertEqual(requests(root), ["PUT " + self.URL, "GET " + self.URL + "?fields=labels"])
+        put = calls(root)[0]
+        self.assertEqual(put["data"], ['{"update": {"labels": [{"add": "ai-do-now"}]}, "fields": {"customfield_1": "ก"}}'])
+        self.assertIn("Content-Type: application/json", put["argv"])
+
+    def test_a_refused_edit_prints_the_code_and_exits_1(self):
+        root, env = self.project(put_code="400")
+        r = run_script("jira-edit.sh", ["ABC-1", "--add-label", "x"], root, env)
+        self.assertEqual((r.returncode, r.stdout, r.stderr),
+                         (1, "ABC-1 edit → HTTP 400 · labels now: ai-do-now,ai-queue\n", ""))
+
+    def test_no_label_left_prints_none(self):
+        root, env = self.project(labels='{"fields":{"labels":[]}}')
+        r = run_script("jira-edit.sh", ["ABC-1", "--remove-label", "x"], root, env)
+        self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "ABC-1 edit → HTTP 204 · labels now: none\n", ""))
+
+    def test_labels_that_cannot_be_read_back_print_a_question_mark(self):
+        root, env = self.project(put_code="404", labels='{"errorMessages":["Issue does not exist"]}')
+        r = run_script("jira-edit.sh", ["ABC-1", "--add-label", "x"], root, env)
+        self.assertEqual((r.returncode, r.stdout), (1, "ABC-1 edit → HTTP 404 · labels now: ?\n"))
+
+    def test_dry_run_prints_the_body_and_sends_nothing(self):
+        root, env = self.project()
+        r = run_script("jira-edit.sh", ["ABC-1", "--add-label", "x", "--dry-run", "--field", 'customfield_1={"value":"ก"}'],
+                       root, env)
+        self.assertEqual((r.returncode, r.stderr), (0, ""))
+        self.assertEqual(r.stdout, '{"update": {"labels": [{"add": "x"}]}, "fields": {"customfield_1": {"value": "ก"}}}\n')
+        self.assertEqual(calls(root), [])
+
+    def test_exact_refusals(self):
+        root, env = self.project()
+        for args, message in (
+            (["--set", "x"], "jira-edit.sh: unknown option --set\n"),
+            (["--add-label"], "jira-edit.sh: --add-label needs a value\n"),
+            (["--add-label", "ai do now"], "jira-edit.sh: label 'ai do now': Jira labels have no spaces\n"),
+            (["--field", "customfield_1={oops"],
+             "jira-edit.sh: --field customfield_1: value is not JSON (quote strings: customfield_1='\"text\"')\n"),
+            (["--field", 'custom field="x"'],
+             "jira-edit.sh: --field 'custom field=\"x\"': expected <field id>=<value>, field id like customfield_10100\n"),
+            (["--field-md", "customfield_1=" + os.path.join(root, "missing.md")],
+             "jira-edit.sh: --field-md customfield_1: [Errno 2] No such file or directory: '%s'\n"
+             % os.path.join(root, "missing.md")),
+            (["--add-label", "a", "--field", 'labels=["b"]'],
+             "jira-edit.sh: labels: use --add-label / --remove-label or --field labels=[...], not both\n"),
+        ):
+            r = run_script("jira-edit.sh", ["ABC-1"] + args, root, env)
+            self.assertEqual((r.returncode, r.stdout, r.stderr), (2, "", message), args)
+        self.assertEqual(calls(root), [])
+
+    def test_usage_needs_no_project(self):
+        for args in ([], ["ABC-1"], ["ABC-1", "--dry-run"]):
+            r = run(args, cwd=tempfile.mkdtemp())
+            self.assertEqual((r.returncode, r.stdout, r.stderr), (2, "", self.USAGE), args)
+
+    def test_keys_the_old_check_refused_stay_refused_before_any_request(self):
+        root, env = self.project()
+        for bad in ("-x", "ABC/1", "../ABC-1"):
+            r = run_script("jira-edit.sh", [bad, "--add-label", "x"], root, env)
+            self.assertEqual((r.returncode, r.stdout), (2, ""), bad)
+        self.assertEqual(calls(root), [])
 
 
 if __name__ == "__main__":

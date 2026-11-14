@@ -1,6 +1,7 @@
 ---
 name: n-arch
-description: Capture how a repository is built as rules people, agents and a checker can all use — architecture shape, layers and allowed import directions, extension recipes, state owners, contracts, commands and size budgets — in docs/architecture/profile.md plus a .ndev.toml the n-dev structure check enforces; refresh it when the code moves; audit the whole repo for structural debt and hot spots. Use when a repo has no architecture profile, when n-dev reports the profile missing or stale, when the user asks to map, document or audit the architecture or set layer/boundary rules, or when setting up n-dev or the 90north-develop loops in a repo.
+description: Write and keep a repository's architecture profile — layers and allowed import directions, extension recipes, state owners, contracts, commands and size budgets, in docs/architecture/profile.md plus the .ndev.toml the n-dev structure check enforces; refresh it when the code moves; audit the repo for structural debt. Use when a repo has no architecture profile, n-dev reports it missing or stale, the user asks to map, document or audit the architecture or set layer rules, or when setting up n-dev or the loops in a repo.
+argument-hint: "[refresh | audit]"
 ---
 
 # n-arch

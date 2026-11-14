@@ -19,21 +19,25 @@ _BRACE_START = [
 ]
 _PY_DEF = re.compile(r"^(\s*)(?:async\s+)?def\s+(\w+)")
 _RB_DEF = re.compile(r"^(\s*)def\s+([\w.?!=]+)")
+_MAX_SIGNATURE = 1000   # characters of code; a longer line is data or minified code, never a signature
 _STRINGS = re.compile(r"\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`")
 
 
 @dataclass(frozen=True)
 class Span:
+    """One function: its name and the lines it covers."""
     name: str
     start: int   # 1-based, inclusive
     end: int     # 1-based, inclusive
 
     @property
     def length(self) -> int:
+        """Lines from the signature to the closing line, both counted."""
         return self.end - self.start + 1
 
 
 def find_spans(text: str, style: Optional[str]) -> List[Span]:
+    """Every function in the text, for a style `classify.function_style` names; [] for any other style."""
     if style == "brace":
         return _brace_spans(text.splitlines())
     if style == "indent":
@@ -68,6 +72,10 @@ def _code_only(lines: List[str]) -> List[str]:
 
 
 def _signature_name(line: str) -> Optional[str]:
+    """The name of the function this line of code starts, or None. Lines over `_MAX_SIGNATURE` are not
+    searched: the patterns backtrack, and on a megabyte of minified code that takes hours."""
+    if len(line) > _MAX_SIGNATURE:
+        return None
     for pattern in _BRACE_START:
         m = pattern.search(line)
         if m:
@@ -77,6 +85,7 @@ def _signature_name(line: str) -> Optional[str]:
 
 
 def _brace_spans(raw: List[str]) -> List[Span]:
+    """Spans in a brace language: from a signature line to the line that closes its body."""
     lines = _code_only(raw)
     spans: List[Span] = []
     for i, line in enumerate(lines):
@@ -105,6 +114,7 @@ def _find_open_brace(lines: List[str], start: int, lookahead: int = 8) -> Option
 
 
 def _matching_close(lines: List[str], open_at: int) -> Optional[int]:
+    """Index of the line that closes the brace opened on line `open_at`, or None when nothing does."""
     depth = 0
     for j in range(open_at, len(lines)):
         for ch in lines[j]:
@@ -122,6 +132,7 @@ def _indent(line: str) -> int:
 
 
 def _indent_spans(lines: List[str]) -> List[Span]:
+    """Spans in Python: from `def` to the last line indented deeper than it."""
     spans: List[Span] = []
     for i, line in enumerate(lines):
         m = _PY_DEF.match(line)
@@ -139,6 +150,7 @@ def _indent_spans(lines: List[str]) -> List[Span]:
 
 
 def _end_spans(lines: List[str]) -> List[Span]:
+    """Spans in Ruby: from `def` to the `end` at the same indent. One-line and endless methods have none."""
     spans: List[Span] = []
     for i, line in enumerate(lines):
         m = _RB_DEF.match(line)

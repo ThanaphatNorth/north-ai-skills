@@ -1,6 +1,17 @@
 ---
 name: n-dev
 description: Use for every task that changes code or tests in a repo, however small — a bug fix, a validation, a new function, a feature, spec or ticket, a module, API, screen or job, a refactor. Development discipline — a failing test shown before the fix, reuse before writing, new behaviour beside existing code, one owner per fact (single source of truth), verified with evidence and reviewed for structure, security and performance. Not for questions or explanations that change no code.
+argument-hint: "<what to build, fix or change>"
+hooks:
+  PreToolUse:
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: 'for d in "${CLAUDE_PLUGIN_ROOT:-}" "${CLAUDE_PLUGIN_ROOT:-}/skills/n-dev" "$HOME/.claude/skills/n-dev" "${CLAUDE_PROJECT_DIR:-.}/.claude/skills/n-dev"; do [ -f "$d/scripts/finish_gate.py" ] && exec python3 -I "$d/scripts/finish_gate.py"; done; exit 0'
+  Stop:
+    - hooks:
+        - type: command
+          command: 'for d in "${CLAUDE_PLUGIN_ROOT:-}" "${CLAUDE_PLUGIN_ROOT:-}/skills/n-dev" "$HOME/.claude/skills/n-dev" "${CLAUDE_PROJECT_DIR:-.}/.claude/skills/n-dev"; do [ -f "$d/scripts/finish_gate.py" ] && exec python3 -I "$d/scripts/finish_gate.py"; done; exit 0'
 ---
 
 # n-dev
@@ -43,11 +54,11 @@ Sort every unknown before asking about it:
 
 **Then finish.** Nothing after the round stops the task for a question. A decision that only shows up mid-build: build everything that does not depend on it, and take the reversible option when one exists, recorded as `DECIDED: <what> — undo by <how>`. When none exists, leave that part unbuilt and put the question, with your recommendation, first in the report.
 
-**Nobody to answer** (a headless run, or the user said not to ask): take each recommended option as an `ASSUMPTION` and leave unbuilt whatever cannot be undone; the report lists both. A builder or fixer subagent never asks: it reports `NEEDS-DECISION`.
+**Nobody to answer** (a headless run, or the user said not to ask): take each recommended option as an `ASSUMPTION` and leave unbuilt whatever cannot be undone; the report lists both. A builder or fixer subagent never asks: it reports `NEEDS-DECISION`. Inside a 90north-develop loop run with `--auto` this paragraph does not apply: no option is taken, and a decision parks the card.
 
 ## Steps
 
-1. **Orient.** If the repo has an architecture profile (`docs/architecture/profile.md`, or the `[profile] path` in `.ndev.toml`), read it first. It already holds the four facts below plus the layer rules, so check it is current (`git log --oneline <its verified-at sha>..HEAD -- <the paths it names>`) and re-verify only the facts this task touches. Without a profile, read the repo's agent and contributor docs (CLAUDE.md, AGENTS.md, CONTRIBUTING), lint and formatter config, and how the most recent similar feature was added (`git log` on a sibling feature, then read that commit's diff — it is the repo's own recipe); on Standard or Large work, suggest the `n-arch` skill in the report. Hand the reuse search to a subagent on Standard or Large work and keep only its list. Record four facts:
+1. **Orient.** With an architecture profile (`docs/architecture/profile.md`, or the `[profile] path` in `.ndev.toml`): read it first, since it holds the four facts below plus the layer rules. Check it is current (`git log --oneline <its verified-at sha>..HEAD -- <the paths it names>`) and re-verify only the facts this task touches. Without one: read the repo's agent and contributor docs (CLAUDE.md, AGENTS.md, CONTRIBUTING), the lint and formatter config, and the diff of the commit that last added a similar feature (the repo's own recipe); on Standard or Large work, suggest the `n-arch` skill in the report. On Standard or Large work, hand the reuse search to a subagent and keep only its list. Record four facts:
    - **Commands** for typecheck, one test file, the full suite, and lint.
    - **Extension points**: how this codebase adds a route, handler, screen, command or listener without editing a central file (`references/extension.md` § Finding the repo's extension points).
    - **State owners** already in use: server cache, store, URL, forms, database, config module.
@@ -60,31 +71,32 @@ Sort every unknown before asking about it:
    *Done when* every success criterion has a test that was seen red and then green, and the red evidence (or its reason) is written down.
 5. **Verify.** Run the full suite, lint, typecheck, and the structure check:
    ```bash
-   python3 <skill-dir>/scripts/structure_check.py --base <base-ref>
+   python3 "${CLAUDE_SKILL_DIR}/scripts/structure_check.py" --base <base-ref>
    ```
+   The script ships with this skill, in its base directory (read as a plain file: the folder that holds this
+   SKILL.md). Never search the disk for it.
    It lists pre-existing files changed beyond a wiring diff, files, functions and lines over budget, blocks copied from existing code, imports that break the repo's layer rules, weakened tests and new dependencies. Debt that was already over budget at the base ref is listed apart and does not fail the check: mention it in the report, and refactor it only when the task asks. Budgets, excludes and layers come from `.ndev.toml` when the repo has one; otherwise set the budgets to the repo's norms with flags (`--help` lists them). *Done when* everything is green, and each structure finding is fixed or carries a one-line reason in the report.
-6. **Review** through three lenses, each read fresh: the reviewer gets the diff, the request and the success criteria but not your design reasoning (a subagent with a new context by default; for Standard and Large work, one per lens, in parallel).
+6. **Review** through three lenses, each read fresh: the reviewer gets the diff, the request and the success criteria but not your design reasoning (a subagent with a new context). A diff of at most 150 changed non-test lines in at most 5 files gets one reviewer that walks all three lenses, each fully; a larger diff gets one reviewer per lens, in parallel. The size decides how many reviewers read it, never whether a lens runs. Inside a 90north-develop loop, config § Review › single review sets that size.
    - **Structure:** the `code-review` skill if installed; otherwise the checklist in `references/structure.md`, reading every changed line of a pre-existing file.
    - **Security:** every row of `references/security.md` the diff touches.
    - **Performance:** every row of `references/performance.md` the diff touches, at the data sizes the project reaches.
+   - **Review gate.** On Standard and Large work, make no commit until the reviewer subagent has answered. Start it with the Agent or Task tool, give it the diff against the base, the request and the success criteria, and quote its result line in the report. A small diff is why one reviewer reads all three lenses; it is never a reason to review nothing. Only Tiny work has no review. When the reviewer runs in the background, end the turn and wait for its answer: commit nothing and report nothing while it reads. `scripts/finish_gate.py` holds a `git commit` once when more than one source file changed and no reviewer has answered.
    Each finding names `path:line`, the input or data size that breaks it, and the test that would prove it; trace it to the failing line and look for an existing guard before calling it a finding. Fix each one test-first (that test red, then green) and re-run step 5. A lens the diff gives nothing to look at says so in one line. A finding whose test will not go red (with the test you tried), one with a static check (an index, the random source: the line is the proof), and one in code the change did not touch are listed in the report instead. *Done when* no finding is open in any lens.
 7. **Commit and report.** When the area has a feature doc and the change adds or changes a rule, keep the doc true in the same commit: each rule with its source and the test that proves it, values named by file rather than copied, rule ids kept stable (a rule that no longer holds is marked retired, not deleted). Commit on a feature branch (create one if on the default branch), following the repo's commit convention and the user's rules on commit messages; stage only files this task changed. Push only when the user asks.
-   - **Finish gate.** Write no report until, in this session, step 5's structure check has run on the final diff and the change is committed on a feature branch. The report quotes the check's result line and the commit's sha. A small diff is no reason to skip the check: it takes seconds. Standard and Large work also runs step 6's review before the commit. Committing locally is part of this skill, so do it without asking; pushing is not. A step that could not run (no git, no test runner, a crash) is named with its error. Never leave one out, and never hand one back as an offer ("say if you want a commit").
+   - **Finish gate.** Write no report until, in this session, step 5's structure check has run on the final diff and the change is committed on a feature branch. The report quotes the check's result line and the commit's sha. A small diff is no reason to skip the check: it takes seconds. Standard and Large work has passed step 6's review gate first. A failing test you did not cause, or a question you still have, does not lift this gate: check and commit your own change, then report the rest. The same hook reads what the session did, from its transcript and from git, and holds the turn once when a step is still owed. Committing locally is part of this skill, so do it without asking; pushing is not. A step that could not run (no git, no test runner, a crash) is named with its error. Never leave one out, and never hand one back as an offer ("say if you want a commit").
 
-   Report, in this order: any question left open (with your recommendation), what was built, each `ASSUMPTION` and `DECIDED` line, the red run (its command and failing line, or why there was none) then the green run, the other checks and their results, the structure-check result, each pre-existing file touched and why, and anything left unverified.
+   Report, in this order: any question left open (with your recommendation); what was built; each `ASSUMPTION` and `DECIDED` line; **Checks**, each as the command you ran and its result line (`npm test` → `pass 7, fail 0`): the red run with its failing line (or why there was none), the green run, lint and typecheck, the structure check's `RESULT` line, the reviewer's result line, and `git log --oneline -1` with the branch for the commit; **Existing files changed**, each pre-existing file touched and why, or "none"; anything left unverified. Claim nothing you did not run in this session: a behaviour you only read in the code is marked "read, not run". When the finish gate's hook holds the turn, do what it lists and then give this report again in full.
 
 ## When skills disagree
 
-- **karpathy-guidelines / inv-code-craft:** keep their think-before-coding, no-speculative-scope, surgical and goal-driven rules; the wiring diff is how n-dev stays surgical. On structure, n-dev wins: "no abstraction for single-use code" and "fewest lines" give way to rule 1 when a module gives one responsibility a name, a seam and a test. A wrapper that only forwards calls stays out under both. Where one of them says to stop and ask, § Questions decides whether and when.
+- **karpathy-guidelines / inv-code-craft:** their think-first, no-speculative-scope and surgical rules hold; the wiring diff is how n-dev stays surgical. On structure, n-dev wins: "no abstraction for single-use code" and "fewest lines" give way to rule 1 when a module gives one responsibility a name, a seam and a test. Where one of them says to stop and ask, § Questions decides whether and when.
 - **The repo's own conventions** win over this skill on style, layout and patterns. Follow them, and mention the disagreement in the report when one blocks a rule.
 - **n-arch** owns the architecture profile and `.ndev.toml`; n-dev reads them and never writes them. A practice pack the repo already has (a `*-practices` skill, house rules) is part of the repo's conventions.
 - **Bugs:** diagnose first (the `diagnosing-bugs` skill if installed), then fix through steps 4–7.
 
-## Inside a 90north-develop flow
+## Inside a 90north-develop loop
 
-A defect runs in `n-defect-loop`, a story, feature or change request in `n-develop-loop`, each attended or unattended (`--auto`); an untracked change uses this skill alone. The loops split the steps:
-- **Orchestrator** (the conductor with `--auto`): steps 1–3 with the question round held as the loop's decision round, step 6 (code, security and performance reviewers plus QA, in parallel), and step 7's feature doc, push, PR and tracker. With `--auto` nobody answers: a decision parks the card with the design note posted as the solution.
-- **Builder or fixer subagent** (`dev-builder`, `defect-fixer`): steps 4–5 inside one work package or one root cause, and a local commit — never a push, a question or the feature doc.
+The loop's own `SKILL.md` says who runs which step. The orchestrator holds steps 1–3 with the question round (as the loop's decision round), the review and the push. A builder or fixer subagent runs steps 4–5 inside one work package or one root cause and commits locally: it never asks, pushes or writes the feature doc. Step 6's review gate is the loop's own review stage there, which reads the committed branch, so the builder's commit does not wait for it and the hook never holds a subagent's commit. With `--auto` nobody answers and no option is taken: a decision parks the card with the design note posted as the solution.
 
 ## Reference map
 
@@ -93,9 +105,10 @@ A defect runs in `n-defect-loop`, a story, feature or change request in `n-devel
 | `references/structure.md` | deciding the split into files and modules, reuse vs extract, size budgets, dependency direction; the review checklist |
 | `references/extension.md` | any change that touches a file that existed before the task |
 | `references/state.md` | adding, moving or caching any state |
-| `references/security.md` | the change reads outside input (file, archive, network response, request, env var, argument, user-typed path), changes who may see or do what, returns or logs stored data, calls another service or adds a dependency; also the step 6 security lens |
+| `references/security.md` | the change reads outside input, changes who may see or do what, returns or logs stored data, calls another service or adds a dependency; also the step 6 security lens |
 | `references/performance.md` | the change reads or writes stored data, loops over input, calls the network, adds a cache, changes a payload or the client bundle, or migrates data; also the step 6 performance lens |
 | `references/change-safety.md` | Large work, or any change to a contract, schema, migration, outbound call or the deploy: compatibility, rollout, failure modes, signals |
 | `templates/design-note.md` | step 3 |
 | `scripts/structure_check.py` | step 5; `--json` for machine-readable output, `--all` to audit the whole repo, reads `.ndev.toml` |
+| `scripts/finish_gate.py` | never by hand: the hook behind step 6's review gate and step 7's finish gate (`scripts/gate_session.py` reads the session for it) |
 | `evals/README.md` | changing this skill: the eval suite compares runs with and without it |

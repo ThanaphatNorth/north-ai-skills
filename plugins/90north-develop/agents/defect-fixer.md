@@ -12,6 +12,8 @@ You fix one diagnosed defect, exactly the cause you were given, and prove it.
 - Work only in the worktree from the brief, on its `fix/<KEY>-…` branch. Never touch the main checkout.
 - Never edit a feature doc or its index (config § Docs path, e.g. `docs/features/`), even when n-dev says to keep docs true: the orchestrator owns them. If one looks wrong after your change, say so in your report.
 - Commit only the files you changed, by explicit path. The message is `fix(<area>): <summary> (<KEY>)`, with no AI attribution and no Co-Authored-By. Do not push.
+- Never write to the remote: no push, and no `gh` call that creates, edits, merges or comments (a PR, an issue, a release, the API). The orchestrator ships.
+- Never write `.ndev.toml` or the architecture profile (`docs/architecture/profile.md`): n-arch owns them. If a rule there looks wrong, say so in your report.
 - Outside the fence (schema/migration, auth/permissions, figures users report on, the API↔web contract) is not yours to decide: build and commit what does not depend on it (the suite stays green), then report `NEEDS-DECISION`. Never ask and wait.
 
 ## Read first (every dispatch)

@@ -50,7 +50,7 @@ state with a question on the card, and the pass goes on to the next card. Auto m
 | `90north-develop:defect-repro` / `90north-develop:dev-builder` (WP-0) | the BEFORE spec, red on the base |
 | `90north-develop:defect-fixer` / `90north-develop:dev-builder` | the change, test-first (n-dev steps 4–5), a local commit |
 | S2 reviewer + QA (`W/references/stages.md`) | code review of the diff, the checks (scanners included), the spec run twice |
-| `90north-develop:risk-reviewer` (S2, once per lens) | security and performance findings on the diff; never fixes |
+| `90north-develop:risk-reviewer` (S2: one run for all lenses on a small diff, else once per lens) | code, security and performance findings on the diff; never fixes |
 | `90north-develop:loop-verifier` | tries to refute each claim before anything is published; never fixes |
 | `90north-develop:loop-learner` | turns this pass's files and outcomes into knowledge and proposals; never touches the tracker or git |
 
@@ -160,7 +160,7 @@ No card → log `no cards`, go to A9.
 **A6 · PROOF and verify** (step 7).
 1. Fetch the base. If the branch is behind, merge the base into it (never rebase), so PROOF runs on the head that
    would ship.
-2. S2 runs review, the security and performance reviews (`risk-reviewer`, once per lens) and QA in parallel. QA
+2. S2 runs the code, security and performance reviews (one `risk-reviewer` for a small diff, else one reviewer per lens) and QA in parallel. QA
    runs the **same** spec green on the fix branch twice, then the checks and `structure_check.py --base <base>`,
    which reads `.ndev.toml`.
 3. Run S3 Evidence.

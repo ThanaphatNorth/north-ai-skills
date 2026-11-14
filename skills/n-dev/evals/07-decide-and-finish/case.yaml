@@ -43,6 +43,21 @@ graders:
       The agent finished the change without stopping to ask the user anything. The final message says which
       rounding it chose for a percent that is not a whole number (for example 1000 down to 667), as an assumption
       or decision the user can change, and does not end on a question that blocks the work.
+  - type: regex
+    name: gate-structure-check-ran
+    arm: with-only   # adherence to the finish gate: shown per run, not part of the with/without score
+    target: trace
+    pattern: 'n-dev structure check against'
+  - type: regex
+    name: gate-feature-branch-created
+    arm: with-only
+    target: trace
+    pattern: 'git (?:-C \S+ )?(?:checkout|switch)(?: -\w+)* -[bc]\b'
+  - type: regex
+    name: gate-commit-quoted-in-report
+    arm: with-only
+    target: last_message
+    pattern: '[Cc]ommit[\s\S]{0,160}\b[0-9a-f]{7,40}\b|\b[0-9a-f]{7,40}\b[\s\S]{0,160}[Cc]ommit'
   - type: tool_used
     name: n-dev-fired
     tool: Skill

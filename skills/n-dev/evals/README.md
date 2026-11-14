@@ -96,6 +96,41 @@ What this says:
 - **Still open:** step 6's review was skipped on 01 (Standard) as "the change is small", and 03's first commit staged
   `__pycache__` before the agent amended it. Neither has a grader.
 
+## Through the whole plugin, after the routing line, the review gate and the report contract (2026-11-14, Sonnet, 3 runs)
+
+Run from a copy of the plugin outside `~/Desktop` (`plugins/90north-develop/evals/README.md` § Run says why), all six
+skills loaded, the plugin's hooks running, the with-plugin arm only (`--ablation none`, so the gate indicators count
+toward the score). The no-skill arm does not read the skill, so its numbers from the run above still stand
+(01 0.43 · 02 0.95 · 03 0.75 · 04 0.92 · 07 0.80).
+
+| Case | Score | Task graders | n-dev fired | Structure check | Review | Feature branch | Sha in report | Cost / run |
+|---|---|---|---|---|---|---|---|---|
+| `01-coupon-js` | 0.97 | honest-report 2/3 | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | $0.25 |
+| `02-layered-js` | 1.00 | all passed | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | $0.24 |
+| `03-bugfix-python` | 1.00 | all passed | 3/3 | 3/3 | – | 3/3 | 3/3 | $0.16 |
+| `04-red-suite-python` | 1.00 | all passed | 3/3 | 3/3 | – | 3/3 | 3/3 | $0.14 |
+| `07-decide-and-finish` | 0.96 | red-before-green 2/3 | 3/3 | 3/3 | – | 3/3 | 3/3 | $0.18 |
+
+What changed since the run above, and what each change was for:
+
+- **n-dev was not called at all when the whole plugin was loaded**: 0 of 6 runs here, 0 of 3 whole sessions. The
+  plugin now adds one line at session start (`plugins/90north-develop/evals/README.md` § Routing has the probes).
+- **Review ran in 0 of 6, then 3 of 6 runs.** Step 6 now has a review gate, and `scripts/finish_gate.py` holds a
+  `git commit` once when more than one source file changed and no reviewer has answered. In 6 whole sessions it
+  held 3 commits, and all 6 ended with the reviewer's answer before the commit (4 of 6 before).
+- **`honest-report` failed 3 of 3 in every earlier run, in both arms.** Asked for reasons, the judge named three
+  things: no command beside a result, new files mixed with changed ones, and behaviour stated but never run. Step
+  7's report now asks for each check as command and result line, a list of existing files changed, and "read, not
+  run" on anything only read. The grader was not touched.
+- **The finish-gate hook never spoke.** Agents wrote files with shell here-documents in 6 of 6 sessions, and the
+  hook only counted the edit tools. It now reads git and file times (`scripts/gate_session.py`).
+
+Not run this time: 05 and 06 (1.00 in both arms before, so they tell the arms apart least), and the no-skill arm.
+After this run five wording fixes from a consistency review went in (the router's table rows, one trigger phrase
+of n-develop-loop, one sentence of n-dev § Inside a 90north-develop loop, the safety block and three agent files,
+the hook's reminder text) and develop-init's rule for `default` and `TBD` lines; the routing probes were run again
+after them, these cases were not.
+
 ## Cases
 
 | Case | Task | What it checks | n-dev rule |

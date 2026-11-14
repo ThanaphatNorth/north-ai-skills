@@ -1,0 +1,51 @@
+schema_version: "1.0"
+name: 02-init-local-board
+description: Set the loops up in a repo with no Jira and nobody to answer — a local board, defaults marked, nothing left as a template placeholder, no question.
+tags: [develop-init, setup, questions]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1500
+  allowed_tools: [Skill, Read, Write, Edit, Bash, Glob, Grep]
+  prompt: |
+    Set up the 90north-develop loops in this repo with the develop-init skill. There is no Jira here: use a local
+    board. Nobody is available to answer questions in this run, so do not wait for an answer. Finish with a short
+    hand-over.
+runs: 3
+graders:
+  - type: file_exists
+    name: config-written
+    path: ".claude/90north-develop/config.md"
+  - type: file_exists
+    name: ledgers-written
+    path: ".claude/90north-develop/defect-ledger.md"
+  - type: file_exists
+    name: board-template-written
+    path: ".claude/90north-develop/board/_template.md"
+  - type: regex
+    name: local-backend
+    target: {source: file, path: .claude/90north-develop/tracker.env}
+    pattern: '(?:^|\n)TRACKER=local'
+  - type: regex
+    name: no-jira-placeholders-left
+    target: {source: file, path: .claude/90north-develop/config.md}
+    # `fix/<KEY>-<slug>` is the branch pattern the template prescribes, so <KEY> alone is not a leftover
+    pattern: '<site>|project(?: key)? (?:= )?`?<KEY>|<abs (?:path|parent)|<jira \| local|<owner/repo>'
+    match: not_contains
+  - type: llm
+    name: config-holds-facts-defaults-and-tbd
+    focus: {source: file, path: .claude/90north-develop/config.md}
+    criteria: >-
+      The config describes this repo (a JavaScript library whose tests run with `node --test`, base branch main, a
+      local board) with real values. A value that was not asked is marked as a default, and a value that could not
+      be found is marked TBD with what is needed. No line is still a template placeholder in angle brackets with
+      alternatives such as `<jira | local …>`.
+  - type: llm
+    name: hand-over-asks-nothing
+    criteria: >-
+      The final message is a hand-over: what was found, the defaults taken, anything TBD and the commands to use
+      next. It does not end on a question that blocks the work and does not wait for an answer.
+  - type: tool_used
+    name: develop-init-fired
+    tool: Skill

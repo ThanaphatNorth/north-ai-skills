@@ -1,6 +1,7 @@
 ---
 name: workflow
-description: Map and router of the 90north-develop plugin — decides which loop a piece of work belongs to (n-defect-loop for defects; n-develop-loop for new development, new features and changed requirements; n-dev alone for a small untracked change; develop-init when the repo isn't set up), and holds what both loops share - the 9 steps, the per-repo state folder, the one decision round an attended run asks, the shared stages (isolate, verify, evidence, ship, clean up, learn), the auto mode both loops run with --auto, the dispatch safety block, core lessons and the tracker (Jira or a local board). Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or when a loop skill points here for a shared stage.
+description: Map and router of the 90north-develop plugin — which loop a piece of work belongs to (n-defect-loop for defects, n-develop-loop for new development and changed requirements, develop-init when the repo is not set up), and what both loops share - the 9 steps, the one decision round, the shared stages, auto mode, the safety block and the tracker. Use when the user asks "which loop", "what's the workflow", "start work on <KEY>" without saying feature or bug, wants the whole picture of the plugin, or a loop skill points here for a shared stage.
+argument-hint: "[<KEY> | <what you want to do>]"
 ---
 
 # 90north-develop · workflow
@@ -46,13 +47,18 @@ Only a low- or no-impact change inside a standing approval merges on its own (`r
 
 ## Route the work
 
+This table sorts work the user wants taken through a loop: they named a loop or a board item, or asked which
+loop. A code change asked for with none of those is n-dev's, whatever its size; the plugin's session-start line
+(`hooks/session-start.txt` in the plugin) sends it there, and no loop starts on its own. A board key or a loop's
+name always wins over n-dev's own description, which also lists tickets and specs.
+
 | Signal | Loop | Command |
 |---|---|---|
 | No `.claude/90north-develop/config.md` (or only the legacy `.claude/defect-loop/`) | set up first | `/90north-develop:develop-init` |
-| Bug / defect type, or "it used to work / it doesn't do what the spec says" | defects | `/90north-develop:n-defect-loop [KEY] [--auto]` |
-| Story, Task, Improvement, change request, a spec file, or "add / change / build …" | development | `/90north-develop:n-develop-loop <KEY \| spec path \| request \| --next> [--auto]` |
+| A board item of type Bug / defect, or one that says "it used to work / it doesn't do what the spec says" | defects | `/90north-develop:n-defect-loop [KEY] [--auto]` |
+| A board item that is a Story, Task, Improvement or change request; or a spec file or an "add / change / build …" request the user asks to take through the loop | development | `/90north-develop:n-develop-loop <KEY \| spec path \| request \| --next> [--auto]` |
 | An unattended pass over the board, on a schedule or `/loop`, or "AI loop / autopilot" | either loop with `--auto` (one schedule per loop) | `references/auto-mode.md` |
-| Small change with no ticket (one file, one rule, no new module) | discipline only | `/90north-develop:n-dev` |
+| A code change asked for with no board item and no loop named, whatever its size | discipline only | `/90north-develop:n-dev` |
 | "Map / document / audit the architecture", layer rules, or n-dev says the profile is missing or stale | architecture profile | `/90north-develop:n-arch [refresh \| audit]` |
 | Unclear | read the ticket: behaviour that **exists and is wrong** against the current spec is a defect; behaviour that **does not exist yet**, or that the spec now asks to change, is development | — |
 
@@ -93,7 +99,9 @@ Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) 
 Every loop reaches the tracker through one door, `scripts/tracker.sh <verb> …`. Run it from inside the project; it
 finds `DL` by walking up. `TRACKER` in `tracker.env` picks the backend:
 - `jira` (the default): Jira REST v3 through the `jira-<verb>.sh` scripts. The credentials file is read by the
-  scripts only; never cat it.
+  scripts only; never cat it. The user creates it in their own terminal with `scripts/jira-login.sh [--force] [path]`:
+  it asks for the email and the API token (not echoed), writes the file with mode 600 and prints `OK <name>` or
+  `FAILED HTTP <code>`. The file holds only `JIRA_EMAIL=` and `JIRA_TOKEN=` lines; it is parsed, never run.
 - `local`: a board of markdown cards in the repo, for a project with no Jira.
 
 Both backends run the same flows, with the queue, lock, lanes, comments and evidence. The verb arguments for each

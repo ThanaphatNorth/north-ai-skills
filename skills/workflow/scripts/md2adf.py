@@ -9,16 +9,42 @@ Blocks (separated by line type, not only blank lines):
   - item                   bullet list (consecutive lines)
   anything else            paragraph; consecutive lines join with hard breaks
 Inline: **bold**, `code`, and bare http(s) links.
+Markdown outside the dialect (a fence, a table, a nested item, a mark that never closes) stays text.
+A file that cannot be read is one line on stderr and exit 1; missing arguments are exit 2.
 """
+from __future__ import annotations
+
 import json
+import os
 import re
 import sys
+from typing import Dict, List, TypedDict
 
 INLINE = re.compile(r"(\*\*(.+?)\*\*|`([^`]+)`|(https?://[^\s)]+))")
 
 
-def inline(text):
-    out, pos = [], 0
+class Mark(TypedDict, total=False):
+    """An inline mark: its type (strong, code, link) and, for a link, the href in attrs."""
+
+    type: str
+    attrs: Dict[str, str]
+
+
+class Node(TypedDict, total=False):
+    """One ADF node; `type` is always set, the other keys depend on it."""
+
+    type: str
+    version: int
+    text: str
+    marks: List[Mark]
+    attrs: Dict[str, str]
+    content: List[Node]
+
+
+def inline(text: str) -> List[Node]:
+    """The text nodes of one line: bold, code and link marks where they close, plain text for the rest."""
+    out: List[Node] = []
+    pos = 0
     for m in INLINE.finditer(text):
         if m.start() > pos:
             out.append({"type": "text", "text": text[pos:m.start()]})
@@ -35,8 +61,9 @@ def inline(text):
     return out
 
 
-def paragraph(lines):
-    content = []
+def paragraph(lines: List[str]) -> Node:
+    """One paragraph node whose lines are joined by hard breaks."""
+    content: List[Node] = []
     for i, line in enumerate(lines):
         if i:
             content.append({"type": "hardBreak"})
@@ -44,26 +71,31 @@ def paragraph(lines):
     return {"type": "paragraph", "content": content}
 
 
-def list_node(kind, items):
+def list_node(kind: str, items: List[str]) -> Node:
+    """A list node of `kind` (orderedList or bulletList) with one single-paragraph item per string."""
     return {"type": kind, "content": [{"type": "listItem", "content": [paragraph([t])]} for t in items]}
 
 
-def convert(md, issue_id):
-    blocks, para, items, kind = [], [], [], None
+def convert(md: str, issue_id: str) -> Node:
+    """The ADF document for the markdown; media nodes point at the attachment collection of `issue_id`."""
+    blocks: List[Node] = []
+    para: List[str] = []
+    items: List[str] = []
+    kind = ""
 
-    def flush():
+    def flush() -> None:
         nonlocal para, items, kind
         if para:
             blocks.append(paragraph(para))
             para = []
         if items:
             blocks.append(list_node(kind, items))
-            items, kind = [], None
+            items, kind = [], ""
 
     for raw in md.splitlines():
         line = raw.rstrip()
         m_ol = re.match(r"^\d+\.\s+(.*)$", line)
-        m_ul = re.match(r"^[-*]\s+(.*)$", line)
+        item = m_ol or re.match(r"^[-*]\s+(.*)$", line)
         m_vid = re.match(r"^::video\s+([0-9a-f-]{36})\s*$", line)
         if not line:
             flush()
@@ -71,12 +103,12 @@ def convert(md, issue_id):
             flush()
             blocks.append({"type": "mediaSingle", "attrs": {"layout": "center"}, "content": [
                 {"type": "media", "attrs": {"type": "file", "id": m_vid.group(1), "collection": f"jira-{issue_id}"}}]})
-        elif m_ol or m_ul:
+        elif item:
             k = "orderedList" if m_ol else "bulletList"
             if para or (kind and kind != k):
                 flush()
             kind = k
-            items.append((m_ol or m_ul).group(1))
+            items.append(item.group(1))
         else:
             if items:
                 flush()
@@ -85,7 +117,35 @@ def convert(md, issue_id):
     return {"type": "doc", "version": 1, "content": blocks}
 
 
+def _fail(message: str) -> int:
+    """Print the message as one stderr line (a line break in a file name shows as \\n); returns exit code 1."""
+    print("md2adf.py: " + "\\n".join(message.splitlines()), file=sys.stderr)
+    return 1
+
+
+def main(argv: List[str]) -> int:
+    """Print the ADF JSON for file argv[0] and issue argv[1]; returns 0, 1 for a failed read or write, 2 for usage."""
+    if len(argv) < 2:
+        print("usage: md2adf.py <comment.md> <issue-id>", file=sys.stderr)
+        return 2
+    try:
+        with open(argv[0], encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError as e:
+        return _fail("cannot read %s: %s" % (argv[0], e.strerror))
+    except UnicodeDecodeError:
+        return _fail("%s is not UTF-8 text" % argv[0])
+    doc = convert(re.sub(r"<!--.*?-->\n?", "", text, flags=re.S), argv[1])  # template notes never reach Jira
+    try:
+        try:
+            print(json.dumps(doc, ensure_ascii=False), flush=True)
+        except UnicodeEncodeError:  # a stdout that cannot hold the text gets the same document with \u escapes
+            print(json.dumps(doc), flush=True)
+    except OSError as e:  # the reader left or the disk is full: drop what is buffered, so the exit stays quiet
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        return _fail("cannot write the document: %s" % e.strerror)
+    return 0
+
+
 if __name__ == "__main__":
-    md_path, issue_id = sys.argv[1], sys.argv[2]
-    text = re.sub(r"<!--.*?-->\n?", "", open(md_path, encoding="utf-8").read(), flags=re.S)  # template notes never reach Jira
-    print(json.dumps(convert(text, issue_id), ensure_ascii=False))
+    sys.exit(main(sys.argv[1:]))

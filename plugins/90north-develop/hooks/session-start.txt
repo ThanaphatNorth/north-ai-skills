@@ -1,0 +1,1 @@
+90north-develop is installed. A request that changes code or tests starts with the Skill tool, skill 90north-develop:n-dev, before the first file is read or edited, however small the change. Work named by a board key, or a loop asked for by name, goes to that loop instead (90north-develop:n-defect-loop, 90north-develop:n-develop-loop; 90north-develop:workflow says which).

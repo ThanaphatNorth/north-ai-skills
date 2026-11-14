@@ -1,0 +1,6 @@
+[profile]
+path = "docs/architecture/profile.md"
+
+[layers.core]
+paths = ["src/**"]
+may-import = []

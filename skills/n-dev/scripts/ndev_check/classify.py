@@ -30,22 +30,28 @@ _TEST_DIR = re.compile(r"(^|/)(tests?|__tests__|spec|specs|androidTest|testFixtu
 
 
 def extension(path: str) -> str:
+    """The extension with its dot, lower-cased; '' when the name has none."""
     return os.path.splitext(path)[1].lower()
 
 
 def is_code(path: str) -> bool:
+    """True for a source file in a language the checks read, judged by extension."""
     return extension(path) in CODE_EXTS
 
 
 def is_test(path: str) -> bool:
+    """True when the file name or a folder on the path marks it as a test."""
     return bool(_TEST_NAME.search(path) or _TEST_DIR.search(path))
 
 
 def matches_any(path: str, globs: Iterable[str]) -> bool:
+    """True when the whole path matches one of the globs (`*` crosses `/` too)."""
     return any(fnmatch.fnmatch(path, g) for g in globs)
 
 
 def is_noise(path: str, extra_globs: Iterable[str] = ()) -> bool:
+    """True for files nobody writes by hand: lockfiles, generated or minified code, vendored and build
+    folders, plus anything that matches `extra_globs`."""
     name = os.path.basename(path)
     if any(fnmatch.fnmatch(name, g) for g in NOISE_GLOBS):
         return True

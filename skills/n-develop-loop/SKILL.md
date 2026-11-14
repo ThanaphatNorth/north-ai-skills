@@ -1,6 +1,6 @@
 ---
 name: n-develop-loop
-description: Development loop of the 90north-develop plugin — takes a story, task, improvement, change request or spec (a Jira or local-board key, a spec file, a plain request, or --next) through 9 steps, from the board to a PR in the review lane: acceptance specs red, the n-dev design note and work packages, a test-first build by dev-builder subagents, code, security and performance review plus QA, a demo video. Attended, it asks every question in one round before anything is built, then runs to the end; --auto runs it unattended and parks a card that needs a person. Only a low- or no-impact change inside a standing approval merges on its own. Use when the user says "develop loop", "build <KEY>", "implement this story/spec", "new feature", "change requirement", "pick the next story", or a schedule fires it. Defects go to n-defect-loop.
+description: Development loop of the 90north-develop plugin — takes one story, change request or spec (a board key, a spec file, a request, or --next) through 9 steps to a reviewed PR in the review lane, with a demo video. --auto runs it unattended. Use when the user says "develop loop", "build <KEY>", "take this story/spec through the loop", "pick the next story", asks for a new feature or changed requirement to go through the loop, or a schedule fires it.
 argument-hint: "<KEY | spec path | request | --next> [--auto] [--dry-run]"
 ---
 
@@ -23,12 +23,9 @@ subagents write the code.
 | `/90north-develop:n-develop-loop --auto [--dry-run] [<KEY>]` | unattended: one pass per `W/references/auto-mode.md` |
 | `/loop 60m /90north-develop:n-develop-loop --next`, or `… --auto` on a schedule (`W/templates/auto-scheduled-task.md`) | attended: resume items whose gate was answered, else take the next one. Unattended: one pass per tick |
 
-The two modes differ in who answers:
-- **Attended:** every question comes in one decision round, before anything is isolated or built
-  (`W/references/stages.md` § Decision round). After it the run goes to the end: an item that still needs a person
-  parks, and the rest goes on.
-- **`--auto`:** nobody answers. A gate parks the card with a question on it, and the pass goes on. In auto mode a
-  Large item never builds: its design note is posted as the solution.
+Attended, every question comes in one decision round before anything is isolated or built, and then the run goes
+to the end. With `--auto` nobody answers: a gate parks the card, and a Large item never builds (its design note is
+posted as the solution).
 
 ## Step 0 · Before the run
 Run S0 in `stages.md` with flow `dev`. Config needs § Dev flow (legacy `.claude/defect-loop/` → run
@@ -143,8 +140,8 @@ writes it now.
    (if config § Docs is on and a rule changed) is committed.
 
 ## 7 · Verify and record
-1. S2 Verify (`stages.md`). The reviewer gets the diff, the ticket, the design note and the AC table. Two
-   `risk-reviewer` runs read the same diff for security and for performance. QA runs every acceptance spec twice
+1. S2 Verify (`stages.md`). The reviewer gets the diff, the ticket, the design note and the AC table. The diff
+   is read for code, security and performance: by one reviewer when it is small, else one per lens. QA runs every acceptance spec twice
    and n-dev's structure check (`../n-dev/scripts/structure_check.py --base <base>`). Fix rounds go back to step 6
    with all findings, with a budget of 2.
 2. S3 Evidence: the `demo` clip walks AC-1 … AC-n in order. Add `before` when an existing screen changed.
@@ -180,7 +177,7 @@ S5 Clean up, then S6 Learn (tag lessons `[dev]`). Auto mode runs A9: outcomes, t
 | really a defect | `handed-to-n-defect-loop` | hand-off row | hand-off label |
 | design approval (config § Dev flow › Design gate) | `awaiting-design-approval` / `solution-posted` | the decision round: you approve or pick an option | the design note on the card; a person takes it |
 | builder decision | `blocked-needs-human` / `stopped` | settled by the note or a reversible option; else parked | what was found, on the card |
-| push | `awaiting-push` | the decision round's yes, or a standing approval | a standing approval, else it waits for your yes |
+| push | `awaiting-push` | the decision round's yes while the branch stays inside what the round showed (`stages.md` § S4), or a standing approval | a standing approval, else it waits for your yes |
 | 2 fix rounds used | `blocked-needs-human` / `stopped` | parked | on the card |
 
 ## Never (on top of `stages.md` § Never)

@@ -44,15 +44,41 @@ Only a low- or no-impact change inside a standing approval merges on its own; ev
 The rules are in `skills/workflow/references/feature-docs.md`, the template in
 `skills/workflow/templates/feature-doc.md`. In `--auto`, verifier claim V10 checks the doc against the diff.
 
-**Security and performance review.** Every change with a non-test source line gets two more reviewers in S2, beside
-the code reviewer and QA: `risk-reviewer` once for security and once for performance. Each walks n-dev's checklist
-for its lens (`skills/n-dev/references/security.md`, `skills/n-dev/references/performance.md`) and reports each
-finding with `path:line`, the input or data size that breaks it, and the test that would prove it.
+**Code, security and performance review.** Every change is read through three lenses in S2, beside QA. The diff's size decides how many reviewers read it, never whether a lens runs:
+- a small diff (config § Review › single review, by default at most 150 changed non-test lines in 5 files) gets one
+  `risk-reviewer` run that walks all three lenses, each fully;
+- a larger diff gets the repo's code reviewer plus `risk-reviewer` once for security and once for performance.
+
+Each lens walks its checklist in n-dev (`skills/n-dev/references/security.md`, `performance.md`, and the review
+checklist in `structure.md`) and reports each finding with `path:line`, the input or data size that breaks it, and the
+test that would prove it.
 - Findings inside the change are fixed in the fix round, each test-first.
 - Findings outside the change are reported, never fixed in that PR. A security weakness outside the change never
   goes into the tracker, a PR or a commit: it goes to the security-notes owner in config § Review.
-- In `--auto`, verifier claim V11 checks that both reviews ran on the head and nothing is open, and a change that
-  needed a security or performance fix never auto-merges.
+- In `--auto`, verifier claim V11 checks that the security and performance reviews ran on the head and nothing is
+  open, and a change that needed a security or performance fix never auto-merges.
+
+**Session-start line.** `hooks/session-start.txt` is one line the plugin adds to every session when it starts: a
+request that changes code or tests begins with n-dev, and work named by a board key or a loop goes to that loop.
+Without it, an agent that has all six skills in front of it tends to start a plain coding request with no skill at
+all (the numbers are in `evals/README.md` § Routing). No loop starts on its own: the line only names n-dev for a plain
+request. Keep skill descriptions short for the same reason: say what the skill is and when to use it, and leave
+how it works to the body.
+
+**Command guard.** `hooks/guard.py` runs before every Bash, Write, Edit and NotebookEdit call (its rules are in
+`hooks/guard_rules.py`). When the call comes from one of this plugin's subagents, it blocks what that agent's hard
+rules and the dispatch safety block (`skills/workflow/references/stages.md`) forbid:
+- every subagent: a push, any call to the tracker scripts, and a `curl` or `wget` to an `atlassian.net` host (a
+  Jira on another host is covered by the agents' instructions only);
+- builders, fixers and reproducers: merge, branch or worktree deletion, `--no-verify`, `reset --hard`, installing a
+  tool or a new dependency, booting an app or a container, a database client or migration, a write to the remote
+  with `gh`, and a write to `.ndev.toml` or the architecture profile;
+- reviewers, the verifier and the learner: anything that builds, tests, reaches the network or changes files, and
+  any file but their own report.
+
+The main conversation and every other agent pass untouched. The guard reads command text, so it is a second lock
+behind the agents' instructions, not a sandbox: a command hidden in a variable or in a script it runs is not seen.
+Its tests are in `hooks/tests/`.
 
 | Skill | Role |
 |--|--|
@@ -68,7 +94,7 @@ finding with `path:line`, the input or data size that breaks it, and the test th
 | `dev-builder` | n-develop-loop | WP-0 acceptance specs red, then one work package test-first, local commit |
 | `defect-repro` | n-defect-loop | an e2e that goes red on the reported symptom, plus the video |
 | `defect-fixer` | n-defect-loop | regression test red → fix at the root cause → green, local commit |
-| `risk-reviewer` | both loops, S2 | reads the diff for one lens, security or performance, against n-dev's checklist; findings with `path:line`, the breaking input or size, and the test; never fixes |
+| `risk-reviewer` | both loops, S2 | reads the diff through its lenses (code, security, performance: all three in one run for a small diff, else one lens per run) against n-dev's checklists; findings with `path:line`, the breaking input or size, and the test; never fixes |
 | `loop-verifier` | both loops, `--auto` | tries to refute each claim (spec ↔ card, before reason, proof on the branch, forbidden areas, scope, structure check, evidence, comment, checks ran, feature doc, security and performance reviews) before anything is published |
 | `loop-learner` | both loops, `--auto` | turns a pass's files and outcomes into knowledge (code map, selectors, calibration, outcomes, lessons); rule changes become proposals |
 
@@ -102,7 +128,7 @@ Re-register any `/loop` or scheduled task that names an old command.
 | `/loop 60m /90north-develop:n-develop-loop --next` | Take ready items one by one; an item at its design gate parks and the next is taken |
 | `/90north-develop:<loop> --auto [--dry-run] [KEY]` | One unattended pass of that loop's queue, or one card |
 | scheduled task / `/loop 30m /90north-develop:<loop> --auto` | Unattended passes (`skills/workflow/templates/auto-scheduled-task.md`), one schedule per loop; start with `--dry-run` |
-| `/90north-develop:n-dev` | A small untracked change with the discipline only |
+| `/90north-develop:n-dev` | Any code change you ask for without a loop: the discipline only. A plain request goes here on its own |
 | `/90north-develop:n-arch [refresh \| audit]` | Map the repo's architecture (develop-init runs it when there is no profile) |
 
 ## Where each loop asks you
@@ -119,6 +145,19 @@ report names (`skills/n-dev/SKILL.md` § Questions, `skills/workflow/references/
 | n-defect-loop | — | cannot reproduce, by-design / change request (handed to n-develop-loop), structural (built by n-develop-loop on your yes) |
 | n-develop-loop | design approval for Large or schema / state / public-interface changes, a trade-off | an item not ready (asked on the ticket) |
 | either, `--auto` | no round | never stops mid-card: it parks the card instead — a question (`ai-need-info`), the solution (`ai-need-dev`), a hand-off to the other loop, a branch awaiting push, a PR in review |
+
+## The codes, in words
+
+The skill files number their steps so that one file can point at another. Reports, tracker comments, PR bodies and
+questions use the words, never the codes. You only meet a code when you read the skill files themselves.
+
+| Code | Where it lives | Means |
+|--|--|--|
+| 1–9 | each loop's `SKILL.md` | read the board · triage · check the spec · reproduce / pin the goal · root cause / design · fix / build · verify and record · open the PR · merge or a person approves |
+| S0–S6 | `skills/workflow/references/stages.md` | before the run · isolate · verify · evidence · ship · clean up · learn |
+| A0–A9 | `skills/workflow/references/auto-mode.md` | the same run with nobody attending: before the pass · follow-ups · scout and lock · triage · the red "before" run · build · the green "proof" run · the verifier gate · ship · learn |
+| V1–V11 | `agents/loop-verifier.md` | the claims the verifier tries to refute: the spec tests the card · "before" failed for the card's reason · "proof" passed on the branch · no forbidden area · only what the card asked · structure check clean · the evidence shows it · the comment matches the diff · the checks really ran · the feature doc matches · the reviews ran and nothing is open |
+| AC-n, R-n, WP-n | design notes, comments, feature docs | an acceptance criterion · a rule of a feature area · a work package |
 
 ## Per-project files (`<repo>/.claude/90north-develop/`)
 
@@ -154,7 +193,7 @@ with the queue, lock, lanes, comments and evidence. Arguments per backend, the c
 
 ## Safety built in
 
-- Agents never boot app processes or touch databases (a second process with other env flags once ran a destructive boot hook).
+- Agents never boot app processes or touch databases (a second process with other env flags once ran a destructive boot hook). The command guard blocks the common forms of both, and every push by a subagent.
 - Never push / force-push / merge / delete without your yes; a standing approval counts only in its written scope.
 - Never moves an item to a QA or review lane without a green acceptance or defect spec from the same session.
 - No production code before a design note; no fix before a red reproduction.
@@ -170,6 +209,8 @@ The skills live once, at the repo root in `skills/<name>/`; `plugins/90north-dev
 plugins/90north-develop/
   .claude-plugin/plugin.json
   agents/dev-builder.md, defect-repro.md, defect-fixer.md, risk-reviewer.md, loop-verifier.md, loop-learner.md
+  hooks/hooks.json, session-start.txt (the routing line), guard.py (the command guard), guard_shell.py (reads a
+        shell line), guard_rules.py (the rules), tests/
   skills/workflow      -> ../../../skills/workflow
   skills/develop-init  -> ../../../skills/develop-init
   skills/n-defect-loop   -> ../../../skills/n-defect-loop
@@ -180,5 +221,11 @@ plugins/90north-develop/
 
 ## Updating
 
-Edit the files under `skills/` (or `agents/` here), bump `version` in `.claude-plugin/plugin.json` and the repo-root `.claude-plugin/marketplace.json`, run `claude plugin validate .` and `python3 tools/validate_skill.py skills/<name>`, commit and push, then `/plugin marketplace update north-ai-skills`.
+1. Edit the files under `skills/` (or `agents/` and `hooks/` here). A new agent also needs its line in the `agents` array of `.claude-plugin/plugin.json` and its rule set in `hooks/guard_rules.py`.
+2. Bump `version` in `.claude-plugin/plugin.json` and in the repo-root `.claude-plugin/marketplace.json`.
+3. Run the checks from the repo root: `python3 tools/check_repo.py`, `python3 tools/validate_skill.py skills/<name>`, `claude plugin validate .`, and the four test suites the root README lists.
+4. Run the consistency review (`tools/consistency-review.md`) with a fresh-context reviewer, and fix or answer every finding.
+5. Run the evals (`evals/README.md` here and `skills/n-dev/evals/README.md`) when a skill's wording changed: a gate that reads a little more abstractly can stop working, and only a run shows it. After changing a description or `hooks/session-start.txt`, run the routing probes too (`evals/README.md` § Routing).
+6. Commit and push, then `/plugin marketplace update north-ai-skills`.
+
 Promote a project lesson that helps every repo into `skills/workflow/references/core-lessons.md` (every loop) or `skills/n-defect-loop/references/core-lessons.md` (defects only).

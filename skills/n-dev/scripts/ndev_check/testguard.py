@@ -42,6 +42,8 @@ _CI_DIRS = (".github/workflows/", ".circleci/")
 
 
 def check_tests(files: Sequence[ChangedFile], deleted: Iterable[str]) -> List[Finding]:
+    """Findings for changes that ask less of the tests. `files` are the changed files, `deleted` the
+    paths that existed at the base ref and are gone."""
     out: List[Finding] = [Finding(KIND, p, 0, 0, 0, "test file deleted; name the behaviour it covered and the "
                                   "test that covers it now") for p in deleted if _is_test_code(p)]
     for f in files:
@@ -56,6 +58,7 @@ def check_tests(files: Sequence[ChangedFile], deleted: Iterable[str]) -> List[Fi
 
 
 def is_snapshot(path: str) -> bool:
+    """True for a stored test expectation: `.snap`, `.ambr`, `__snapshots__/`, `.approved.`, `.verified.`."""
     name = os.path.basename(path)
     return (name.endswith((".snap", ".ambr")) or "__snapshots__/" in path or ".approved." in name
             or ".verified." in name)
@@ -66,16 +69,19 @@ def _is_test_code(path: str) -> bool:
 
 
 def _is_coverage_config(path: str) -> bool:
+    """True for a file that can hold a coverage gate: a test-runner or build config, or a CI workflow."""
     name = os.path.basename(path)
     return any(fnmatch.fnmatch(name, g) for g in _COVERAGE_FILES) or path.startswith(_CI_DIRS)
 
 
 def _added_rows(f: ChangedFile) -> List[Tuple[int, str]]:
+    """(line number, text) of the lines this change added, in order."""
     rows = f.text.split("\n")
     return [(n, rows[n - 1]) for n in sorted(f.added) if n <= len(rows)]
 
 
 def _removed_assertions(f: ChangedFile) -> List[Finding]:
+    """One finding when assertion lines were removed and do not reappear among the added lines."""
     if f.is_new:
         return []
     kept = {text.strip() for _, text in _added_rows(f)}
@@ -89,6 +95,7 @@ def _removed_assertions(f: ChangedFile) -> List[Finding]:
 
 
 def _skip_markers(f: ChangedFile) -> List[Finding]:
+    """One finding when added lines carry a skip or focus marker outside string literals."""
     hits = [n for n, text in _added_rows(f) if _SKIP.search(blank_strings(text))]
     if not hits:
         return []
@@ -97,10 +104,12 @@ def _skip_markers(f: ChangedFile) -> List[Finding]:
 
 
 def _thresholds(text: str) -> Dict[str, float]:
+    """The coverage keys in one line of config, each with its number."""
     return {flag or key: float(value) for flag, key, value in _THRESHOLD.findall(text)}
 
 
 def _coverage(f: ChangedFile) -> List[Finding]:
+    """One finding when a coverage number went down, a gate disappeared, or `passWithNoTests` came in."""
     before: Dict[str, float] = {}
     for _, text in f.removed:
         before.update(_thresholds(text))
@@ -124,4 +133,5 @@ def _coverage(f: ChangedFile) -> List[Finding]:
 
 
 def _num(value: float) -> str:
+    """The number as the config wrote it: 80, not 80.0."""
     return str(int(value)) if value == int(value) else str(value)

@@ -23,7 +23,7 @@ The loop gets better only through files. You write the knowledge files; you neve
 2. **Signals → knowledge** (the signal table is in the workflow skill's `references/auto-knowledge.md` § Signals):
    - `code-map.md`: card vocabulary → `repo/path`, extension recipe, date. Add one when a locate took more than 2 minutes or found an area the map lacked; newest wins, older ones are marked retired.
    - `selectors.md`: a locator or label that worked after a miss, or broke, with the date and the spec that proved it.
-   - `calibration.md`: one row per built card (estimate raw, calibrated, actual non-test lines from `git diff --numstat` minus the size excludes, files, repos). Recompute the factor as the median of actual ÷ raw over the last 10 rows, and write the new factor with its date.
+   - `calibration.md`: one row per built card (estimate raw, calibrated, actual non-test lines from `git diff --numstat` minus config § Review's test globs, files, repos). Recompute the factor as the median of actual ÷ raw over the last 10 rows, and write the new factor with its date.
    - `outcomes.jsonl`: one JSON line per card: `{"date","key","route","verdict","classPredicted","classShipped","verified","pr","outcome","minutes"}`.
    - `DL/lessons.md`: one `[ai]` entry per real mistake (a refutation, a change request, a reopen, a wrong verdict, a retry that cost time): `- [date] [ai] <step or agent> seen:N — symptom → cause → rule. (open | proposal → <file>)`, ≤ 5 lines. On a repeat, bump `seen:` instead of adding a new entry.
 3. **Proposals.** Write `DL/knowledge/proposals/<date>-<slug>.md` when:

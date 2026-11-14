@@ -3,20 +3,23 @@
 Supported: comments; `[table]` and `[dotted."quoted".table]` headers; `key = value` with bare or quoted keys;
 values that are "basic" strings (with escapes), 'literal' strings, integers, booleans, or arrays of those
 (multi-line, trailing comma, comments inside). Anything else raises TomlError naming the line, so a file
-never silently means something other than what it says. Pure."""
+never silently means something other than what it says: that includes an integer outside the 64-bit range
+TOML promises, and arrays nested deeper than `MAX_DEPTH`. Pure."""
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, NoReturn, Set, Tuple
 
 _BARE = re.compile(r"[A-Za-z0-9_-]+")
 _TOKEN = re.compile(r"[+-]?[0-9A-Za-z_.:-]+")
 _INT = re.compile(r"[+-]?(0|[1-9](_?[0-9])*)")
 _ESCAPES = {'"': '"', "\\": "\\", "n": "\n", "t": "\t", "r": "\r", "b": "\b", "f": "\f"}
+MAX_DEPTH = 32          # arrays inside arrays: far more than a config needs, far less than the stack holds
+_INT64_DIGITS = 19      # a longer run of digits cannot fit; checked first because int() refuses huge strings
 
 
 class TomlError(ValueError):
-    pass
+    """The text is not in the supported subset; the message starts with `line N:`."""
 
 
 def _is_control(c: str) -> bool:
@@ -25,15 +28,20 @@ def _is_control(c: str) -> bool:
 
 
 def _is_scalar(code: int) -> bool:
+    """True for a Unicode scalar value: in range and not a surrogate."""
     return code <= 0x10FFFF and not 0xD800 <= code <= 0xDFFF
 
 
 def loads(text: str) -> Dict[str, Any]:
+    """The document as nested dicts, as `tomllib.loads` gives for the same text. TomlError otherwise."""
     return _Parser(text).document()
 
 
 class _Parser:
-    def __init__(self, text: str):
+    """A cursor over the text. Each method reads one construct at the cursor, leaves the cursor after it
+    and returns its value, or raises TomlError for the cursor's line."""
+
+    def __init__(self, text: str) -> None:
         self.s = text
         self.i = 0
 
@@ -41,7 +49,8 @@ class _Parser:
     def line(self) -> int:
         return self.s.count("\n", 0, self.i) + 1
 
-    def fail(self, what: str):
+    def fail(self, what: str) -> NoReturn:
+        """Raise TomlError for the line the cursor is on."""
         raise TomlError("line %d: %s" % (self.line(), what))
 
     def peek(self) -> str:
@@ -72,6 +81,7 @@ class _Parser:
                 return
 
     def end_of_line(self) -> None:
+        """Consume the rest of the line; anything on it but spaces and a comment is an error."""
         self.skip_spaces()
         if self.peek() == "#":
             self.skip_comment()
@@ -83,6 +93,7 @@ class _Parser:
 
     # -- statements ---------------------------------------------------------------------------
     def document(self) -> Dict[str, Any]:
+        """The whole document as nested dicts."""
         root: Dict[str, Any] = {}
         table = root
         seen: Set[Tuple[str, ...]] = set()
@@ -93,6 +104,7 @@ class _Parser:
             table = self.header(root, seen) if self.peek() == "[" else self.key_value(table)
 
     def header(self, root: Dict[str, Any], seen: Set[Tuple[str, ...]]) -> Dict[str, Any]:
+        """The table a `[a.b]` header opens, created under `root` when it is new."""
         self.i += 1
         if self.peek() == "[":
             self.fail("arrays of tables ([[...]]) are not supported")
@@ -105,8 +117,7 @@ class _Parser:
         if self.peek() != "]":
             self.fail("expected ] to close the table header")
         self.i += 1
-        self.end_of_line()
-        if tuple(keys) in seen:
+        if tuple(keys) in seen:   # judged before the line ends, so the error names the header's own line
             self.fail("table [%s] is defined twice" % ".".join(keys))
         seen.add(tuple(keys))
         table = root
@@ -114,9 +125,11 @@ class _Parser:
             table = table.setdefault(k, {})
             if not isinstance(table, dict):
                 self.fail("%r is a value, not a table" % k)
+        self.end_of_line()
         return table
 
     def key_value(self, table: Dict[str, Any]) -> Dict[str, Any]:
+        """Store one `key = value` in `table`, and return that table for the next statement."""
         line = self.line()
         k = self.key()
         self.skip_spaces()
@@ -147,7 +160,8 @@ class _Parser:
         self.i = m.end()
         return m.group(0)
 
-    def value(self) -> Any:
+    def value(self, depth: int = 0) -> Any:
+        """The value at the cursor; `depth` counts the arrays it is already inside."""
         if self.s.startswith('"""', self.i) or self.s.startswith("'''", self.i):
             self.fail("multi-line strings are not supported")
         c = self.peek()
@@ -156,16 +170,24 @@ class _Parser:
         if c == "'":
             return self.literal_string()
         if c == "[":
-            return self.array()
+            return self.array(depth + 1)
         m = _TOKEN.match(self.s, self.i)
         token = m.group(0) if m else ""
         if token in ("true", "false"):
             self.i += len(token)
             return token == "true"
         if _INT.fullmatch(token):
-            self.i += len(token)
-            return int(token.replace("_", ""))
+            return self.integer(token)
         self.fail("unsupported value %r: use a string, integer, boolean or array" % (token or c))
+
+    def integer(self, token: str) -> int:
+        """The token as an int. An error outside the 64-bit range TOML promises, on every Python."""
+        digits = token.replace("_", "")
+        number = int(digits) if len(digits.lstrip("+-")) <= _INT64_DIGITS else None
+        if number is None or not -2 ** 63 <= number < 2 ** 63:
+            self.fail("integer is outside the 64-bit range")
+        self.i += len(token)
+        return number
 
     def basic_string(self) -> str:
         self.i += 1
@@ -209,7 +231,10 @@ class _Parser:
         text, self.i = self.s[self.i:end], end + 1
         return text
 
-    def array(self) -> List[Any]:
+    def array(self, depth: int) -> List[Any]:
+        """The items of the array at the cursor, which is `depth` arrays deep."""
+        if depth > MAX_DEPTH:
+            self.fail("arrays are nested more than %d deep" % MAX_DEPTH)
         start = self.line()
         self.i += 1
         items: List[Any] = []
@@ -220,7 +245,7 @@ class _Parser:
             if self.peek() == "]":
                 self.i += 1
                 return items
-            items.append(self.value())
+            items.append(self.value(depth))
             self.skip_blank()
             if self.peek() == ",":
                 self.i += 1

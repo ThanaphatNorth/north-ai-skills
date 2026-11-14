@@ -1,6 +1,6 @@
 ---
 name: n-defect-loop
-description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira, or a local board when there is no Jira; one by key, or a sweep of the open-defect query) through 9 steps, from the board to a PR in the QA lane: reproduce with a red e2e and a before video, root cause at path:line, a test-first fix with n-dev, code, security and performance review plus QA, an after video and the 3-part comment. Attended, it asks every question in one round before anything is built, then runs to the end; --auto runs it unattended on a schedule or /loop and parks a card that needs a person. Only a low- or no-impact change inside a standing approval merges on its own. Reads project facts from .claude/90north-develop/config.md (run /90north-develop:develop-init first). Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule runs it. New features and changed requirements go to n-develop-loop.
+description: Defect loop of the 90north-develop plugin — takes defects from the board (Jira or a local board), one by key or a sweep of the open-defect query, through 9 steps to a reviewed fix PR in the QA lane, with before and after videos. --auto runs it unattended. Use when the user says "defect loop", "sweep the board", "fix bug <KEY>", "clear the bugs to Ready for QA", or a schedule runs it.
 argument-hint: "[<KEY>] [--auto] [--dry-run]"
 ---
 
@@ -21,12 +21,9 @@ return and write to the tracker (Jira or the local board, through `W/scripts/tra
 | `/90north-develop:n-defect-loop --auto [--dry-run] [<KEY>]` | unattended: one pass per `W/references/auto-mode.md` |
 | `/loop 30m /90north-develop:n-defect-loop [--auto]`, or a scheduled task (`W/templates/auto-scheduled-task.md`) | keep sweeping; attended mode keeps going between ticks while cards remain |
 
-The two modes differ in who answers:
-- **Attended:** every question comes in one decision round, before anything is isolated or built
-  (`W/references/stages.md` § Decision round). After it the sweep goes to the end: a card that still needs a person
-  parks, and the rest goes on.
-- **`--auto`:** nobody answers. A gate parks the card with a question on it, and the pass goes on. Auto mode adds the queue lock,
-  the triage matrix (`W/references/auto-triage.md`), the verifier and the learner.
+Attended, every question comes in one decision round before anything is isolated or built, and then the sweep
+goes to the end. With `--auto` nobody answers: a gate parks the card, and the pass adds the queue lock, the triage
+matrix (`W/references/auto-triage.md`), the verifier and the learner.
 
 ## Step 0 · Before every run
 Run S0 in `stages.md` with flow `defect`, and read this skill's `references/core-lessons.md` in full. In auto mode,
@@ -138,8 +135,8 @@ It writes a regression test red → fix → green, runs the checks and commits l
 Commit it locally as `docs(<area>): … (<KEY>)`.
 
 ## 7 · Verify and record
-1. S2 Verify (`stages.md`): the reviewer's spec is the ticket plus the root cause. Two `risk-reviewer` runs read
-   the same diff for security and for performance. QA runs the defect spec twice. Fix rounds go back to step 6,
+1. S2 Verify (`stages.md`): the reviewer's spec is the ticket plus the root cause. The diff is read for
+   code, security and performance: by one reviewer when it is small, else one per lens. QA runs the defect spec twice. Fix rounds go back to step 6,
    with a budget of 2.
 2. S3 Evidence: `before` (red) and `after`.
 3. Auto mode adds A6 PROOF and the A7 verifier gate: nothing the verifier refutes is published.
@@ -177,7 +174,7 @@ shared ones into the workflow skill's. Auto mode runs A9: outcomes, then the lea
 | change request / by-design | `handed-to-n-develop-loop` | hand-off row, tell the PO | hand-off label |
 | structural | `blocked-needs-human` / `solution-posted` | options on the ticket; parked | solution on the card |
 | 2 fix rounds used, or a decision | `blocked-needs-human` / `stopped` | fix rounds used: parked. A decision: settled by the root cause or a reversible option, else parked | what was tried, on the card |
-| push | `awaiting-push` | the decision round's yes, or a standing approval | a standing approval, else it waits for your yes |
+| push | `awaiting-push` | the decision round's yes while the branch stays inside what the round showed (`stages.md` § S4), or a standing approval | a standing approval, else it waits for your yes |
 | PR open | `ready-for-qa` (auto: `in-review`) | a person reviews the PR | the same |
 
 ## Never (on top of `stages.md` § Never)

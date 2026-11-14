@@ -96,7 +96,7 @@ The skills are Markdown and load with no extra setup. Only their helper scripts 
 | n-arch | (uses n-dev's script) | n-dev linked beside it |
 | design-atlas | `scripts/palette.py` | Python 3.8+, plus Pillow for PNG/JPG logos (`pip install pillow`) |
 | design-atlas | `scripts/shoot.mjs`, `scripts/scrollfilm.mjs` | Node 22+ and Google Chrome (ffmpeg for `--mp4`) |
-| plugin loops | `skills/workflow/scripts/tracker.sh` (+ `jira-*.sh`, `local_board.py`) | bash, python3; for Jira also curl, jq and an API token in `~/.config/<project>-jira.env` (`develop-init` walks you through it); a local board needs nothing else; `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
+| plugin loops | `skills/workflow/scripts/tracker.sh` (+ `jira-*.sh`, `local_board.py`) | bash, python3; for Jira also curl and an API token in `~/.config/<project>-jira.env`, created with `skills/workflow/scripts/jira-login.sh` in your own terminal (`develop-init` tells you when); a local board needs nothing else; `gh` for PRs, and an e2e runner (Playwright or Cypress) in the target repo for repros and videos |
 
 ## Layout
 
@@ -142,10 +142,15 @@ skills/n-defect-loop/
   templates/jira-comment.md   3-section comment: reproduced?, root cause, solution
 skills/develop-init/
   SKILL.md            per-repo setup for both loops; templates/config.md, templates/tracker.env
-plugins/90north-develop/  plugin manifest, agents, symlinks to the skills above
+plugins/90north-develop/  plugin manifest, agents, hooks (the session-start line, the command guard), evals, symlinks to the skills above
 .claude-plugin/marketplace.json  this repo as a plugin marketplace
 research/<skill>/     raw research notes with sources (provenance, not loaded by the skill)
-tools/validate_skill.py structure, cross-link and source-URL checks
+tools/validate_skill.py   one skill: frontmatter, referenced files, reference shape, source URLs
+tools/check_repo.py       the whole repo: versions, registered agents, plugin links, README table,
+                          paths and § references that must resolve, ledger states, agent names
+tools/repo_check/         the checks behind check_repo.py, one module per concern
+tools/consistency-review.md  the brief for the review a machine cannot do: files that now disagree
+tools/tests/              tests for both tools
 ```
 
 ## Check a skill
@@ -153,6 +158,36 @@ tools/validate_skill.py structure, cross-link and source-URL checks
 ```bash
 python3 tools/validate_skill.py skills/design-atlas --urls --report .logs/urls.tsv
 ```
+
+## Check the repo
+
+One command for what used to be kept in sync by hand. It exits 1 when a version, a registered agent, a plugin link,
+a path or a `§` reference no longer matches:
+
+```bash
+python3 tools/check_repo.py
+```
+
+The script tests, each from the repo root:
+
+```bash
+python3 -m unittest discover -s skills/n-dev/scripts/tests -p 'test_*.py'
+```
+
+```bash
+python3 -m unittest discover -s skills/workflow/scripts/tests -p 'test_*.py'
+```
+
+```bash
+python3 -m unittest discover -s tools/tests -p 'test_*.py'
+```
+
+```bash
+python3 -m unittest discover -s plugins/90north-develop/hooks/tests -p 'test_*.py'
+```
+
+Two files that now say different things are not something a script can see. After a change to a skill, an agent or
+a shared reference, run the brief in `tools/consistency-review.md` with a fresh-context reviewer.
 
 ## Structure check (n-dev)
 

@@ -31,7 +31,7 @@ The learner has no tracker access. Before dispatching it, you write `DL/runs/<da
 | Signal | Collect with | Means |
 |---|---|---|
 | triage verdict vs what happened | `triage.md` vs `build.md`, `verify.md` | a do-now that ended stopped = the table was too loose; a need-dev a person then fixed in ≤ 50 lines = too strict |
-| estimate vs actual | `triage.md` vs `git diff --numstat` minus size excludes | calibration |
+| estimate vs actual | `triage.md` vs `git diff --numstat` minus config § Review's test globs | calibration |
 | locate time and misses | `triage.md` | a code-map entry; a profile row that pointed to the wrong place |
 | locators that worked or broke | the spec, `before.md`, `proof.md` | selectors |
 | verifier refutations | `verify.md` | what the builder or recorder got wrong, and the fix |
