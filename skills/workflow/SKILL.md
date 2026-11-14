@@ -10,7 +10,7 @@ Two loops, split by type of work, on one discipline and one set of per-repo fact
 keep code, identifiers and commit messages in the repo's language.
 
 ```
-                     develop-init  (once per repo)  →  .claude/90north-develop/
+                     develop-init  (once per repo)  →  .claude/90north-develop/ + .90north-develop/
                                       │
      n-defect-loop  (defects)                       n-develop-loop  (features, changes)
   1 Read the board ── 2 Triage ── 3 Check the spec           (the same three steps)
@@ -80,19 +80,30 @@ triages it `by-design / change request` and hands it off. A "Task" saying "the t
 A handoff writes one ledger row in each loop's ledger (`handed-to-n-develop-loop` / `from-n-defect-loop KEY`), so
 no ticket is owned by two loops at once.
 
-## Per-repo state (`DL` = `<repo-root>/.claude/90north-develop/`)
+## Per-repo state: settings in `DC`, working state in `DL`
+
+`DC` = `<repo-root>/.claude/90north-develop/` holds the settings. Claude Code asks a person before it writes under
+`.claude/`, which is right for the file that holds the push approval and the tracker's address.
+`DL` = `<repo-root>/.90north-develop/` holds what a loop writes as it works. It sits outside `.claude/` so that a
+session that can ask nobody can still record its work.
+
+`scripts/where.sh` prints both folders for the project it is run in. A loop takes `DC` and `DL` from it and never
+builds the paths by hand: in a project that has not moved yet they are one folder, and a file written to the other
+place would split the state in two.
 
 | File | Owner of | Written by |
 |---|---|---|
-| `config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
-| `tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
-| `board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
-| `dev-ledger.md` / `defect-ledger.md` | one row per state change of a work item, per loop, both modes, written with `scripts/ledger.sh` (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
-| `lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
-| `knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
-| `runs/<date>/<KEY>/`, `runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
+| `DC/config.md` | every project fact: tracker, board ids, lanes, push policy, repo/worktree recipe, stack recipe, accounts, checks, team, spec sources, § Dev flow, § Defect flow, § Auto mode | develop-init; the loops add facts they verify (in auto mode they only propose) |
+| `DC/tracker.env` | `TRACKER` and the backend's settings (`JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES`) — no secrets | develop-init |
+| `DL/board/` (local tracker only) | one markdown file per card, attachments in `board/<KEY>/`; committed when config says so | people add cards; `tracker.sh` writes them, always in the main checkout. The loops never commit them: the run report lists changed cards for a person to commit |
+| `DL/dev-ledger.md` / `DL/defect-ledger.md` | one row per state change of a work item, per loop, both modes, written with `scripts/ledger.sh` (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
+| `DL/lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
+| `DL/knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
+| `DL/runs/<date>/<KEY>/`, `DL/runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
 
-Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them; the scripts find either folder. Set `DEVELOP_DIR` to point at the folder explicitly.
+A project set up before 0.12 has its working state in `DC` as well: `where.sh` then prints the same folder twice, with a note. The scripts read and write it there (the folder that holds a ledger or the board is the one in use; an empty file or folder is a leftover and decides nothing), and `scripts/move-state.sh` moves it (develop-init offers it; `--dry-run` shows what would move). Until it is moved, a session that can ask nobody cannot write every run file or remove the pass lock there, so an unattended pass does not start: `where.sh --auto`, its first command, refuses it (exit 3) before a lock or a card is taken.
+
+Legacy repos keep `.claude/defect-loop/` (its `ledger.md` is the defect ledger) until develop-init migrates them, and an unattended pass does not start there either; the scripts find either settings folder. Set `DEVELOP_DIR` (settings) and `DEVELOP_STATE_DIR` (working state) to point at the folders explicitly.
 
 ## Tracker (`scripts/tracker.sh <verb>` — used by every loop)
 

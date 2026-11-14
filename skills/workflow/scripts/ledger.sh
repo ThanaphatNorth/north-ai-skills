@@ -1,9 +1,10 @@
 #!/bin/bash
 # The loops' one way to write a ledger row:
 #   ledger.sh <dev|defect> <KEY> <state> <branch @ sha> <worktree · ports · DB> <evidence> <next>
-# Appends one row, stamped with the local date and time, to <state folder>/<flow>-ledger.md of the main checkout
-# (also when run from a linked worktree). A ledger is written here and never with an edit tool or a shell redirect:
-# the state folder sits under .claude/, and a session that can ask nobody refuses such a write.
+# Appends one row, stamped with the local date and time, to <working state>/<flow>-ledger.md of the main checkout
+# (also when run from a linked worktree): .90north-develop/ beside the project, or .claude/90north-develop/ in a
+# project that has not moved its state yet. Every ledger row goes through here, so each one is checked and stamped
+# the same way, and a project not moved yet can still record a row in a session that can ask nobody.
 # A cell is one line of text; a `|` inside it is written `\|` so the row keeps its seven columns.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -18,7 +19,16 @@ done
 [[ $state =~ ^[a-z][a-z0-9-]*$ ]] || refuse "the state is one lower-case word such as in-review or awaiting-push, not '$state'"
 # shellcheck source=_state.sh
 . "$HERE/_state.sh"
-file="$DEVELOP_DIR/$flow-ledger.md"
+name="$flow-ledger.md"
+case $DEVELOP_DIR in
+  */.claude/defect-loop) # the single-loop setup: its ledger.md is the defect ledger, and it has no development loop
+    [ "$flow" = defect ] || refuse "this project still has the legacy .claude/defect-loop/ folder — run /90north-develop:develop-init before the development loop"
+    name=ledger.md ;;
+esac
+file="$DEVELOP_STATE_DIR/$name"
+case $DEVELOP_STATE_DIR in
+  */.claude/90north-develop) echo "note: this project's working state is still under .claude/ — $HERE/move-state.sh moves it beside the project" >&2 ;;
+esac
 [ ! -L "$file" ] || refuse "$file is a link; a ledger is a plain file in the state folder"
 [ -f "$file" ] || refuse "$file is missing — run /90north-develop:develop-init"
 row="| $(date '+%Y-%m-%d %H:%M') | $key | $state"

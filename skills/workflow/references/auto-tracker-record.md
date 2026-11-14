@@ -1,6 +1,6 @@
 # Tracker record — the lock, the labels, what every step leaves on the card
 
-> Read when: auto mode writes anything to the tracker, runs A1 follow-ups, or releases stale locks. Field ids, label names, queries and transition ids live in `DL/config.md` § Auto mode; this file says *what* gets written and *when*.
+> Read when: auto mode writes anything to the tracker, runs A1 follow-ups, or releases stale locks. Field ids, label names, queries and transition ids live in `DC/config.md` § Auto mode; this file says *what* gets written and *when*.
 
 The tracker (Jira, or the local board — `W/references/trackers.md`) is the system of record. People read the card, never `DL/runs/`. When the run files and the card disagree, the card wins, and the learner writes a lesson. Every step leaves a field, a label, a comment or a transition. A step that cannot write its row stops and reports why.
 

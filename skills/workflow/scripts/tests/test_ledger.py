@@ -1,7 +1,8 @@
 """Tests for ledger.sh: the one way a loop writes a ledger row.
 
-The state folder sits under .claude/, and a session that can ask nobody refuses an edit tool or a shell redirect
-there. The script is the door: it checks the row, stamps it and appends it to the ledger of the main checkout.
+The ledgers live in .90north-develop/ beside the project (in .claude/90north-develop/ for a project that has not
+moved its state yet). The script is the door: it checks the row, stamps it and appends it to the ledger of the main
+checkout.
 
   python3 -m unittest discover -s skills/workflow/scripts/tests -p 'test_*.py'
 """
@@ -21,15 +22,19 @@ ROW = ["dev", "TASK-1", "awaiting-push", "feat/TASK-1-x @ 347ff39", "../pricing-
 ENV = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t",
            GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_NOSYSTEM="1")
 ENV.pop("DEVELOP_DIR", None)
+ENV.pop("DEVELOP_STATE_DIR", None)
 ENV.pop("DEFECT_LOOP_DIR", None)
 
 
 class LedgerCase(unittest.TestCase):
     def setUp(self):
         self.root = os.path.realpath(tempfile.mkdtemp(prefix="ledger-"))
-        self.state = os.path.join(self.root, ".claude", "90north-develop")
+        self.settings = os.path.join(self.root, ".claude", "90north-develop")
+        self.state = os.path.join(self.root, ".90north-develop")
+        os.makedirs(self.settings)
         os.makedirs(self.state)
-        self.put("tracker.env", "TRACKER=local\n")
+        with open(os.path.join(self.settings, "tracker.env"), "w", encoding="utf-8") as fh:
+            fh.write("TRACKER=local\n")
         self.put("dev-ledger.md", HEAD)
         self.put("defect-ledger.md", HEAD.replace("dev ledger", "defect ledger"))
 
@@ -94,8 +99,57 @@ class Appends(LedgerCase):
         code, _, err = self.run_ledger(ROW, cwd=tree)
         self.assertEqual((code, err), (0, ""))
         self.assertIn("| TASK-1 | awaiting-push |", self.read())
-        with open(os.path.join(tree, ".claude", "90north-develop", "dev-ledger.md"), encoding="utf-8") as fh:
+        with open(os.path.join(tree, ".90north-develop", "dev-ledger.md"), encoding="utf-8") as fh:
             self.assertEqual(fh.read(), HEAD)  # the worktree's own copy is not the ledger
+
+
+class NotMovedYet(LedgerCase):
+    """A project set up before the working state moved out of .claude/ keeps its ledgers where they are."""
+
+    def setUp(self):
+        super().setUp()
+        for name in ("dev-ledger.md", "defect-ledger.md"):
+            os.rename(os.path.join(self.state, name), os.path.join(self.settings, name))
+        os.rmdir(self.state)
+
+    def test_the_row_goes_to_the_ledger_under_claude_with_a_note_on_how_to_move(self):
+        code, out, err = self.run_ledger(ROW)
+        self.assertEqual((code, out), (0, "ledger: dev TASK-1 → awaiting-push\n"))
+        self.assertIn("move-state.sh", err)
+        with open(os.path.join(self.settings, "dev-ledger.md"), encoding="utf-8") as fh:
+            self.assertIn("| TASK-1 | awaiting-push |", fh.read())
+        self.assertFalse(os.path.exists(self.state))  # writing a row does not move anything
+
+
+    def test_a_stray_new_folder_does_not_take_the_row_away_from_the_old_ledger(self):
+        os.makedirs(os.path.join(self.state, "runs", "2026-11-14"))
+        code, _, err = self.run_ledger(ROW)
+        self.assertEqual(code, 0, err)
+        with open(os.path.join(self.settings, "dev-ledger.md"), encoding="utf-8") as fh:
+            self.assertIn("| TASK-1 | awaiting-push |", fh.read())
+
+
+class LegacyFolder(LedgerCase):
+    """The single-loop setup before 0.3: .claude/defect-loop/, whose ledger.md is the defect ledger."""
+
+    def setUp(self):
+        super().setUp()
+        self.legacy = os.path.join(self.root, ".claude", "defect-loop")
+        os.rename(self.settings, self.legacy)
+        shutil.rmtree(self.state)
+        with open(os.path.join(self.legacy, "ledger.md"), "w", encoding="utf-8") as fh:
+            fh.write(HEAD)
+
+    def test_a_defect_row_goes_to_its_ledger_md(self):
+        code, out, _ = self.run_ledger(["defect", "ABC-12", "ready-for-qa"] + ROW[3:])
+        self.assertEqual((code, out), (0, "ledger: defect ABC-12 → ready-for-qa\n"))
+        with open(os.path.join(self.legacy, "ledger.md"), encoding="utf-8") as fh:
+            self.assertIn("| ABC-12 | ready-for-qa |", fh.read())
+
+    def test_a_dev_row_needs_develop_init_first(self):
+        code, out, err = self.run_ledger(ROW)
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("develop-init", err)
 
 
 class Refuses(LedgerCase):

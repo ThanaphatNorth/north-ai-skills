@@ -6,7 +6,7 @@ The framework holds the procedure; the **project pack** holds the facts. A pack 
 
 | Kind of fact | Owner | Written by |
 |---|---|---|
-| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DL/config.md` § Auto mode (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
+| tracker ids, queue and lock, labels, lanes, limits, fences, never-touch list, ship gates, schedule | `DC/config.md` § Auto mode (plus § Tracker, § Push policy, § Comments, § Evidence) | `/90north-develop:develop-init` |
 | architecture: map, layers, extension recipes, state owners, contracts, commands | `docs/architecture/profile.md` | `/90north-develop:n-arch` |
 | budgets, layer globs, allowed import directions | `.ndev.toml` | `/90north-develop:n-arch` |
 | house rules, reusable component lists, coding conventions | the repo's practice pack (a `*-practices` skill or docs folder), linked from the profile's Conventions and from config § Team | the team |

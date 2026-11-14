@@ -9,8 +9,8 @@ from .model import Doc, Finding, docs, error, prose_lines, read_text, readmes, w
 from .paths import PLACEHOLDER_MARKS, is_target_path, resolve
 
 # The owners a reference may name: "`stages.md` § Decision round", "n-dev § Questions", "config § Checks".
-CONFIG_TEMPLATE = "skills/develop-init/templates/config.md"  # every repo's DL/config.md is written from it
-CONFIG_NAMES = ("config", "Config", "config.md", "DL/config.md")
+CONFIG_TEMPLATE = "skills/develop-init/templates/config.md"  # every repo's DC/config.md is written from it
+CONFIG_NAMES = ("config", "Config", "config.md", "DC/config.md")
 OWNER_ALIASES = dict({name: CONFIG_TEMPLATE for name in CONFIG_NAMES}, **{"n-dev": "skills/n-dev/SKILL.md"})
 OWNER = re.compile(r"(?:(`[^`\n]+`)|([\w./-]+\.md)|\b(n-dev|[Cc]onfig))\s*$")
 MENTION = re.compile(r"`[^`\s]+\.md`|\b(?:n-dev|[Cc]onfig)\b")  # an owner named earlier on a § reference's line

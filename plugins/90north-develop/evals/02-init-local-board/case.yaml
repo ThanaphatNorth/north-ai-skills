@@ -19,10 +19,10 @@ graders:
     path: ".claude/90north-develop/config.md"
   - type: file_exists
     name: ledgers-written
-    path: ".claude/90north-develop/defect-ledger.md"
+    path: ".90north-develop/defect-ledger.md"
   - type: file_exists
     name: board-template-written
-    path: ".claude/90north-develop/board/_template.md"
+    path: ".90north-develop/board/_template.md"
   - type: regex
     name: local-backend
     target: {source: file, path: .claude/90north-develop/tracker.env}

@@ -108,7 +108,7 @@ class OwnerAliases(SectionCase):
         self.assertEqual(self.sections(), [MISS % (WORKFLOW, n, "n-dev", "Answers", NDEV)])
 
     def test_config_alias_in_every_spelling(self):
-        self.passes(WORKFLOW, "config § Checks e2e lines; Config § Auto mode › never-touch; `DL/config.md` § "
+        self.passes(WORKFLOW, "config § Checks e2e lines; Config § Auto mode › never-touch; `DC/config.md` § "
                               "Dev flow's ready query (config.md § Checks) <config § Auto mode>")
         n = self.say(WORKFLOW, "Push per config § Push policy, or ask.")
         self.assertEqual(self.sections(), [MISS % (WORKFLOW, n, "config", "Push policy, or ask", CONFIG)])

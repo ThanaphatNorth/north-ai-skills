@@ -11,10 +11,10 @@ and a few hand runs look right. `<loop>` is `n-defect-loop` or `n-develop-loop`.
 Start with `--dry-run`. Remove it after 2–3 dry passes read well on the board.
 
 ```text
-Working directory: <absolute repo root, the folder that holds .claude/90north-develop/>
+Working directory: <absolute repo root, the folder that holds .claude/90north-develop/ and .90north-develop/>
 The 90north-develop plugin is installed. Run /90north-develop:<loop> --auto --dry-run
-Each run starts fresh: read .claude/90north-develop/config.md, lessons.md and knowledge/ as the skill instructs;
-do not rely on memory of earlier runs. Append the pass report to .claude/90north-develop/runs/<YYYY-MM-DD>/run.md.
+Each run starts fresh: read the config, lessons.md and knowledge/ from the two folders the skill's where.sh prints;
+do not rely on memory of earlier runs. Append the pass report to runs/<YYYY-MM-DD>/run.md in the working-state folder.
 Reply in <the user's language>. Push or merge only inside the standing approval written in config § Push policy;
 anything else waits for the user.
 ```

@@ -10,7 +10,7 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which loop a piece of work belongs to, the 9 steps and the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), the auto mode both loops run with `--auto`, core lessons and the tracker (Jira or a local board). |
 | [`n-defect-loop`](skills/n-defect-loop/SKILL.md) | Defect loop: 9 steps per defect — read the board, triage, check the spec, reproduce (red e2e + before video), root cause at `path:line`, test-first fix with n-dev, verify + record (review + QA, after video), open the PR into the QA lane, then merge only a low-impact change inside a standing approval, else a person approves. Attended, or unattended with `--auto`. Needs the plugin. |
 | [`n-develop-loop`](skills/n-develop-loop/SKILL.md) | Development loop for new features and changed requirements: the same 9 steps, with the middle being acceptance spec red, the n-dev design note and work packages (a gate for Large or schema/interface changes), and a test-first build by subagents; the PR goes to the review lane. Attended, or unattended with `--auto`. Needs the plugin. |
-| [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects (or sets up a local board when there is no Jira), writes `.claude/90north-develop/` for both loops. |
+| [`develop-init`](skills/develop-init/SKILL.md) | Once per repo: discovers the stack, reads the board's ids and lanes for stories and defects (or sets up a local board when there is no Jira), writes the settings to `.claude/90north-develop/` and the working state to `.90north-develop/` for both loops. |
 
 ## Install
 
@@ -132,6 +132,9 @@ skills/workflow/
   templates/feature-doc.md    a feature doc
   scripts/tracker.sh, _state.sh  one door to the tracker: TRACKER=jira | local
   scripts/ledger.sh   one door to the ledgers: checks a row, stamps it, appends it in the main checkout
+  scripts/where.sh    prints a project's two folders: settings (DC) and working state (DL); with --auto it
+                      refuses an unattended pass until the working state has moved out of .claude/
+  scripts/move-state.sh  once, for a project set up before 0.12: moves its working state out of .claude/
   scripts/jira-*.sh, md2adf.py  Jira backend (REST v3)
   scripts/local_board*.py     local board backend (markdown cards)
 skills/n-develop-loop/

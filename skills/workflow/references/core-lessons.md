@@ -1,6 +1,6 @@
 # Core lessons — both loops (every project)
 
-> Read when: S0 of either loop (`stages.md`), in full, together with the flow's own core lessons and the project's `.claude/90north-develop/lessons.md`; and when a project lesson might belong to every repo.
+> Read when: S0 of either loop (`stages.md`), in full, together with the flow's own core lessons and the project's `DL/lessons.md`; and when a project lesson might belong to every repo.
 
 Distilled from real runs. A project lesson that would help any repo in both flows is promoted here; one that only concerns defects goes to `n-defect-loop/references/core-lessons.md` (edit the plugin source, bump the plugin version, `/plugin update`).
 

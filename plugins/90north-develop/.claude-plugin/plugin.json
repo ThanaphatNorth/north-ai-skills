@@ -1,6 +1,6 @@
 {
   "name": "90north-develop",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "description": "North's development plugin: two loops split by type of work, on one discipline, for any repo on Jira or on a local board of markdown cards. n-defect-loop takes a defect from the board to a pull request in the QA lane; n-develop-loop takes a story, feature or change to a pull request in the review lane. Both run attended (one question round, then to the end) or unattended with --auto. Every change starts with a red test and gets a code, security and performance review, QA and evidence. With workflow (the router and the shared stages), develop-init (once per repo), n-dev (how every change is written) and n-arch (each repo's architecture rules). The plugin README has the details.",
   "skills": "./skills/",
   "agents": [

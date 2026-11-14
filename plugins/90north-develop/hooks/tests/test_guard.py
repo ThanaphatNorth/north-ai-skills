@@ -116,7 +116,7 @@ class Blocked(unittest.TestCase):
         cases = [
             ("risk-reviewer", "/repo/wt/src/auth.ts"),
             ("risk-reviewer", "/scratch/ABC-1/verify.md"),
-            ("loop-verifier", "/repo/.claude/90north-develop/runs/2026-11-14/ABC-1/proof.md"),
+            ("loop-verifier", "/repo/.90north-develop/runs/2026-11-14/ABC-1/proof.md"),
             ("loop-verifier", "/repo/wt/e2e/x.spec.ts"),
             ("loop-learner", "/repo/.claude/90north-develop/config.md"),
             ("loop-learner", "/repo/docs/architecture/profile.md"),
@@ -177,10 +177,10 @@ class Allowed(unittest.TestCase):
             ("risk-reviewer", "/scratch/ABC-1/review-security.md"),
             ("risk-reviewer", "/scratch/ABC-1/review-performance.md"),
             ("risk-reviewer", "/scratch/ABC-1/review.md"),
-            ("loop-verifier", "/repo/.claude/90north-develop/runs/2026-11-14/ABC-1/verify.md"),
-            ("loop-learner", "/repo/.claude/90north-develop/knowledge/code-map.md"),
-            ("loop-learner", "/repo/.claude/90north-develop/lessons.md"),
-            ("loop-learner", "/repo/.claude/90north-develop/runs/2026-11-14/learn.md"),
+            ("loop-verifier", "/repo/.90north-develop/runs/2026-11-14/ABC-1/verify.md"),
+            ("loop-learner", "/repo/.90north-develop/knowledge/code-map.md"),
+            ("loop-learner", "/repo/.90north-develop/lessons.md"),
+            ("loop-learner", "/repo/.90north-develop/runs/2026-11-14/learn.md"),
         ]
         for agent, path in cases:
             self.assertEqual(run(agent, "Write", {"file_path": path}), (0, ""), "%s could not write %s" % (agent, path))

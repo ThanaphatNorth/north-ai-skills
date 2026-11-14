@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "90north-develop",
-      "version": "0.11.1",
+      "version": "0.12.0",
       "source": "./plugins/90north-develop",
       "description": "North's development plugin: n-defect-loop and n-develop-loop take a defect or a story from the board to a pull request, attended (one question round, then to the end) or unattended with --auto, on the n-dev discipline, for any repo on Jira or on a local board of markdown cards."
     }

@@ -178,5 +178,237 @@ class StateFolder(unittest.TestCase):
         self.assertEqual((r.returncode, r.stdout.splitlines()[0], r.stderr), (0, "todo  ← now", ""))
 
 
+def moved_project(env_text="TRACKER=local\n", board="board"):
+    """A project whose working state sits beside it, outside .claude/: settings in .claude/90north-develop/,
+    the board in .90north-develop/. Returns (root, working state folder, env)."""
+    root = os.path.realpath(tempfile.mkdtemp())
+    os.makedirs(os.path.join(root, ".claude", "90north-develop"))
+    state = os.path.join(root, ".90north-develop")
+    os.makedirs(os.path.join(state, board))
+    write_env(root, env_text)
+    with open(os.path.join(state, board, "TASK-1.md"), "w", encoding="utf-8") as fh:
+        fh.write(CARD)
+    env = dict(os.environ, HOME=root)
+    for name in ("DEVELOP_DIR", "DEVELOP_STATE_DIR", "DEFECT_LOOP_DIR", "TRACKER", "LOCAL_BOARD", "LOCAL_STATUSES",
+                 "JIRA_SITE", "JIRA_ENV_FILE"):
+        env.pop(name, None)
+    return root, state, env
+
+
+class WorkingState(unittest.TestCase):
+    """Settings stay in .claude/90north-develop/. What a loop writes as it works (board, ledgers, runs) lives in
+    .90north-develop/ beside the project, where a session that can ask nobody may still write."""
+
+    def test_the_board_is_read_from_the_folder_beside_the_project(self):
+        root, _, env = moved_project()
+        r = statuses(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0], r.stderr), (0, "todo  ← now", ""))
+
+    def test_it_wins_over_a_board_left_behind_under_claude(self):
+        root, _, env = moved_project()
+        old = os.path.join(root, ".claude", "90north-develop", "board")
+        os.makedirs(old)
+        with open(os.path.join(old, "TASK-1.md"), "w", encoding="utf-8") as fh:
+            fh.write(CARD.replace("status: todo", "status: review"))
+        self.assertEqual(statuses(root, env).stdout.splitlines()[0], "todo  ← now")
+
+    def test_a_board_named_in_tracker_env_is_relative_to_the_working_state(self):
+        root, _, env = moved_project("TRACKER=local\nLOCAL_BOARD=cards\n", board="cards")
+        r = statuses(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0], r.stderr), (0, "todo  ← now", ""))
+
+    def test_develop_state_dir_names_the_folder(self):
+        root, state, env = moved_project()
+        elsewhere = os.path.join(root, "kept-elsewhere")
+        os.rename(state, elsewhere)
+        r = statuses(root, dict(env, DEVELOP_STATE_DIR=elsewhere))
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0], r.stderr), (0, "todo  ← now", ""))
+
+    def test_a_project_not_moved_yet_still_reads_its_board_under_claude(self):
+        root, _, env = local_project("TRACKER=local\n")
+        r = statuses(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0]), (0, "todo  ← now"))
+
+    def test_a_linked_worktree_uses_the_main_checkouts_working_state(self):
+        root, state, env = moved_project()
+        env.update(GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@x", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@x",
+                   GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_NOSYSTEM="1")
+        git = lambda *a: subprocess.run(["git", "-C", root] + list(a), env=env, capture_output=True, check=True)
+        git("init", "-q", "-b", "main")
+        git("add", "-A")
+        git("commit", "-qm", "base")
+        tree = os.path.join(root, "wt")
+        git("worktree", "add", "-q", tree)
+        r = door(["edit", "TASK-1", "--add-label", "seen"], tree, env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        with open(os.path.join(state, "board", "TASK-1.md"), encoding="utf-8") as fh:
+            self.assertIn("seen", fh.read())
+        with open(os.path.join(tree, ".90north-develop", "board", "TASK-1.md"), encoding="utf-8") as fh:
+            self.assertNotIn("seen", fh.read())  # the worktree's own copy is not the board
+
+
+class NotMovedYet(unittest.TestCase):
+    """A project whose board and ledgers are still under .claude/ is read there until move-state.sh has run,
+    whatever else has appeared beside it."""
+
+    def test_a_stray_new_folder_does_not_hide_a_board_still_under_claude(self):
+        root, _, env = local_project("TRACKER=local\n")
+        os.makedirs(os.path.join(root, ".90north-develop", "runs", "2026-11-14"))
+        with open(os.path.join(root, ".90north-develop", "runs", "2026-11-14", "run.md"), "w") as fh:
+            fh.write("a pass wrote this before the move\n")
+        r = statuses(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0]), (0, "todo  ← now"), r.stderr)
+
+    def test_a_stray_folder_under_claude_does_not_hide_a_moved_board(self):
+        root, _, env = moved_project()
+        os.makedirs(os.path.join(root, ".claude", "90north-develop", "runs", "2026-11-14"))
+        r = statuses(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()[0], r.stderr), (0, "todo  ← now", ""))
+
+    def found(self, root, env):
+        """The search finds the one card, wherever the working state is."""
+        r = door(["search", "status=todo"], root, env)
+        self.assertEqual((r.returncode, [line.split(" | ")[0] for line in r.stdout.splitlines()]), (0, ["TASK-1"]), r.stderr)
+
+    def test_an_empty_board_folder_beside_does_not_hide_the_board_under_claude(self):
+        root, dl, env = local_project("TRACKER=local\n")
+        os.makedirs(os.path.join(root, ".90north-develop", "board"))
+        self.found(root, env)
+        self.assertEqual(where(root, env).stdout.splitlines()[1], "DL=" + dl)
+        self.assertEqual(where(root, env, "--auto").returncode, 3)
+
+    def test_an_empty_ledger_file_beside_does_not_hide_the_board_under_claude(self):
+        root, dl, env = local_project("TRACKER=local\n")
+        os.makedirs(os.path.join(root, ".90north-develop"))
+        for name in ("dev-ledger.md", "defect-ledger.md"):
+            with open(os.path.join(root, ".90north-develop", name), "w"):
+                pass
+        self.found(root, env)
+        self.assertEqual(where(root, env).stdout.splitlines()[1], "DL=" + dl)
+
+    def test_empty_leftovers_under_claude_do_not_hide_a_moved_board(self):
+        root, state, env = moved_project()
+        old = os.path.join(root, ".claude", "90north-develop")
+        os.makedirs(os.path.join(old, "board"))
+        with open(os.path.join(old, "dev-ledger.md"), "w"):
+            pass
+        self.found(root, env)
+        self.assertEqual(where(root, env).stdout.splitlines(), ["DC=" + old, "DL=" + state])
+
+    def test_only_empty_leftovers_anywhere_is_a_project_with_settings_only(self):
+        """Nothing to keep in either place: the working state belongs beside the project."""
+        root = os.path.realpath(tempfile.mkdtemp())
+        old = os.path.join(root, ".claude", "90north-develop")
+        os.makedirs(os.path.join(old, "runs"))
+        os.makedirs(os.path.join(old, "board"))
+        write_env(root, "TRACKER=local\n")
+        r = where(root, moved_project()[2])
+        self.assertEqual((r.returncode, r.stdout.splitlines()), (0, ["DC=" + old, "DL=" + os.path.join(root, ".90north-develop")]))
+
+
+WHERE = os.path.join(SCRIPTS, "where.sh")
+
+
+def where(root, env, *args):
+    return subprocess.run([WHERE] + list(args), cwd=root, env=env, capture_output=True, text=True)
+
+
+class Where(unittest.TestCase):
+    """where.sh is how a loop learns the two folders: it never builds the paths by hand."""
+
+    def test_a_moved_project(self):
+        root, state, env = moved_project()
+        r = where(root, env)
+        self.assertEqual((r.returncode, r.stderr), (0, ""))
+        self.assertEqual(r.stdout, "DC=%s\nDL=%s\n" % (os.path.join(root, ".claude", "90north-develop"), state))
+
+    def test_a_project_not_moved_yet_names_one_folder_twice_and_says_how_to_move(self):
+        root, dl, env = local_project("TRACKER=local\n")
+        r = where(root, env)
+        lines = r.stdout.splitlines()
+        self.assertEqual((r.returncode, lines[:2]), (0, ["DC=" + dl, "DL=" + dl]))
+        self.assertIn("move-state.sh", lines[2])
+        self.assertTrue(lines[2].startswith("NOTE="))
+
+    def test_a_project_with_settings_only_points_at_the_new_folder(self):
+        root = os.path.realpath(tempfile.mkdtemp())
+        os.makedirs(os.path.join(root, ".claude", "90north-develop"))
+        write_env(root, "TRACKER=local\n")
+        env = moved_project()[2]
+        r = where(root, env)
+        self.assertEqual((r.returncode, r.stdout.splitlines()),
+                         (0, ["DC=" + os.path.join(root, ".claude", "90north-develop"), "DL=" + os.path.join(root, ".90north-develop")]))
+
+    def test_from_a_subfolder_and_with_no_setup(self):
+        root, state, env = moved_project()
+        os.makedirs(os.path.join(root, "src", "deep"))
+        self.assertIn("DL=" + state, where(os.path.join(root, "src", "deep"), env).stdout)
+        r = where(tempfile.mkdtemp(), env)
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("develop-init", r.stderr)
+
+
+class WhereUnattended(unittest.TestCase):
+    """`where.sh --auto` is the door of an unattended pass. Under .claude/ such a session can write some files and
+    not others, and cannot remove its own pass lock, so the pass is refused before it starts."""
+
+    def test_a_project_not_moved_yet_is_refused_with_exit_3(self):
+        root, dl, env = local_project("TRACKER=local\n")
+        r = where(root, env, "--auto")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        said = [line for line in r.stderr.splitlines() if line.strip()]
+        self.assertEqual(len(said), 1, r.stderr)
+        self.assertIn(os.path.join(SCRIPTS, "move-state.sh"), said[0])
+        self.assertIn("unattended", said[0])
+        self.assertEqual(r.stdout.splitlines()[:2], ["DC=" + dl, "DL=" + dl])
+
+    def test_a_moved_project_answers_as_usual(self):
+        root, _, env = moved_project()
+        plain, auto = where(root, env), where(root, env, "--auto")
+        self.assertEqual((auto.returncode, auto.stderr, auto.stdout), (0, "", plain.stdout))
+
+    def test_a_project_with_settings_only_may_start(self):
+        root = os.path.realpath(tempfile.mkdtemp())
+        os.makedirs(os.path.join(root, ".claude", "90north-develop"))
+        write_env(root, "TRACKER=local\n")
+        r = where(root, moved_project()[2], "--auto")
+        self.assertEqual((r.returncode, r.stderr), (0, ""))
+
+    def test_a_legacy_folder_is_refused_and_points_at_develop_init(self):
+        """.claude/defect-loop/ is under .claude/ too, and move-state.sh does not take it: develop-init does."""
+        root, dl, env = local_project("TRACKER=local\n", folder="defect-loop")
+        r = where(root, env, "--auto")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(r.stdout.splitlines()[:2], ["DC=" + dl, "DL=" + dl])
+        refusal = [line for line in r.stderr.splitlines() if line.startswith("where:")]
+        self.assertEqual(len(refusal), 1, r.stderr)
+        self.assertIn("unattended", refusal[0])
+        self.assertIn("/90north-develop:develop-init", refusal[0])
+        self.assertNotIn("move-state.sh", refusal[0])
+
+    def test_a_legacy_folder_asked_plainly_gets_the_note(self):
+        root, dl, env = local_project("TRACKER=local\n", folder="defect-loop")
+        r = where(root, env)
+        lines = r.stdout.splitlines()
+        self.assertEqual((r.returncode, lines[:2]), (0, ["DC=" + dl, "DL=" + dl]))
+        self.assertTrue(lines[2].startswith("NOTE="), lines)
+        self.assertIn("/90north-develop:develop-init", lines[2])
+
+    def test_a_working_state_named_under_claude_is_refused(self):
+        """DEVELOP_STATE_DIR can name any folder; one under .claude/ has the same problem as the old layout."""
+        root, _, env = moved_project()
+        named = os.path.join(root, ".claude", "state")
+        os.makedirs(named)
+        r = where(root, dict(env, DEVELOP_STATE_DIR=named), "--auto")
+        self.assertEqual((r.returncode, r.stdout.splitlines()[1]), (3, "DL=" + named), r.stderr)
+
+    def test_any_other_argument_is_a_usage_error(self):
+        root, _, env = moved_project()
+        for args in (["--unattended"], ["--auto", "more"]):
+            r = where(root, env, *args)
+            self.assertEqual((r.returncode, r.stdout), (2, ""), args)
+            self.assertIn("usage:", r.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

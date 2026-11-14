@@ -20,7 +20,9 @@ PLACEHOLDER_MARKS = ("<", ">", "{", "}", "…", "://")  # `<KEY>.md`, `{slug}.md
 TARGET_PREFIXES = (
     "docs/",     # the target repo's docs: architecture profile, feature docs
     ".claude/",  # the target repo's Claude folder: state, agents, launch.json
-    "DL/",       # the loops' alias for <repo>/.claude/90north-develop/
+    "DL/",       # the loops' alias for <repo>/.90north-develop/, the working state
+    "DC/",       # the loops' alias for <repo>/.claude/90north-develop/, the settings
+    ".90north-develop/",  # the target repo's working-state folder
     "~/",        # the user's home
     "src/",      # the target repo's source
     "board/",    # the local board's cards
@@ -31,7 +33,7 @@ TARGET_NAMES = (  # bare names only: `templates/card.md` is checked, `card.md` i
     "qa.md", "comment.md", "design-note.md",
     # run files of one pass, written to DL/runs/<date>/
     "run.md", "learn.md", "outcomes.md", "weekly.md",
-    # per-repo state in DL/: config, lessons, the ledgers (legacy `ledger.md`, `ai-ledger.md`), knowledge
+    # per-repo files: config in DC/; lessons, the ledgers (legacy `ledger.md`, `ai-ledger.md`) and knowledge in DL/
     "config.md", "lessons.md", "ledger.md", "*-ledger.md", "code-map.md", "selectors.md", "calibration.md",
     # cards of a local board
     "_template.md", "TASK-*.md",

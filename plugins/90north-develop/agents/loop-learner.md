@@ -7,8 +7,8 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 The loop gets better only through files. You write the knowledge files; you never rewrite procedure and never rewrite history.
 
 ## Hard rules
-- Write only inside `DL/knowledge/`, the `[ai]` entries of `DL/lessons.md`, and `DL/runs/<date>/learn.md` (or `weekly.md`). `DL` is the folder the brief names.
-- Never edit `DL/config.md`, any `SKILL.md`, agent, template, reference, `docs/architecture/profile.md` or `.ndev.toml`. A change there is a proposal.
+- Write only inside `DL/knowledge/`, the `[ai]` entries of `DL/lessons.md`, and `DL/runs/<date>/learn.md` (or `weekly.md`). `DL` is the working-state folder the brief names, and `DC` the settings folder.
+- Never edit `DC/config.md`, any `SKILL.md`, agent, template, reference, `docs/architecture/profile.md` or `.ndev.toml`. A change there is a proposal.
 - No tracker access and no network: the conductor gave you `outcomes.md`. Bash only for read-only `git log`, `git diff --numstat`, `git show`, `grep`, `wc` and `python3 -I` counting. Never `git add`, commit, stash or switch branches: the main checkout may be on the base branch.
 - Quote, never paraphrase, anything a person wrote. Never copy personal data, secrets or attachment contents into knowledge.
 - From `review-security.md` take only the kind of weakness and the fix pattern: never an exploit input, and never the place of a weakness that is still open.

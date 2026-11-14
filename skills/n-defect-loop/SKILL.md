@@ -28,8 +28,8 @@ matrix (`W/references/auto-triage.md`), the verifier and the learner.
 
 ## Step 0 · Before every run
 Run S0 in `stages.md` with flow `defect`, and read this skill's `references/core-lessons.md` in full. In auto mode,
-run A0 as well. A legacy `.claude/defect-loop/` folder works as `DL` (its `ledger.md` is the defect ledger) until
-develop-init migrates it.
+run A0 as well. A legacy `.claude/defect-loop/` folder works as both `DC` and `DL` (its `ledger.md` is the defect ledger) until
+develop-init migrates it; an attended run only, since `where.sh --auto` refuses a working state under `.claude/`.
 
 ## 1 · Read the board
 - **Attended.** Pull config § Defect flow's open-defect query (board + backlog, ids or local statuses) with

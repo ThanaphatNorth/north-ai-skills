@@ -60,8 +60,16 @@ class BoardCase(unittest.TestCase):
 
 class BoardFolder(BoardCase):
     def test_a_missing_board_folder_is_one_line(self):
+        """A project not moved yet keeps a ledger under .claude/, so that is where its board is missed."""
+        self.file(os.path.join(".claude", "90north-develop", "dev-ledger.md"), "| key |\n")
         shutil.rmtree(self.board)
         self.refused(self.t("search", "status=todo"), "no board folder at " + self.board)
+
+    def test_with_settings_only_the_board_is_missed_beside_the_project(self):
+        """No ledger, board or run files anywhere: the working state belongs outside .claude/."""
+        shutil.rmtree(self.board)
+        beside = os.path.join(self.root, ".90north-develop", "board")
+        self.refused(self.t("search", "status=todo"), "no board folder at " + beside)
 
     def test_a_board_path_that_is_a_file_is_refused(self):
         shutil.rmtree(self.board)

@@ -8,7 +8,8 @@
   tracker.sh comment KEY comment.md [cN] appends (or replaces the loop's cN), reads it back; exit 1 on a bad video
   tracker.sh attach KEY FILE…            copies into <board>/KEY/ and prints the path for `::video <path>`
   tracker.sh download KEY NEW-DIR [NAME…]
-Board: LOCAL_BOARD (absolute, or relative to DEVELOP_DIR), else <DEVELOP_DIR>/board.
+Board: LOCAL_BOARD (absolute, or relative to the working state folder), else <working state>/board. The folder is
+DEVELOP_STATE_DIR, which tracker.sh sets (DEVELOP_DIR for a project whose state has not moved out of .claude/).
 Statuses: LOCAL_STATUSES, else todo,in-progress,need-info,review,ready-for-qa,reopened,done.
 Writes are atomic (a fresh temp file, then rename) and keep the card's file mode. One writer at a time: the loops'
 pass lock keeps it so. A card, an attachment or a video that is a link leaving the board folder is refused.
@@ -39,8 +40,8 @@ def usage(form: str) -> Usage:
 
 
 def board_dir() -> str:
-    """The board folder from DEVELOP_DIR and LOCAL_BOARD; refuses one that is absent or cannot be read."""
-    dl = os.environ.get("DEVELOP_DIR")
+    """The board folder from the working state folder and LOCAL_BOARD; refuses one that is absent or cannot be read."""
+    dl = os.environ.get("DEVELOP_STATE_DIR") or os.environ.get("DEVELOP_DIR")
     if not dl:
         raise Usage("DEVELOP_DIR is not set: call tracker.sh, which finds the project's state folder")
     board = os.path.join(dl, os.environ.get("LOCAL_BOARD") or "board")

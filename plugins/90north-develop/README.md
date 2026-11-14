@@ -4,7 +4,7 @@ North's development plugin: two loops split by type of work, the same 9 steps in
 per-repo facts. They work with Jira, or with a local board of markdown cards when there is no Jira.
 
 ```
-                     develop-init  (once per repo)  →  .claude/90north-develop/
+                     develop-init  (once per repo)  →  .claude/90north-develop/ + .90north-develop/
                                       │
      n-defect-loop  (defects)                       n-develop-loop  (features, changes)
   1 Read the board ── 2 Triage ── 3 Check the spec           (the same three steps)
@@ -30,7 +30,7 @@ a cause; a feature needs a design. That is the only difference in the middle.
 With `--auto`, either loop runs with nobody in the chat:
 - it builds only what needs no gate (a gate parks the card with a question or the solution on it);
 - an adversarial verifier refutes every claim before anything is published;
-- it ships by a written policy, and learns into `.claude/90north-develop/knowledge/`.
+- it ships by a written policy, and learns into `.90north-develop/knowledge/`.
 
 Only a low- or no-impact change inside a standing approval merges on its own; everything else waits for a person.
 
@@ -83,7 +83,7 @@ Its tests are in `hooks/tests/`.
 | Skill | Role |
 |--|--|
 | `workflow` | the map: routes work to a loop, owns the shared stages, the auto mode, the dispatch safety block, core lessons and the tracker (Jira or a local board) |
-| `develop-init` | once per repo: discovers the stack, reads the board's ids and lanes (or sets up a local board), writes `.claude/90north-develop/` |
+| `develop-init` | once per repo: discovers the stack, reads the board's ids and lanes (or sets up a local board), writes the settings to `.claude/90north-develop/` and the working state to `.90north-develop/` |
 | `n-defect-loop` | defects: each from the board through reproduce → root cause → test-first fix → PR → QA lane, attended or `--auto` |
 | `n-develop-loop` | new development, features and changed requirements: acceptance spec red → design → test-first build → PR → review lane, attended or `--auto` |
 | `n-dev` | the discipline: design before code, modular, reuse first, extension files, one owner per fact, test-first, verified; asks at most once, before the first edit, and finishes with the structure check and a local commit |
@@ -159,17 +159,24 @@ questions use the words, never the codes. You only meet a code when you read the
 | V1–V11 | `agents/loop-verifier.md` | the claims the verifier tries to refute: the spec tests the card · "before" failed for the card's reason · "proof" passed on the branch · no forbidden area · only what the card asked · structure check clean · the evidence shows it · the comment matches the diff · the checks really ran · the feature doc matches · the reviews ran and nothing is open |
 | AC-n, R-n, WP-n | design notes, comments, feature docs | an acceptance criterion · a rule of a feature area · a work package |
 
-## Per-project files (`<repo>/.claude/90north-develop/`)
+## Per-project files
+
+Two folders. `<repo>/.claude/90north-develop/` holds the settings: Claude Code asks a person before it writes under
+`.claude/`, which suits the file that holds the push approval. `<repo>/.90north-develop/` holds what a loop writes as
+it works, so a run with nobody at the keyboard can still record it. A project set up before 0.12 has everything in
+the first folder: `skills/workflow/scripts/move-state.sh` moves the working state (develop-init offers it). Until then
+the attended loops keep using the old place, and an unattended pass does not start: `where.sh --auto`, its first
+command, refuses it. `where.sh` prints the two folders a project uses.
 
 | File | Holds |
 |--|--|
-| `config.md` | Tracker, board ids, § Dev flow, § Defect flow and § Auto mode (queries, lock, lanes, fences, gates, ship classes), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks (with the repo's security and performance scanners), team agents, § Docs, § Review (data sizes), spec sources, project rules |
-| `tracker.env` | `TRACKER` (jira or local) and its settings: `JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES` — no secrets |
-| `board/` | Local tracker only: one markdown card per file, attachments in `board/<KEY>/`; committed by default, the loops edit it and a person commits |
-| `dev-ledger.md`, `defect-ledger.md` | One row per state change, per loop, both modes (a legacy `ai-ledger.md` stays as history) |
-| `lessons.md` | Project lessons tagged `[dev]` / `[defect]` / `[ai]` / `[both]` (core lessons ship with the plugin) |
-| `knowledge/` | Auto mode's code map, selectors, calibration, outcomes log and proposals (written by `loop-learner`) |
-| `runs/` | Auto mode's per-card hand-off files and the shared pass lock; git-ignored |
+| `.claude/90north-develop/config.md` | Tracker, board ids, § Dev flow, § Defect flow and § Auto mode (queries, lock, lanes, fences, gates, ship classes), push policy, repo/worktree recipe, isolated stack recipe, accounts, checks (with the repo's security and performance scanners), team agents, § Docs, § Review (data sizes), spec sources, project rules |
+| `.claude/90north-develop/tracker.env` | `TRACKER` (jira or local) and its settings: `JIRA_SITE`, `JIRA_ENV_FILE`, or `LOCAL_BOARD`, `LOCAL_STATUSES` — no secrets |
+| `.90north-develop/board/` | Local tracker only: one markdown card per file, attachments in `board/<KEY>/`; committed by default, the loops edit it and a person commits |
+| `.90north-develop/dev-ledger.md`, `defect-ledger.md` | One row per state change, per loop, both modes, written with `ledger.sh` (a legacy `ai-ledger.md` stays as history) |
+| `.90north-develop/lessons.md` | Project lessons tagged `[dev]` / `[defect]` / `[ai]` / `[both]` (core lessons ship with the plugin) |
+| `.90north-develop/knowledge/` | Auto mode's code map, selectors, calibration, outcomes log and proposals (written by `loop-learner`) |
+| `.90north-develop/runs/` | Auto mode's per-card hand-off files and the shared pass lock; git-ignored |
 
 Credentials (Jira only): a file outside the repo (default `~/.config/<project>-jira.env`, `JIRA_EMAIL` + `JIRA_TOKEN`, chmod 600). The scripts send the token to curl on stdin and never print it. A repo set up with 0.2 (`.claude/defect-loop/`) keeps working for defects; `develop-init` moves it on your yes.
 

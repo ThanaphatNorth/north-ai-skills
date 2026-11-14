@@ -3,7 +3,7 @@
 Written by `/90north-develop:develop-init`. Facts only; each fact lives on one line here and nowhere else.
 
 ## Tracker
-- Backend: local — board `.claude/90north-develop/board`, prefix `TASK`, committed yes.
+- Backend: local — board `.90north-develop/board`, prefix `TASK`, committed yes.
 
 ## Board facts
 - Issue types: defects `bug`; development `story`, `task`, `improvement`.

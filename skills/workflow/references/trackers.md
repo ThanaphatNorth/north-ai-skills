@@ -3,15 +3,16 @@
 > Read when: setting up a repo (develop-init), writing a query or lane into config, or a loop calls
 > `W/scripts/tracker.sh` and you need a verb's arguments for this repo's backend.
 
-Every loop reaches the tracker through `W/scripts/tracker.sh <verb> …`. `TRACKER` in `DL/tracker.env` picks the backend:
+Every loop reaches the tracker through `W/scripts/tracker.sh <verb> …`. `TRACKER` in `DC/tracker.env` picks the backend:
 
 | `TRACKER` | Backend | For |
 |---|---|---|
 | `jira` (the default, also when the line is missing) | the `jira-<verb>.sh` scripts, Jira REST v3, credentials file | a team board in Jira |
 | `local` | `local_board.py`: one markdown file per card in the board folder | a repo with no Jira; works offline and needs no account |
 
-Scripts find `DL` by walking up from the current folder (`_state.sh`). A state folder found inside a linked git worktree
-is mapped to the same folder in the main checkout, so every worktree reads and writes one board.
+Scripts find the settings folder `DC` by walking up from the current folder (`_state.sh`) and take the working state `DL`
+from beside it; `where.sh` prints both. Folders found inside a linked git worktree are mapped to the same folders in
+the main checkout, so every worktree reads and writes one board.
 
 ## Verbs
 

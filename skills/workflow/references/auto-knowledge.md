@@ -2,7 +2,7 @@
 
 > Read when: auto mode A0 reads what earlier passes learned, A9 collects outcomes and dispatches `loop-learner`, or the weekly review runs. The learner's own rules are in the plugin's `loop-learner` agent; this file is the map of the files and of who may change what.
 
-The loop improves only through files. Rules (this skill's references and `DL/config.md`) say what to do. Knowledge (`DL/knowledge/`) says what was true last time. Agents read knowledge **before** the rules apply, and the learner is the only writer.
+The loop improves only through files. Rules (this skill's references and `DC/config.md`) say what to do. Knowledge (`DL/knowledge/`) says what was true last time. Agents read knowledge **before** the rules apply, and the learner is the only writer.
 
 ## Files (`DL/knowledge/`, plain files; once a person commits them, the whole team's passes share them)
 
@@ -51,7 +51,7 @@ Auto-applied as file edits. The learner never commits: the main checkout may be 
 
 ## What it may only propose
 
-Changes to `DL/config.md`, any skill (`skills/**`), agent, template, the profile or `.ndev.toml`. Write `DL/knowledge/proposals/<date>-<slug>.md` with: the evidence quoted from the files, the exact edit as a diff, the expected effect, and how to tell it worked. A lesson with `seen ≥ 2` that still needs a rule change becomes a proposal automatically. A proposal that would help every repo (a skill or agent of this plugin) also names the plugin file, so the user can move it into the plugin repo. Rules that hold for any project go in `W/references/core-lessons.md`.
+Changes to `DC/config.md`, any skill (`skills/**`), agent, template, the profile or `.ndev.toml`. Write `DL/knowledge/proposals/<date>-<slug>.md` with: the evidence quoted from the files, the exact edit as a diff, the expected effect, and how to tell it worked. A lesson with `seen ≥ 2` that still needs a rule change becomes a proposal automatically. A proposal that would help every repo (a skill or agent of this plugin) also names the plugin file, so the user can move it into the plugin repo. Rules that hold for any project go in `W/references/core-lessons.md`.
 
 ## Weekly review
 

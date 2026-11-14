@@ -26,7 +26,7 @@ STAGES = """# Shared stages
 
 ## S0 · Before every run (cheap, mandatory)
 
-1. No `DL/config.md` → stop.
+1. No `DC/config.md` → stop.
 2. Read the lessons.
 3. Read the ledger. A work item whose last row is a parked state (`ready-for-qa`, `in-review`, `needs-info`, `handed-to-<loop>`, and auto mode's `stopped`) is skipped unless the tracker changed (`gh pr view N`).
 
@@ -60,7 +60,7 @@ FILES = {
     "skills/workflow/scripts/tracker.sh": "#!/usr/bin/env bash\n",
     "skills/n-dev/SKILL.md": "# n-dev\n\n## Questions: one round, before the first edit\n\nSee `references/extension.md`.\n",
     "skills/n-dev/references/extension.md": "# Extension\n\n## Anti-patterns\n\nNone.\n",
-    "skills/develop-init/SKILL.md": "# develop-init\n\nWrites `DL/config.md` from `templates/config.md`.\n",
+    "skills/develop-init/SKILL.md": "# develop-init\n\nWrites `DC/config.md` from `templates/config.md`.\n",
     "skills/develop-init/templates/config.md": "# config\n\n## Checks (QA runs all)\n\n## Dev flow (n-develop-loop)\n\n"
                                                "## Auto mode (both loops)\n",
     "skills/n-defect-loop/SKILL.md": "# n-defect-loop\n\n`W = ../workflow/`. Read `W/references/stages.md` § S0 and "
