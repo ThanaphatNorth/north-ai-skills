@@ -35,7 +35,7 @@ Recording style, so a QA or PO reader can follow without reading the spec: a vis
 | Refuted claim | Goes back to |
 |---|---|
 | V1 spec ↔ card mapping, V2 BEFORE reason, V7 BEFORE frames | A4: rewrite the spec or re-record BEFORE, then re-run PROOF |
-| V3 proof on the branch, V4 forbidden area, V5 scope, V6 structure, V9 checks ran | A5: the builder, with `verify.md` attached |
+| V3 proof on the branch, V4 forbidden area, V5 scope, V6 structure, V9 checks ran | A5: the builder, with `verify.md` attached; a missing or wrong plan-vs-diff line, or drift that belongs in the plan, is yours (`gate-docs.md` § Plan vs diff) |
 | V7 AFTER frames | A6: re-record AFTER |
 | V8 comment ↔ diff, wording | you: rewrite the comment draft |
 | V10 feature doc ↔ diff | you: fix the feature doc (`feature-docs.md`), then re-run the verifier |
@@ -54,8 +54,8 @@ All must hold:
 | Gate | Check |
 |---|---|
 | Standing approval | config § Push policy quotes the user's words, dated, and they name **merge** for this class; config › auto-merge is on; the repo matches config's auto-merge repos. `--delete-branch` only when the words also name deleting merged branches |
-| Safe kind | every changed file matches config's auto-merge paths (the feature doc path in config § Docs counts as allowed), and the diff holds only the kinds in the auto-merge column of `auto-triage.md` § Decision matrix |
-| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config § Review's test globs; feature docs and their index are excluded like tests), ≤ config max files (feature docs not counted), no new dependency, env var, route, state owner or API call |
+| Safe kind | every changed file matches config's auto-merge paths (the feature doc path in config § Docs, and the gate-doc copy under config § Docs › gate docs, count as allowed; the class is judged on the diff without the copy), and the diff holds only the kinds in the auto-merge column of `auto-triage.md` § Decision matrix |
+| Small and local | 1 repo, ≤ config max lines counted in non-test source files only (`git diff --numstat` minus config § Review's test globs; feature docs and their index, and the gate-doc copy under config § Docs › gate docs, are excluded like tests), ≤ config max files (feature docs and the gate-doc copy not counted), no new dependency, env var, route, state owner or API call |
 | Low blast radius | severity and environment in the auto-merge band, no person's force-review label, not reopened, not a feedback round |
 | Structure | the n-dev structure check has no finding on the branch (existing debt listed apart is fine) and the profile is current for the touched paths |
 | Security and performance | `review-security.md` and `review-performance.md` found nothing at blocker or should-fix in any round (`found in all rounds` reads 0 and 0). A change that needed a security or performance fix is not low-impact: a person reviews it |

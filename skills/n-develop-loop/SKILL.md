@@ -11,7 +11,9 @@ subagents write the code.
 - **Shared parts** live in the workflow skill (`W = ../workflow/` from this skill's base directory): the stages
   S0–S6, the dispatch safety block, the tracker (`W/scripts/tracker.sh`, Jira or the local board) and the auto
   mode. Read `W/references/stages.md` once per run.
-- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 5).
+- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 6).
+- **Gate documents:** every step below ends by writing its file into the item's run folder `R` =
+  `DL/runs/<date>/<KEY>/`, and the next step starts by reading it (`W/references/gate-docs.md`). No file, no pass.
 - **Code:** every line follows n-dev (`../n-dev/`).
 
 ## Calls and modes
@@ -42,7 +44,10 @@ Then:
 2. Open the linked spec, decision log and design files that config § Spec sources names.
 3. A structural defect handed over on a person's yes: ledger `from-n-defect-loop KEY`. Steps 2–3 and the decision
    round run as usual. Step 4 then isolates a new `feat/<KEY>-<slug>` worktree and copies the defect's red spec in
-   as WP-0, with no new spec to write.
+   as WP-0, with no new spec to write. This loop opens a new `R`, and `card.md` names the defect's run folder as
+   `previousRun`. Step 4 runs the copied spec red on the new worktree and writes its own `before.md`, and the design
+   note reads the defect's `root-cause.md` there (`W/references/gate-docs.md` § The run folder).
+4. **Gate document:** `R/card.md`.
 
 Attachments may hold personal data: describe them, never copy them.
 
@@ -70,14 +75,18 @@ Attachments may hold personal data: describe them, never copy them.
    or onto the ticket (`needs-info`) when only the reporter or PO can say.
 3. Write the **AC → test** table: each criterion → the test level (e2e for user-visible criteria, API or integration
    for the rest) and the spec file.
+4. **Gate document:** `R/triage.md`, covering steps 2 and 3: route, readiness, size, the AC list, the sources read
+   with any conflict, and the AC → test table.
 
 ## Decision round (attended) · ask once, then build
 Run `W/references/stages.md` § Decision round with this loop's inputs:
-1. Draft step 5's design note now, for every size. Orient and the note are read-only and need only the base
-   checkout.
+1. Draft step 5's design note now, for every size, into `R/design-note.md`. Orient and the note are read-only on
+   the code and need only the base checkout.
 2. This loop's decisions: readiness gaps and source conflicts the user can settle (steps 2–3), the design gate
    (step 5.3), and the push of `feat/<KEY>-<slug>` when no standing approval covers it.
 3. One message. An approval given here covers the note as shown, so steps 4–9 run with no second stop.
+4. **Gate document:** `R/decisions.md`, the questions and answers word for word, with who answered, and the files
+   the draft showed (for Large work, with the note's own repo path): a push yes covers those files only.
 
 ## 4 · Pin the goal: acceptance specs go red
 1. S1 Isolate (`stages.md`): a worktree on `feat/<KEY>-<slug>`, an anchor commit, the stack.
@@ -85,7 +94,8 @@ Run `W/references/stages.md` § Decision round with this loop's inputs:
    runs them against the stack, and sees each go **red because the feature is missing**. A locator timeout, a login
    error or missing data does not count as red. Before existing behaviour is extended, the same WP adds
    characterization tests that pass now.
-3. Keep the red output: it is the "before" of the story.
+3. Keep the red output: it is the "before" of the story. **Gate document:** `R/before.md` (spec paths and hashes,
+   base sha, each red command with its failing line, evidence paths).
 
 ## 5 · Design: the note and the work packages (n-dev steps 1–3)
 Attended mode drafted this note for the decision round; here it gains WP-0's red runs and is saved. Auto mode
@@ -99,8 +109,8 @@ writes it now.
    - its success criteria and test seam;
    - the WPs it depends on.
 
-   Standard work: the note goes to `<scratchpad>/<KEY>/design-note.md` (`DL/runs/<date>/<KEY>/` in auto mode).
-   Large work: the repo's docs folder per config, with the interface designed two ways and compared.
+   **Gate document:** `R/design-note.md`, in both modes. For Large work the note moves to the repo's docs folder per
+   config in the worktree, committed with the item, with the interface designed two ways and compared, and `R/design-note.md` becomes one line pointing to it.
 3. **Gate.** What config § Dev flow › Design gate names is a decision: by default Large work, a trade-off the
    user would care about, and anything on its always-ask list.
    - **Attended:** it was asked in the decision round, with the note shown short (the AC table, the WPs, the
@@ -125,7 +135,11 @@ writes it now.
 3. Check every report against its WP before the next dispatch:
    - every criterion is covered;
    - every pre-existing file changed only by a wiring diff or a cited reason;
-   - nothing changed outside the WP.
+   - nothing changed outside the WP, or the reason is one you accept: then write it into the design note's
+     Changes after approval section before the next dispatch (`W/references/gate-docs.md` § Plan vs diff).
+
+   Append each checked report to `R/build.md`: tests red → green, checks, the structure check's result line, the
+   commit sha, files, and each `DECIDED` line.
 
    A builder reporting `NEEDS-DECISION`:
    - **Attended:** settle it with `stages.md` § Decision round › a decision that appears later. Decide it when the
@@ -147,11 +161,14 @@ writes it now.
    with all findings, with a budget of 2.
 2. S3 Evidence: the `demo` clip walks AC-1 … AC-n in order. Add `before` when an existing screen changed.
 3. Auto mode adds A6 PROOF and the A7 verifier gate: nothing the verifier refutes is published.
+4. **Gate documents:** `R/review.md`, `review-security.md`, `review-performance.md`, `qa.md`, and the Plan vs diff
+   section of `build.md`; auto mode adds `proof.md` and `verify.md`.
 
 ## 8 · Open the PR
 In auto mode, pick the ship class (step 9) first: it decides the lane.
 
-S4 Ship with `templates/jira-comment.md`, whose §2 carries the `Docs:` line. In auto mode, adjust it as
+S4 Ship with `templates/jira-comment.md`, whose §2 carries the `Docs:` line. **Gate documents:** `R/comment.md`
+and `R/ship.md` (push approval, PR, lane, plan vs diff, metrics); step 9 appends its Merge section. In auto mode, adjust it as
 `W/templates/auto-comments.md` § Proof comment says.
 - Push per config § Push policy, or the decision round's yes for this branch, and open the PR.
 - Move the item to config § Dev flow's review lane (usually Code Review). In auto mode, an auto-merged item goes to
@@ -167,8 +184,12 @@ The ship class decides. `W/references/auto-evidence-and-ship.md` § Ship classes
 
 A new feature with a schema, contract or public-interface change never reaches the auto-merge class.
 
+**Gate document:** the Merge section of `R/ship.md`, written when the PR is merged or a person approves it; until
+then it reads `waits for a person — PR #N`.
+
 ## After · Clean up and learn
-S5 Clean up, then S6 Learn (tag lessons `[dev]`). Auto mode runs A9: outcomes, then the learner.
+S5 Clean up, then S6 Learn (tag lessons `[dev]`). Auto mode runs A9: outcomes, then the learner. **Gate document:**
+the run's section of `DL/runs/<date>/run.md`.
 
 ## Gates — where an item waits for a person
 

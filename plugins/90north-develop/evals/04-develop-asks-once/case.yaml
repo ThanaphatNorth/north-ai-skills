@@ -23,6 +23,10 @@ graders:
     pattern: 'git worktree add'
     match: not_contains
   - type: regex
+    name: triage-gate-doc-before-the-round
+    target: trace
+    pattern: 'runs/[^ ]*/TASK-1/triage\.md'
+  - type: regex
     name: asks-about-the-push
     target: last_message
     pattern: '[Pp]ush'

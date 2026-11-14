@@ -10,7 +10,9 @@ You are the **orchestrator** (the main conversation): you read the tracker, deci
 return and write to the tracker (Jira or the local board, through `W/scripts/tracker.sh`).
 - **Shared parts** live in the workflow skill (`W = ../workflow/` from this skill's base directory): the stages
   S0–S6, the dispatch safety block, the tracker and the auto mode. Read `W/references/stages.md` once per run.
-- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 5).
+- **Ledger:** every state change of an item is one row, written with `W/scripts/ledger.sh` (`W/references/stages.md` § S4, item 6).
+- **Gate documents:** every step below ends by writing its file into the item's run folder `R` =
+  `DL/runs/<date>/<KEY>/`, and the next step starts by reading it (`W/references/gate-docs.md`). No file, no pass.
 - **Code:** every fix follows n-dev (`../n-dev/`).
 
 ## Calls and modes
@@ -39,7 +41,8 @@ develop-init migrates it; an attended run only, since `where.sh --auto` refuses 
 
 For each ticket not skipped:
 1. `W/scripts/tracker.sh get <KEY>`.
-2. `W/scripts/tracker.sh download <KEY> <scratchpad>/<KEY>/attachments`, then **look** at the screenshots and videos.
+2. `W/scripts/tracker.sh download <KEY> R/attachments`, then **look** at the screenshots and videos.
+3. **Gate document:** `R/card.md`.
 
 Attachments may hold personal data: describe them, never copy them into the repo or a comment.
 
@@ -87,6 +90,9 @@ the latest comment, a linked spec or an existing rule disagrees with the ticket 
 wins is a decision: never pick yourself. It goes to the decision round, or onto the ticket (`needs-info`) when only
 the reporter or PO can say.
 
+**Gate document:** `R/triage.md`, covering steps 2 and 3: the triage class with its reason (the cited line, decision
+id or commit for by-design), the AC list, the sources read with any conflict, and the AC → test table.
+
 ## Decision round (attended) · ask once, then fix
 Run `W/references/stages.md` § Decision round after steps 1–3 for every card of the sweep:
 - this loop's decisions: missing pieces and source conflicts the user can settle, and the push of this run's
@@ -94,6 +100,7 @@ Run `W/references/stages.md` § Decision round after steps 1–3 for every card 
 - one message, then steps 4–9 run for every actionable card with no further question. A card that needs a person
   later (structural options, not reproduced, 2 fix rounds used, a fixer's `NEEDS-DECISION`) parks, and the sweep
   goes on.
+- **Gate document:** `R/decisions.md` for every card of the sweep, the questions and answers word for word.
 
 ## 4 · Reproduce: a failing test, on video
 1. S1 Isolate (`stages.md`), branch `fix/<KEY>-<slug>`. Ticket data from the reporter's files goes into a **copy**
@@ -101,7 +108,7 @@ Run `W/references/stages.md` § Decision round after steps 1–3 for every card 
 2. Dispatch `90north-develop:defect-repro` with:
    - the safety block, the ticket text verbatim (minus personal data), the comments and the attachment paths;
    - the worktree, web URL and login (role → test account, how to log in);
-   - the config § Checks e2e lines, and the output folder `<scratchpad>/<KEY>/repro`.
+   - the config § Checks e2e lines, and the output folder `R/repro`.
 
    It returns a spec, the **red** output and the raw video.
    - Red for the reported reason → reproduced; keep the video as `before`.
@@ -110,13 +117,19 @@ Run `W/references/stages.md` § Decision round after steps 1–3 for every card 
      `cannot-reproduce`, and leave the ticket in its lane.
 
    Never fix an unreproduced defect.
+3. **Gate document:** `R/before.md` (spec path and hash, base sha, the red command and its failing line, why it is
+   the reported symptom, the video path), or, not reproduced, what was tried and what is needed.
 
 ## 5 · Root cause: the exact file and line
 1. Rank 3–5 falsifiable hypotheses (the `diagnosing-bugs` skill, when installed).
 2. Confirm one at `path:line` and name the guards you checked. It must explain the red run exactly.
+3. **Gate document:** `R/root-cause.md`: the hypotheses ranked, the confirmed one, the guards, and the scope fence
+   (the files the fix may touch). The fence is the plan that verify compares the diff with
+   (`W/references/gate-docs.md` § Plan vs diff).
 
 Small, certain web or CSS defects may be reproduced and fixed in one fixer dispatch, which writes the measuring spec
-red first.
+red first. Before that dispatch write `R/root-cause.md` with the suspected `path:line` and the fence, and write
+`R/before.md` from the fixer's red run before `build.md` (`W/references/gate-docs.md` § The chain).
 
 ## 6 · Test-first fix
 Dispatch `90north-develop:defect-fixer` with:
@@ -125,7 +138,9 @@ Dispatch `90north-develop:defect-fixer` with:
 - n-dev's absolute path, with its structure check `../n-dev/scripts/structure_check.py --base <base>`.
 
 It writes a regression test red → fix → green, runs the checks and commits locally:
-`fix(<area>): <summary> (<KEY>)`.
+`fix(<area>): <summary> (<KEY>)`. Check its report against the root cause, then write **`R/build.md`**: tests red →
+green, checks, the structure check's result line, the commit sha and files. A file outside the fence with a reason you
+accept goes into the Changes after approval section of `root-cause.md` first.
 
 **Feature doc** (config § Docs on). Write it yourself, never the fixer, per `W/references/feature-docs.md`:
 - the fix changed a rule or made one clearer → change that `R-n`, with the regression test in its row, and create
@@ -141,12 +156,15 @@ Commit it locally as `docs(<area>): … (<KEY>)`.
    with a budget of 2.
 2. S3 Evidence: `before` (red) and `after`.
 3. Auto mode adds A6 PROOF and the A7 verifier gate: nothing the verifier refutes is published.
+4. **Gate documents:** `R/review.md`, `review-security.md`, `review-performance.md`, `qa.md`, and the Plan vs diff
+   section of `build.md`; auto mode adds `proof.md` and `verify.md`.
 
 ## 8 · Open the PR
 In auto mode, pick the ship class (step 9) first: it decides the lane.
 
 S4 Ship with `templates/jira-comment.md`: the before video goes under §1, the after video and the `Docs:` line
-under §3. In auto mode,
+under §3. **Gate documents:** `R/comment.md` and `R/ship.md` (push approval, PR, lane, plan vs diff, metrics); step 9
+appends its Merge section. In auto mode,
 adjust it as `W/templates/auto-comments.md` § Proof comment says.
 - Push per config § Push policy, or the decision round's yes for this branch, and open the PR.
 - Lane, by mode and class:
@@ -162,9 +180,13 @@ The ship class decides. `W/references/auto-evidence-and-ship.md` § Ship classes
 - **Everything else** waits for a person. They review the PR and merge it, or tell you in chat to merge that one
   PR. Attended mode never auto-merges.
 
+**Gate document:** the Merge section of `R/ship.md`, written when the PR is merged or a person approves it; until
+then it reads `waits for a person — PR #N`.
+
 ## After · Clean up and learn
 S5 Clean up, then S6 Learn: tag lessons `[defect]`, promote defect-only rules into `references/core-lessons.md` and
-shared ones into the workflow skill's. Auto mode runs A9: outcomes, then the learner.
+shared ones into the workflow skill's. Auto mode runs A9: outcomes, then the learner. **Gate document:** the run's
+section of `DL/runs/<date>/run.md`.
 
 ## Gates — where a card waits for a person
 

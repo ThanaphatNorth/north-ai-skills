@@ -15,7 +15,7 @@ The loop gets better only through files. You write the knowledge files; you neve
 - Never delete a lesson or a code-map entry. Mark it `retired: <date> <reason>`.
 
 ## Inputs (from the brief)
-`DL`, the pass folder `DL/runs/<date>/` (every card's `triage.md`, `before.md`, `build.md`, `proof.md`, `review-security.md`, `review-performance.md`, `verify.md`, `ship.md`, plus `run.md` and the conductor's `outcomes.md`), the repo path and base ref, the profile path (or "missing"), and the mode (`pass` | `review`).
+`DL`, the pass folder `DL/runs/<date>/` and every run folder `outcomes.md` lists for this pass (every card's gate documents: `triage.md`, `decisions.md`, `before.md`, `root-cause.md` or `design-note.md`, `build.md`, `proof.md`, `review-security.md`, `review-performance.md`, `verify.md`, `ship.md`, plus `run.md` and the conductor's `outcomes.md`), the repo path and base ref, the profile path (or "missing"), and the mode (`pass` | `review`).
 
 ## Mode `pass`
 
@@ -32,14 +32,15 @@ The loop gets better only through files. You write the knowledge files; you neve
    - an auto-merge change kind was reverted or reopened twice;
    - a locate found the profile wrong or stale → "run `/90north-develop:n-arch refresh`", naming the rows and the evidence;
    - a target layer rule in the profile now has 0 violations → "enforce it in `.ndev.toml` through n-arch";
-   - the same structure finding repeated across cards → a builder rule.
+   - the same structure finding repeated across cards → a builder rule;
+   - a verifier refutation, a reopen or a change request the procedure should have caught → an **eval proposal**, `DL/knowledge/proposals/<date>-eval-<slug>.md`, in the shape the workflow skill's `references/gate-docs.md` § Eval proposals gives.
    Each proposal holds the evidence quoted from the files, the exact edit as a diff, the expected effect, and how to tell it worked. A proposal that helps every project also names the plugin file it would change.
 4. **Re-queue flags.** For a card the outcomes show was reopened, or answered after need-info, write `requeue: <KEY> <reason>` in `learn.md`.
 5. **Write** `DL/runs/<date>/learn.md`: signals read, knowledge files changed with line counts, lessons added or bumped, proposals written, re-queue flags.
 
 ## Mode `review` (weekly)
 
-Read the last 7 days of `outcomes.jsonl` and the open proposals. Write `DL/runs/<date>/weekly.md` with: cards handled by route and verdict, do-now accuracy (do-now cards that shipped ÷ do-now cards), auto-merge reverts or reopens, the median minutes per card, the most-refuted claim, need-info answer rate, proposals open longer than 7 days, and the knowledge files changed but not committed (`git status --short <DL>/knowledge <DL>/lessons.md`) so a person can commit them. Propose any change of a number in config (limits, fences, the factor) the data supports, as a proposal file.
+Read the last 7 days of `outcomes.jsonl` and the open proposals. Write `DL/runs/<date>/weekly.md` with: cards handled by route and verdict, do-now accuracy (do-now cards that shipped ÷ do-now cards), auto-merge reverts or reopens, the median minutes per card, the most-refuted claim, need-info answer rate, the first-pass verify rate and the plan-drift rate (from the Metrics section of each `ship.md`), proposals open longer than 7 days, and the knowledge files changed but not committed (`git status --short <DL>/knowledge <DL>/lessons.md`) so a person can commit them. Propose any change of a number in config (limits, fences, the factor) the data supports, as a proposal file.
 
 ## Report (your final answer, nothing else)
 ```
