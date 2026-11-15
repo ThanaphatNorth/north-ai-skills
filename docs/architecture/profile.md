@@ -11,7 +11,7 @@ Shape: a skills repository (instruction files) with four small command-line prog
 - `plugins/90north-develop/` → the plugin: manifest, `agents/`, `hooks/` (session-start line, command guard), `evals/`, and `skills/` as symlinks into `skills/`.
 - `tools/` → this repo's own checkers: `check_repo.py` + package `repo_check/`, `validate_skill.py`, `quality.sh` (types and coverage), `consistency-review.md`.
 - `.claude-plugin/marketplace.json` → what `/plugin marketplace add` reads.
-- Outside the layering: every `*.md` (instructions, not code), `*.sh`, `skills/*/evals/**` and `plugins/*/evals/**` (fixtures an agent edits during a run), `skills/design-atlas/**` (a design skill with its own scripts), `research/`.
+- Outside the layering: every `*.md` (instructions, not code), `*.sh`, `skills/*/evals/**` and `plugins/*/evals/**` (fixtures an agent edits during a run), `skills/design-atlas/**` (a design skill with its own scripts), `skills/diagram-atlas/**` (a drawing skill; the structure check skips its worked examples, which are coordinate data, its icon data `glyphs.py`, and `icons.py` + `diagramkit.py`, copied unchanged from an earlier hand-placed SVG kit), `research/`.
 
 ## Layers and dependency direction
 
