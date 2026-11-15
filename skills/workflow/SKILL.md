@@ -37,6 +37,11 @@ What differs is the middle: a defect needs a cause, a feature needs a design. Bo
 true in the same PR: its rules with their sources, rule → test, and decisions with reasons
 (`references/feature-docs.md`).
 
+Every step ends in a **gate document**: a markdown file in the item's run folder `DL/runs/<date>/<KEY>/` (card,
+triage, decisions, before, root cause or design note, build, the reviews and QA, ship). It records what was decided,
+by whom, on which sha, and the next step starts by reading it, never from memory. A config switch also commits the
+readable part into the PR (`references/gate-docs.md`).
+
 Each loop runs **attended** by default: it asks every question in one decision round, before anything is isolated
 or built, and then runs to the end (`references/stages.md` § Decision round). With `--auto` it runs **unattended**
 (`references/auto-mode.md`): it builds only what needs no gate, puts an adversarial verifier before anything is
@@ -99,11 +104,11 @@ place would split the state in two.
 | `DL/dev-ledger.md` / `DL/defect-ledger.md` | one row per state change of a work item, per loop, both modes, written with `scripts/ledger.sh` (a legacy `ai-ledger.md` stays as history and is read for ownership while it has open rows) | the loop that owns the item |
 | `DL/lessons.md` | project lessons, tagged `[dev]`, `[defect]`, `[ai]` or `[both]` | S6 Learn, `loop-learner` |
 | `DL/knowledge/` | what auto mode learned: code map, selectors, calibration, outcomes, proposals | `loop-learner` |
-| `DL/runs/<date>/<KEY>/`, `DL/runs/.pass.lock` | auto mode's hand-off files between passes, and the pass lock both loops share; git-ignored | either loop with `--auto` |
+| `DL/runs/<date>/<KEY>/`, `DL/runs/<date>/run.md`, `DL/runs/.pass.lock` | each item's gate documents (`references/gate-docs.md`), the day's run log, and auto mode's pass lock both loops share; git-ignored | either loop, both modes (the lock: `--auto` only) |
 
 A project set up before 0.12 has its working state in `DC` as well: `where.sh` then prints the same folder twice, with a note. The scripts read and write it there (a ledger decides which place is in use; with no ledger anywhere, cards on the board do; a README, a keep file, an empty file, an empty folder or folders that hold only empty folders are leftovers and decide nothing), and `scripts/move-state.sh` moves it (develop-init offers it; `--dry-run` shows what would move; the ledgers move last, so a move that stopped half way is finished by running it again). Until it is moved, a session that can ask nobody cannot write every run file or remove the pass lock there, so an unattended pass does not start: `where.sh --auto`, its first command, refuses it (exit 3) before a lock or a card is taken.
 
-The state is in two places when it is read beside the project while a ledger, cards, lessons or knowledge are still under `.claude/` (run files are hand-offs, not records, and do not count). The scripts read the new place, `where.sh` names both in its note, and no run takes a work item until a person has put each file in one place: `where.sh --auto` exits 3, and an attended run stops at S0.
+The state is in two places when it is read beside the project while a ledger, cards, lessons or knowledge are still under `.claude/` (run folders do not count: the scripts never read them to choose the place). The scripts read the new place, `where.sh` names both in its note, and no run takes a work item until a person has put each file in one place: `where.sh --auto` exits 3, and an attended run stops at S0.
 
 An unattended pass also needs the working state folder to be there: `ledger.sh` only appends to a ledger develop-init wrote. With no such folder (a project that has its settings only, or a `DEVELOP_STATE_DIR` that names nothing) `where.sh --auto` exits 2 and the pass does not start.
 
@@ -139,6 +144,7 @@ backend, the card format and the query form are in `references/trackers.md`. Tes
 |---|---|
 | `references/stages.md` | a loop reaches a shared stage (S0–S6) or its decision round, or writes a dispatch brief |
 | `references/core-lessons.md` | before every run of any loop, in full |
+| `references/gate-docs.md` | every step of either loop: the gate document it writes and the next one reads, plan vs diff, metrics, eval proposals, committing the chain into the PR |
 | `references/feature-docs.md` | step 2 by-design (cite or propose the rule), step 3 (read the area's rules), steps 5–6 (plan and write the doc in the same PR), step 8 (the `Docs:` line), verifier V10 |
 | `references/trackers.md` | setting up a repo, writing a query or lane into config, or a verb's arguments for this repo's backend (Jira or the local board) |
 | `../n-dev/SKILL.md` | the discipline every builder and fixer follows; pass its absolute path in each brief |

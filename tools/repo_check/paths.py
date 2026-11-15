@@ -22,15 +22,16 @@ TARGET_PREFIXES = (
     ".claude/",  # the target repo's Claude folder: state, agents, launch.json
     "DL/",       # the loops' alias for <repo>/.90north-develop/, the working state
     "DC/",       # the loops' alias for <repo>/.claude/90north-develop/, the settings
+    "R/",        # the loops' alias for DL/runs/<date>/<KEY>/, one item's run folder of gate documents
     ".90north-develop/",  # the target repo's working-state folder
     "~/",        # the user's home
     "src/",      # the target repo's source
     "board/",    # the local board's cards
 )
 TARGET_NAMES = (  # bare names only: `templates/card.md` is checked, `card.md` is a run file
-    # run files of one card, written to DL/runs/<date>/<KEY>/ or the scratchpad
+    # run files (gate documents) of one card, written to DL/runs/<date>/<KEY>/
     "triage.md", "card.md", "before.md", "build.md", "proof.md", "verify.md", "ship.md", "review*.md",
-    "qa.md", "comment.md", "design-note.md",
+    "qa.md", "comment.md", "design-note.md", "decisions.md", "root-cause.md",
     # run files of one pass, written to DL/runs/<date>/
     "run.md", "learn.md", "outcomes.md", "weekly.md",
     # per-repo files: config in DC/; lessons, the ledgers (legacy `ledger.md`, `ai-ledger.md`) and knowledge in DL/

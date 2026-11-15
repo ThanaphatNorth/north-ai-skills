@@ -89,6 +89,7 @@ A line marked `TBD` is asked in the decision round of the first run that needs i
 ## Docs (feature docs, kept true in every PR; rules: the workflow skill's `references/feature-docs.md`)
 - Feature docs: <on (default) | off> · path `<docs/features/ | the repo's docs system: Docusaurus folder, handbook …>` · index `<path>/README.md` · max <150> lines per doc.
 - Docs system conventions: <none — use the workflow skill's `templates/feature-doc.md` | front matter, sidebar, file naming the repo already uses>. The index file is the only list of areas.
+- Gate docs in the PR: <off (default): each item's gate documents stay in `DL/runs/<date>/<KEY>/` | on — path `<docs/changes/>`: triage, decisions, root cause or design note and build are copied into `<path>/<KEY>/` in the item's commit> (the workflow skill's `references/gate-docs.md`).
 
 ## Review (security and performance; rows: n-dev's `references/security.md` and `references/performance.md`; handling: the workflow skill's `references/stages.md` § S2)
 - Data sizes the performance review assumes: <table or collection → production size, e.g. `orders` ~5M rows · users per tenant ~2k · largest upload 20 MB | none (no data store) | TBD — <who can give the sizes>>. A size-dependent finding with no size here is marked `size unknown` and is at most a should-fix.

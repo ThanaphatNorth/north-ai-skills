@@ -62,20 +62,19 @@ Subagents never talk to the tracker and never decide. Each brief:
 
 ## Run files
 
-Hand-off files live in `DL/runs/<date>/<KEY>/`. They are git-ignored, because scheduled runs do not share a
-scratchpad. Wherever the shared stages say `<scratchpad>/<KEY>/`, auto mode uses that folder, so S2's `review.md`,
-`review-security.md`, `review-performance.md` and `qa.md` land there too.
+The run files are the gate documents of `gate-docs.md`, in the same run folder `R` = `DL/runs/<date>/<KEY>/` the
+attended mode uses: `card.md`, `triage.md`, `decisions.md` (written for every card at A3, then each gate that
+parked it), `before.md`, `root-cause.md` or `design-note.md`, `build.md`, S2's `review.md`, `review-security.md`,
+`review-performance.md` and `qa.md`, `comment.md` and `ship.md`. They are git-ignored, because scheduled runs do not
+share a scratchpad, and they start with the header `gate-docs.md` gives. Auto mode adds or tightens:
 
 | File | Written by you, from | Must hold |
 |---|---|---|
-| `card.md` | `W/scripts/tracker.sh get` + `W/scripts/tracker.sh card <KEY> <config fields>` | every field and label, links, comments newest first, attachments described (never copied) |
-| `triage.md` | A3 | `auto-triage.md` § What triage writes, including the AC → test table |
-| `before.md` | the BEFORE agent's report | spec path and `shasum -a 256`, base sha (`git rev-parse`), the failing line, evidence paths |
-| `design-note.md` | A5, n-develop-loop | n-dev's design note |
-| `build.md` | each builder's report | root cause or WP, tests red → green with pasted lines, checks with pasted lines, structure-check output, commit sha, files |
-| `proof.md` | QA's report | the same spec hash, the served sha (`git rev-parse` of what the stack ran), both green runs pasted, evidence paths |
-| `verify.md` | `loop-verifier` | its table and verdict |
-| `ship.md` | A8 | the gate table with each command and result, PR, comment id, lane |
+| `triage.md` | A3 | also `auto-triage.md` § What triage writes |
+| `decisions.md` | A3, every card | `no decision round (auto)`, the assumptions, then each gate that parked the card with the question as posted |
+| `proof.md` | QA's report (A6) | the same spec hash as `before.md`, the served sha (`git rev-parse` of what the stack ran), both green runs pasted, evidence paths |
+| `verify.md` | `loop-verifier` (A7) | its table and verdict |
+| `ship.md` | A8 | the ship class and the row that set it, on top of `gate-docs.md`'s ship gate table |
 
 The pass log is `DL/runs/<date>/run.md`.
 
@@ -123,7 +122,8 @@ The pass log is `DL/runs/<date>/run.md`.
 
 No card → log `no cards`, go to A9.
 
-**A3 · Triage, check the spec**: `auto-triage.md`, its steps 1–7.
+**A3 · Triage, check the spec**: `auto-triage.md`, its steps 1–7. Then write `triage.md` and, every time,
+`decisions.md`: `no decision round (auto)`, the assumptions, and each gate that parks the card later is appended.
 1. Read the whole card, then check that the spec is complete and consistent, including against the feature doc's
    rules when config § Docs is on (triage steps 1–2).
 2. **Route** it (triage step 3). When the route is the other loop's kind of work, hand the card off and go to the
@@ -159,7 +159,7 @@ No card → log `no cards`, go to A9.
    with the note posted as the solution. Gate cases are any change to state shape, schema or a public interface
    (an additive one too: nobody is here to answer), or a trade-off a person would care about.
 3. Build, by loop:
-   - **n-defect-loop:** root cause at `path:line` (the loop's step 5), then `defect-fixer`.
+   - **n-defect-loop:** root cause at `path:line` (the loop's step 5) into `root-cause.md`, then `defect-fixer`.
    - **n-develop-loop:** one `dev-builder` per work package.
 4. Every builder returns red → green, the checks, n-dev's structure check and a local commit. A `NEEDS-DECISION`
    takes the stopped path, and the branch stays local. A `NEEDS-DECISION` is a forbidden area, or a gap the note
@@ -172,7 +172,7 @@ No card → log `no cards`, go to A9.
    would ship.
 2. S2 runs the code, security and performance reviews (one `risk-reviewer` for a small diff, else one reviewer per lens) and QA in parallel. QA
    runs the **same** spec green on the fix branch twice, then the checks and `structure_check.py --base <base>`,
-   which reads `.ndev.toml`.
+   which reads `.ndev.toml`. Then write the Plan vs diff section of `build.md` (`gate-docs.md` § Plan vs diff).
 3. Run S3 Evidence.
 
 A failed proof goes back to A5 and counts as an attempt. The card takes the **stopped** path after config › build

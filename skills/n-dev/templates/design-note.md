@@ -58,6 +58,14 @@ Dependency direction: <UI → application → core; confirm no cycle>
 
 Or the one line "no feature doc, or no rule changed".
 
+## Changes after approval
+
+| File | Change | Reason | From (report, finding or decision) |
+|---|---|---|---|
+
+Or the one line "none". Every file the build touches beyond the plan above is listed here before it ships; inside a
+90north-develop loop, verify compares the diff with this note (the workflow skill's `references/gate-docs.md`).
+
 ## Security and performance (the rows the change touches)
 
 From `references/security.md` and `references/performance.md`, or the one line "no security- or

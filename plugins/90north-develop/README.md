@@ -34,6 +34,22 @@ With `--auto`, either loop runs with nobody in the chat:
 
 Only a low- or no-impact change inside a standing approval merges on its own; everything else waits for a person.
 
+**Gate documents.** Every step of both loops ends in a markdown file in the item's run folder
+`.90north-develop/runs/<date>/<KEY>/`, in both modes: `card`, `triage` (with the AC → test table), `decisions` (each
+question and answer word for word), `before` (the red run), `root-cause` or `design-note`, `build`, the reviews and
+`qa`, `comment` and `ship`. Each opens with the same header: the gate, what it read, the decision, who decided (a
+person's exact words, a rule, or an agent checked by the orchestrator), the sha and the time. The next step starts by
+reading it, so a missing file means the step did not run. On top of the chain, borrowed from the AI-native SDLC
+playbook:
+- **plan vs diff**: verify compares the diff's files with the design note or the root cause's fence; drift is fixed
+  or written into the plan before it ships;
+- **metrics** per item in `ship.md` (read → spec, red → green, fix rounds, first-pass verify, findings, drift);
+- **eval proposals**: a procedure mistake a person corrected, or a reopened card, becomes a proposed eval case, not
+  only a lesson.
+
+The folder is git-ignored. Config § Docs › gate docs `on` also commits the readable part (triage, decisions, plan,
+build) into the PR under `docs/changes/<KEY>/`. The rules are in `skills/workflow/references/gate-docs.md`.
+
 **Feature docs.** Both loops keep one markdown doc per feature area true in the same PR as the code, by default
 `docs/features/<area>.md` (config § Docs). Each doc holds:
 - the area's rules `R-n`, each with its source (ticket, decision, spec);

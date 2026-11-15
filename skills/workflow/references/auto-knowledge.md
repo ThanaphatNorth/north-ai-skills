@@ -26,7 +26,7 @@ Lessons are not here: they go in `DL/lessons.md` with the `[ai]` tag and the age
 
 ## Signals (A9 — the conductor collects, the learner reads)
 
-The learner has no tracker access. Before dispatching it, you write `DL/runs/<date>/outcomes.md` with the facts below, gathered since the last `outcomes.jsonl` line:
+The learner has no tracker access. Before dispatching it, you write `DL/runs/<date>/outcomes.md` with the facts below, gathered since the last `outcomes.jsonl` line, and first the list of every run folder `R` this pass wrote to, including folders opened on an earlier date:
 
 | Signal | Collect with | Means |
 |---|---|---|
