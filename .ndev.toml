@@ -18,6 +18,10 @@ exclude = [
   "skills/*/evals/**",
   "plugins/*/evals/**",
   "skills/design-atlas/examples/**",
+  "skills/diagram-atlas/examples/**",
+  "skills/diagram-atlas/scripts/glyphs.py",
+  "skills/diagram-atlas/scripts/icons.py",
+  "skills/diagram-atlas/scripts/diagramkit.py",
   "research/**",
 ]
 

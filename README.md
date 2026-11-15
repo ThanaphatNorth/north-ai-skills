@@ -5,6 +5,7 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 | Skill | What it does |
 |---|---|
 | [`design-atlas`](skills/design-atlas/SKILL.md) | UX/UI design hub for web, mobile and desktop apps: user research and design psychology, creative direction (concept → storyboard → signature effect), style and theme selection, palettes matched to a logo, design systems with an expression layer and `light-dark()` theming, designing from the subject's own material so the result does not read as AI-made (tells, the replacement trap, a four-test audit), a visual-craft finish pass (light, type, optical detail, the beauty bar), multi-script typography, motion, scroll and parallax with a job, 3D (three.js), tested cinematic effect demos and AI-generated (Higgsfield) hero media. Language- and market-neutral. |
+| [`diagram-atlas`](skills/diagram-atlas/SKILL.md) | Architecture and deployment-topology diagrams that look like real architecture figures: cloud and data-center icons, nested network groups (AWS cloud, region, VPC, subnets, or on-premise data center, DMZ, app, data and management zones, Kubernetes clusters), numbered connectors, and two tables (what talks to what and how, how each component is deployed). AWS, on-premise and hybrid. Outputs an HTML page and a PNG, with a lint for lines running through text. |
 | [`n-dev`](skills/n-dev/SKILL.md) | Structured development: design before code, modular and functional modules, reuse before writing, new behaviour in extension files beside existing code, state with one owner, test-first, at most one question round before the first edit and a finish gate before the report, plus a git-based structure check (wiring budget, file/function budgets, copied blocks, layer rules, weakened tests, new dependencies) for any language, and an eval suite. |
 | [`n-arch`](skills/n-arch/SKILL.md) | Architecture profile: maps how a repo is built (shape, layers and import directions, extension recipes, state owners, contracts, commands, budgets) into `docs/architecture/profile.md` and the `.ndev.toml` the n-dev check enforces; refreshes it as the code moves; audits structural debt and hot spots. |
 | [`workflow`](skills/workflow/SKILL.md) | Map and router of the 90north-develop plugin: which loop a piece of work belongs to, the 9 steps and the shared stages both loops run (isolate, review + QA, evidence video, ship, learn), the auto mode both loops run with `--auto`, core lessons and the tracker (Jira or a local board). |
@@ -14,12 +15,12 @@ Agent skills by North. Each skill lives in `skills/<name>/` with a `SKILL.md` en
 
 ## Install
 
-Pick a path. **A** for the development loops, **B** for the standalone skills (`design-atlas`, `n-dev`), or both.
+Pick a path. **A** for the development loops, **B** for the standalone skills (`design-atlas`, `diagram-atlas`, `n-dev`), or both.
 
 | You want | Use |
 |---|---|
 | n-defect-loop, n-develop-loop, develop-init, workflow, n-dev and n-arch, plus the loops' agents | **A. Plugin** |
-| design-atlas, n-dev and/or n-arch in every project | **B. Personal skills** |
+| design-atlas, diagram-atlas, n-dev and/or n-arch in every project | **B. Personal skills** |
 | a skill in one repo only, shared with that repo's team | **C. Project skills** |
 
 Then restart Claude Code (or start a new session) and type `/`. The skills show up as slash commands.
@@ -62,10 +63,10 @@ git clone https://github.com/ThanaphatNorth/north-ai-skills.git ~/north-ai-skill
 ```
 
 ```bash
-mkdir -p ~/.claude/skills && for s in design-atlas n-dev n-arch; do ln -sn ~/north-ai-skills/skills/$s ~/.claude/skills/$s; done
+mkdir -p ~/.claude/skills && for s in design-atlas diagram-atlas n-dev n-arch; do ln -sn ~/north-ai-skills/skills/$s ~/.claude/skills/$s; done
 ```
 
-Drop any name from `design-atlas n-dev n-arch` you don't want; n-arch's audit uses n-dev's script, so link both. The commands are `/design-atlas`, `/n-dev` and `/n-arch`. `ln -sn` refuses to overwrite: if it says `File exists`, that name is already taken in `~/.claude/skills/`. An earlier install of this repo is fine to leave; anything else, rename or remove it first.
+Drop any name from `design-atlas diagram-atlas n-dev n-arch` you don't want; n-arch's audit uses n-dev's script, so link both. The commands are `/design-atlas`, `/diagram-atlas`, `/n-dev` and `/n-arch`. `ln -sn` refuses to overwrite: if it says `File exists`, that name is already taken in `~/.claude/skills/`. An earlier install of this repo is fine to leave; anything else, rename or remove it first.
 
 | Task | Command |
 |---|---|
